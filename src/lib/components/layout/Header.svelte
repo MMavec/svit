@@ -158,7 +158,12 @@
 		</div>
 		<ThemeToggle />
 		{#if authStore.isAuthenticated}
-			<button class="header-btn user-btn" onclick={() => authStore.signOut()} title="Sign out" aria-label="Sign out">
+			<button
+				class="header-btn user-btn"
+				onclick={() => authStore.signOut()}
+				title="Sign out"
+				aria-label="Sign out"
+			>
 				<svg
 					width="16"
 					height="16"
