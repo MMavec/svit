@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Mapping**: MapLibre GL JS — CARTO basemaps (no API key), municipality boundaries + feature pins
 - **Charts**: D3.js — sparkline charts via `d3.line()` + `d3.curveBasis`
 - **GTFS-RT**: `gtfs-realtime-bindings` for BC Transit protobuf alert decoding
-- **Auth/DB**: Supabase (installed, not yet wired — optional accounts only)
+- **Auth/DB**: Supabase (auth store + modal wired, optional accounts only)
 - **Fonts**: Inter (body) + Geist Mono (data/monospace)
 - **Persistence**: localStorage (anonymous) + Supabase (future, logged-in users)
 
@@ -49,7 +49,7 @@ Single-page dashboard with a 12-column draggable grid (60px rows, 12px gap). Pan
 - **Tier 1** (implemented): Council Watch, Bylaw Tracker, Voices, Public Hearings, Development Watch, Councillor Profiles
 - **Tier 2** (implemented): Local Wire, CRD Map (MapLibre), Pulse (D3), Construction & Roads, Transit, Safety & Emergency
 - **Tier 3** (implemented): Weather & Tides, Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment
-- **Tier 4** (placeholder, requires account): My Monitors, Connections, Threads, Demographics
+- **Tier 4** (implemented, requires account): My Monitors, Connections, Threads, Demographics
 
 Panel registration: `DashboardGrid.svelte` maps panel IDs to components via `{#if panel.id === 'xxx'}` chain. New panels must be imported and added there.
 
@@ -59,10 +59,12 @@ Every panel follows the same structure: local `$state` for data/loading, `onMoun
 
 ### Reactive State (Svelte 5 Runes)
 
-Three stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
+Five stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
 - **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
 - **`theme.svelte.ts`** — Dark/light theme. Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark.
 - **`layout.svelte.ts`** — Panel grid positions (id → {x, y, w, h}). Methods: `getPosition()`, `updatePosition()`, `reset()`.
+- **`refresh.svelte.ts`** — Auto-refresh toggle + per-panel intervals. Methods: `toggle()`, `getInterval(panelId)`.
+- **`auth.svelte.ts`** — Supabase auth state (user, session, loading). Methods: `signInWithEmail()`, `signUpWithEmail()`, `signOut()`, `resetPassword()`.
 
 ### API Proxy Pattern
 
@@ -102,20 +104,27 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 
 - `CRDMap.svelte` in `src/lib/components/map/` is the reusable map component; `CRDMapPanel.svelte` is the panel wrapper that feeds it `MapFeature[]` data
 - On `setStyle()` (theme toggle), all sources/layers are destroyed — the `style.load` event callback must re-add them
-- Municipality boundaries are static GeoJSON at `static/data/crd-municipalities.geojson` (bbox-derived rectangles; future: real CRD polygons)
+- Municipality boundaries are static GeoJSON at `static/data/crd-municipalities.geojson` (real CRD polygons from BC WFS, Douglas-Peucker simplified)
 - Feature pins come from development applications + construction events with coordinates
 
 ### Multi-Source API Pattern
 
-`/api/safety` aggregates 3 independent sources via `Promise.allSettled` — one failing source doesn't break others. Results merge and sort by severity. This pattern should be reused for future multi-source panels.
+`/api/safety` aggregates 4 independent sources via `Promise.allSettled` (weather, wildfire, road incidents, USGS earthquakes) — one failing source doesn't break others. Results merge and sort by severity. This pattern should be reused for future multi-source panels.
+
+### Auto-Refresh System
+
+`src/lib/stores/refresh.svelte.ts` provides per-panel refresh intervals (3min for transit/safety, 5min for news/pulse, 15min for council/weather, 30-60min for lower-frequency). Toggle via header button. Panels use `setInterval` with cleanup in `onDestroy`.
+
+### Auth System
+
+`src/lib/supabase.ts` creates Supabase client (returns null if env vars unconfigured). `src/lib/stores/auth.svelte.ts` manages session/user state with sign-in/sign-up/sign-out/reset flows. `AuthModal.svelte` provides login/signup/reset UI. All Tier 4 panels show auth-gate when unauthenticated.
 
 ### Key Data Sources (Planned but Not Yet Implemented)
 
 - Legistar REST API for CRD/Esquimalt — API returns setup error, needs Granicus contact
 - CivicWeb portals (Oak Bay, Colwood, Sooke, Sidney, N.Saanich, Metchosin) — HTML scrape
-- USGS earthquakes API
 - eBird API (requires `EBIRD_API_KEY`), OBIS — additional wildlife/nature sources
-- CRD ArcGIS REST (`mapservices.crd.bc.ca/arcgis/rest/services/`) — real boundary polygons, environment, parks
+- CRD ArcGIS REST (`mapservices.crd.bc.ca/arcgis/rest/services/`) — environment, parks
 
 ### Theme System
 
@@ -154,14 +163,25 @@ ONC_API_TOKEN=              # Free from data.oceannetworks.ca
 PUBLIC_MAPTILER_KEY=        # Free tier (optional — currently using CARTO basemaps, no key needed)
 ```
 
-## Database (Future — Phase 4)
+## Database (Supabase — Phase 4)
 
 Supabase with 4 tables (all with RLS):
 - `profiles` — extends auth.users (display_name, default_municipality, theme_preference)
 - `monitors` — custom keyword alerts (keyword, municipality filter, source filter)
+- `connections` — civic contact tracking (name, municipality, relationship, notes)
+- `threads` — discussion threads (title, municipality, messages JSONB)
+
+Additional future tables:
 - `layout_preferences` — saved panel grid positions (JSONB)
 - `saved_items` — bookmarked meetings/bylaws/news (item_type, external_id, metadata JSONB)
 
 ## Implementation Status
 
-Phases 0–3 complete. 19 of 23 panels are live (Tiers 1–3 fully implemented). Phase 4 (campaign tools requiring Supabase accounts) is next: My Monitors, Connections, Threads, Demographics.
+Phases 0–4 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
+
+### Recent Improvements
+- Real CRD municipality boundary polygons from BC WFS (replaced bbox rectangles)
+- USGS earthquake integration in Safety & Emergency panel
+- Auto-refresh system with per-panel intervals and header toggle
+- Panel collapse/minimize with localStorage persistence
+- Responsive mobile layout (stacked below 768px)
