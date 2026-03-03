@@ -28,6 +28,12 @@
 	import TreesUrbanForest from '$lib/components/panels/TreesUrbanForest.svelte';
 	import NatureEnvironment from '$lib/components/panels/NatureEnvironment.svelte';
 
+	// Tier 4 panel components (campaign tools)
+	import MyMonitors from '$lib/components/panels/MyMonitors.svelte';
+	import Connections from '$lib/components/panels/Connections.svelte';
+	import Threads from '$lib/components/panels/Threads.svelte';
+	import Demographics from '$lib/components/panels/Demographics.svelte';
+
 	import { onMount } from 'svelte';
 
 	const COLS = 12;
@@ -169,6 +175,14 @@
 						<TreesUrbanForest />
 					{:else if panel.id === 'nature-environment'}
 						<NatureEnvironment />
+					{:else if panel.id === 'my-monitors'}
+						<MyMonitors />
+					{:else if panel.id === 'connections'}
+						<Connections />
+					{:else if panel.id === 'threads'}
+						<Threads />
+					{:else if panel.id === 'demographics'}
+						<Demographics />
 					{:else}
 						<div class="panel-placeholder">Coming soon...</div>
 					{/if}
