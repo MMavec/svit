@@ -443,3 +443,10 @@ export interface ApiResponse<T> {
 	};
 	error?: string;
 }
+
+export interface ThreadMessage {
+	id: string;
+	content: string;
+	authorId: string;
+	createdAt: string;
+}

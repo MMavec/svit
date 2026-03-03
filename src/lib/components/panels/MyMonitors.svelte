@@ -2,6 +2,8 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { supabase } from '$lib/supabase';
+	import { apiFetch } from '$lib/api/fetcher';
+	import { matchMonitors, type MonitorMatch } from '$lib/utils/monitor-matcher';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	interface Monitor {
@@ -18,6 +20,9 @@
 	let showAdd = $state(false);
 	let newKeyword = $state('');
 	let newSources = $state<string[]>(['council', 'news', 'development']);
+	let matchesByMonitor = $state<Record<string, MonitorMatch[]>>({});
+	let scanning = $state(false);
+	let expandedMonitor = $state<string | null>(null);
 
 	const SOURCE_OPTIONS = [
 		{ id: 'council', label: 'Council' },
@@ -37,6 +42,7 @@
 			.order('created_at', { ascending: false });
 		monitors = (data || []) as Monitor[];
 		loading = false;
+		scanForMatches();
 	}
 
 	async function addMonitor() {
@@ -66,6 +72,48 @@
 		} else {
 			newSources = [...newSources, src];
 		}
+	}
+
+	async function scanForMatches() {
+		if (monitors.length === 0) return;
+		scanning = true;
+
+		const sources: { path: string; source: string }[] = [
+			{ path: '/council', source: 'council' },
+			{ path: '/news', source: 'news' },
+			{ path: '/development', source: 'development' },
+			{ path: '/social', source: 'social' },
+			{ path: '/safety', source: 'safety' }
+		];
+
+		const results = await Promise.allSettled(
+			sources.map((s) =>
+				apiFetch<Array<{ id: string; title?: string; description?: string; address?: string }>>(
+					s.path,
+					{ limit: 50 }
+				)
+			)
+		);
+
+		const allMatches: MonitorMatch[] = [];
+		for (let i = 0; i < results.length; i++) {
+			const r = results[i];
+			if (r.status !== 'fulfilled' || !r.value.data) continue;
+			const items = r.value.data.map((item) => ({
+				id: item.id,
+				title: item.title || (item as { address?: string }).address || '',
+				description: item.description
+			}));
+			allMatches.push(...matchMonitors(monitors, items, sources[i].source));
+		}
+
+		const grouped: Record<string, MonitorMatch[]> = {};
+		for (const m of allMatches) {
+			if (!grouped[m.monitorId]) grouped[m.monitorId] = [];
+			grouped[m.monitorId].push(m);
+		}
+		matchesByMonitor = grouped;
+		scanning = false;
 	}
 
 	$effect(() => {
@@ -124,8 +172,17 @@
 
 		<div class="monitor-list">
 			{#each monitors as monitor (monitor.id)}
-				<div class="monitor-card">
-					<div class="monitor-keyword">{monitor.keyword}</div>
+				{@const monitorMatches = matchesByMonitor[monitor.id] || []}
+				<div class="monitor-card" class:has-matches={monitorMatches.length > 0}>
+					<button
+						class="monitor-header-btn"
+						onclick={() => (expandedMonitor = expandedMonitor === monitor.id ? null : monitor.id)}
+					>
+						<div class="monitor-keyword">{monitor.keyword}</div>
+						{#if monitorMatches.length > 0}
+							<span class="match-badge">{monitorMatches.length}</span>
+						{/if}
+					</button>
 					<div class="monitor-meta">
 						<span class="monitor-sources">
 							{monitor.sources.join(', ')}
@@ -136,8 +193,25 @@
 							<span class="monitor-scope">All CRD</span>
 						{/if}
 					</div>
+					{#if expandedMonitor === monitor.id && monitorMatches.length > 0}
+						<div class="match-list">
+							{#each monitorMatches as match (match.itemId + match.source)}
+								<div class="match-item">
+									<span class="match-source">{match.source}</span>
+									<span class="match-title">{match.itemTitle}</span>
+									<span class="match-field">({match.matchedIn})</span>
+								</div>
+							{/each}
+						</div>
+					{/if}
 					<div class="monitor-footer">
-						<span class="match-count">{monitor.matches || 0} matches</span>
+						<span class="match-count">
+							{#if scanning}
+								scanning...
+							{:else}
+								{monitorMatches.length} match{monitorMatches.length !== 1 ? 'es' : ''}
+							{/if}
+						</span>
 						<button class="delete-btn" onclick={() => deleteMonitor(monitor.id)}>Remove</button>
 					</div>
 				</div>
@@ -301,10 +375,79 @@
 		background: var(--bg-surface-hover);
 	}
 
+	.monitor-card.has-matches {
+		border-left: 3px solid var(--accent-primary);
+	}
+
+	.monitor-header-btn {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		width: 100%;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		text-align: left;
+	}
+
 	.monitor-keyword {
 		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text-primary);
+	}
+
+	.match-badge {
+		font-size: 0.5625rem;
+		font-weight: 700;
+		min-width: 16px;
+		height: 16px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 8px;
+		background: var(--accent-primary);
+		color: var(--text-inverse);
+		padding: 0 4px;
+	}
+
+	.match-list {
+		margin-top: 6px;
+		padding: 4px 0;
+		border-top: 1px solid var(--border-primary);
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+	}
+
+	.match-item {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 0.625rem;
+	}
+
+	.match-source {
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--accent-primary);
+		letter-spacing: 0.03em;
+		flex-shrink: 0;
+	}
+
+	.match-title {
+		color: var(--text-secondary);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.match-field {
+		color: var(--text-tertiary);
+		font-style: italic;
+		flex-shrink: 0;
 	}
 
 	.monitor-meta {
