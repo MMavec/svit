@@ -5,6 +5,7 @@
 	import { layoutStore } from '$lib/stores/layout.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { bookmarkStore } from '$lib/stores/bookmarks.svelte';
+	import { searchStore } from '$lib/stores/search.svelte';
 
 	let showBookmarks = $state(false);
 	let bookmarkCount = $derived(bookmarkStore.items.length);
@@ -73,6 +74,26 @@
 				<rect x="14" y="3" width="7" height="7" />
 				<rect x="14" y="14" width="7" height="7" />
 				<rect x="3" y="14" width="7" height="7" />
+			</svg>
+		</button>
+		<button
+			class="header-btn"
+			onclick={() => searchStore.open()}
+			aria-label="Search (Cmd+K)"
+			title="Search (Cmd+K)"
+		>
+			<svg
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<circle cx="11" cy="11" r="8" />
+				<line x1="21" y1="21" x2="16.65" y2="16.65" />
 			</svg>
 		</button>
 		<div class="bookmark-wrapper">

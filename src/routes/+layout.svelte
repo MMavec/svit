@@ -6,6 +6,7 @@
 	import CloudySky from '$lib/components/theme/CloudySky.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
 	import AuthModal from '$lib/components/auth/AuthModal.svelte';
+	import SearchOverlay from '$lib/components/layout/SearchOverlay.svelte';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
@@ -34,6 +35,9 @@
 
 	<!-- Auth modal -->
 	<AuthModal />
+
+	<!-- Search overlay -->
+	<SearchOverlay />
 </div>
 
 <style>
