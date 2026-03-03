@@ -3,6 +3,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { supabase } from '$lib/supabase';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import { municipalities } from '$lib/config/municipalities';
 
 	interface Connection {
@@ -23,6 +24,7 @@
 
 	let connections = $state<Connection[]>([]);
 	let loading = $state(false);
+	let error = $state<string | null>(null);
 	let showAdd = $state(false);
 	let newName = $state('');
 	let newMunicipality = $state<string>(municipalityStore.slug || 'victoria');
@@ -32,12 +34,17 @@
 	async function loadConnections() {
 		if (!supabase || !authStore.isAuthenticated) return;
 		loading = true;
-		const { data } = await supabase
+		error = null;
+		const { data, error: dbError } = await supabase
 			.from('connections')
 			.select('*')
 			.eq('user_id', authStore.user!.id)
 			.order('last_contact', { ascending: false });
-		connections = (data || []) as Connection[];
+		if (dbError) {
+			error = dbError.message;
+		} else {
+			connections = (data || []) as Connection[];
+		}
 		loading = false;
 	}
 
@@ -95,6 +102,8 @@
 		</div>
 	{:else if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadConnections} />
 	{:else}
 		<div class="conn-header">
 			<span class="conn-count"

@@ -5,6 +5,7 @@
 	import { apiFetch } from '$lib/api/fetcher';
 	import { matchMonitors, type MonitorMatch } from '$lib/utils/monitor-matcher';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	interface Monitor {
 		id: string;
@@ -17,6 +18,7 @@
 
 	let monitors = $state<Monitor[]>([]);
 	let loading = $state(false);
+	let error = $state<string | null>(null);
 	let showAdd = $state(false);
 	let newKeyword = $state('');
 	let newSources = $state<string[]>(['council', 'news', 'development']);
@@ -35,14 +37,19 @@
 	async function loadMonitors() {
 		if (!supabase || !authStore.isAuthenticated) return;
 		loading = true;
-		const { data } = await supabase
+		error = null;
+		const { data, error: dbError } = await supabase
 			.from('monitors')
 			.select('*')
 			.eq('user_id', authStore.user!.id)
 			.order('created_at', { ascending: false });
-		monitors = (data || []) as Monitor[];
+		if (dbError) {
+			error = dbError.message;
+		} else {
+			monitors = (data || []) as Monitor[];
+			scanForMatches();
+		}
 		loading = false;
-		scanForMatches();
 	}
 
 	async function addMonitor() {
@@ -132,6 +139,8 @@
 		</div>
 	{:else if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadMonitors} />
 	{:else}
 		<div class="monitors-header">
 			<span class="monitor-count">{monitors.length} monitor{monitors.length !== 1 ? 's' : ''}</span>
