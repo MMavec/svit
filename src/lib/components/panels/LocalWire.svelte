@@ -5,6 +5,7 @@
 	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import { newsSources } from '$lib/config/news-sources';
 	import type { NewsItem } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let articles = $state<NewsItem[]>([]);
 	let loading = $state(true);
@@ -90,7 +91,7 @@
 	</div>
 
 	{#if loading}
-		<div class="loading">Loading news...</div>
+		<PanelSkeleton variant="list" />
 	{:else}
 		<div class="article-list">
 			{#each articles as article (article.id)}
@@ -259,7 +260,6 @@
 		overflow: hidden;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

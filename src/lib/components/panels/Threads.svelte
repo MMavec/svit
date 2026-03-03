@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { supabase } from '$lib/supabase';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	interface Thread {
 		id: string;
@@ -92,7 +93,7 @@
 			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
 		</div>
 	{:else if loading}
-		<div class="loading">Loading threads...</div>
+		<PanelSkeleton variant="list" />
 	{:else}
 		<div class="threads-header">
 			<span class="thread-count">{threads.length} thread{threads.length !== 1 ? 's' : ''}</span>
@@ -335,7 +336,6 @@
 		cursor: pointer;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

@@ -2,6 +2,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { supabase } from '$lib/supabase';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	interface Monitor {
 		id: string;
@@ -82,7 +83,7 @@
 			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
 		</div>
 	{:else if loading}
-		<div class="loading">Loading monitors...</div>
+		<PanelSkeleton variant="list" />
 	{:else}
 		<div class="monitors-header">
 			<span class="monitor-count">{monitors.length} monitor{monitors.length !== 1 ? 's' : ''}</span>
@@ -337,7 +338,6 @@
 		cursor: pointer;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

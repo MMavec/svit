@@ -3,6 +3,7 @@
 	import { fetchEnvironmentReadings } from '$lib/api/environment';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { EnvironmentReading } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let readings = $state<EnvironmentReading[]>([]);
 	let loading = $state(true);
@@ -86,7 +87,7 @@
 
 <div class="nature">
 	{#if loading}
-		<div class="loading">Loading environmental data...</div>
+		<PanelSkeleton variant="hero" />
 	{:else if readings.length === 0}
 		<div class="empty">No environmental data available</div>
 	{:else}
@@ -249,7 +250,6 @@
 		margin-top: 2px;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

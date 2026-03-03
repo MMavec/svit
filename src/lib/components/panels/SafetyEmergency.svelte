@@ -4,6 +4,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import type { SafetyAlert } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let alerts = $state<SafetyAlert[]>([]);
 	let loading = $state(true);
@@ -116,7 +117,7 @@
 
 <div class="safety">
 	{#if loading}
-		<div class="loading">Checking alerts...</div>
+		<PanelSkeleton variant="list" />
 	{:else if alerts.length === 0}
 		<div class="all-clear">
 			<div class="check-icon">&#10003;</div>
@@ -329,15 +330,5 @@
 
 	.more-link:hover {
 		text-decoration: underline;
-	}
-
-	.loading {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex: 1;
-		font-size: 0.8125rem;
-		color: var(--text-tertiary);
-		font-style: italic;
 	}
 </style>

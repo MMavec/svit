@@ -2,6 +2,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { supabase } from '$lib/supabase';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import { municipalities } from '$lib/config/municipalities';
 
 	interface Connection {
@@ -93,7 +94,7 @@
 			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
 		</div>
 	{:else if loading}
-		<div class="loading">Loading connections...</div>
+		<PanelSkeleton variant="list" />
 	{:else}
 		<div class="conn-header">
 			<span class="conn-count"
@@ -348,7 +349,6 @@
 		cursor: pointer;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;
