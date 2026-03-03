@@ -2,13 +2,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { supabase } from '$lib/supabase';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
-
-	interface ThreadMessage {
-		id: string;
-		content: string;
-		authorId: string;
-		createdAt: string;
-	}
+	import type { ThreadMessage } from '$lib/types/index';
 
 	interface Thread {
 		id: string;

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchDevelopments } from '$lib/api/development';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { DevelopmentApplication } from '$lib/types/index';
@@ -19,10 +18,6 @@
 		applications = result.data || [];
 		loading = false;
 	}
-
-	onMount(() => {
-		loadDevelopments();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

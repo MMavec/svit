@@ -1,6 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { SocialPost } from '$lib/types/index';
+import { hashCode } from '$lib/utils/hash';
+import { attributeMunicipalityByText } from '$lib/utils/geo-attribution';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -51,7 +53,7 @@ async function fetchBlueskyPosts(searchTerm: string): Promise<SocialPost[]> {
 				likes: post.likeCount || 0,
 				reposts: post.repostCount || 0,
 				replies: post.replyCount || 0,
-				municipality: attributeMunicipality(post.record.text)
+				municipality: attributeMunicipalityByText(post.record.text)
 			})
 		);
 	} catch {
@@ -134,38 +136,6 @@ function getSeedPosts(): SocialPost[] {
 			municipality: 'oak-bay'
 		}
 	];
-}
-
-function attributeMunicipality(text: string): string | undefined {
-	const lower = text.toLowerCase();
-	const patterns: [string, string[]][] = [
-		['victoria', ['victoria', '#vic ', 'james bay', 'fernwood']],
-		['saanich', ['saanich', '#saanich']],
-		['esquimalt', ['esquimalt']],
-		['oak-bay', ['oak bay', '#oakbay']],
-		['langford', ['langford', '#langford']],
-		['colwood', ['colwood']],
-		['sooke', ['sooke']],
-		['sidney', ['sidney']],
-		['north-saanich', ['north saanich']],
-		['central-saanich', ['central saanich', 'brentwood']],
-		['view-royal', ['view royal']],
-		['highlands', ['highlands district']],
-		['metchosin', ['metchosin']]
-	];
-
-	for (const [slug, keywords] of patterns) {
-		if (keywords.some((kw) => lower.includes(kw))) return slug;
-	}
-	return undefined;
-}
-
-function hashCode(str: string): string {
-	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
-		hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-	}
-	return Math.abs(hash).toString(36);
 }
 
 export const GET: RequestHandler = async ({ url }) => {

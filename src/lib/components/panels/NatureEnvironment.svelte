@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchEnvironmentReadings } from '$lib/api/environment';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { EnvironmentReading } from '$lib/types/index';
@@ -16,10 +15,6 @@
 		readings = result.data || [];
 		loading = false;
 	}
-
-	onMount(() => {
-		loadData();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

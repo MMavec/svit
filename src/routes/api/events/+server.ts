@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { CommunityEvent } from '$lib/types/index';
 import { municipalities } from '$lib/config/municipalities';
+import { hashCode } from '$lib/utils/hash';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -196,14 +197,6 @@ function getSeedData(): CommunityEvent[] {
 			source: 'seed'
 		}
 	];
-}
-
-function hashCode(str: string): string {
-	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
-		hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-	}
-	return Math.abs(hash).toString(36);
 }
 
 export const GET: RequestHandler = async ({ url }) => {

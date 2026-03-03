@@ -31,7 +31,6 @@
 	}
 
 	onMount(() => {
-		loadAlerts();
 		startRefreshTimer();
 	});
 

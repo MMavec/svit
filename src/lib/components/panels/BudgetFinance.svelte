@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchBudgetItems } from '$lib/api/budget';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { BudgetItem } from '$lib/types/index';
@@ -17,10 +16,6 @@
 		items = result.data || [];
 		loading = false;
 	}
-
-	onMount(() => {
-		loadData();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

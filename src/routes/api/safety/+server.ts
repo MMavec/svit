@@ -1,7 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { SafetyAlert } from '$lib/types/index';
-import { CRD_BBOX, municipalities } from '$lib/config/municipalities';
+import { CRD_BBOX } from '$lib/config/municipalities';
+import { hashCode } from '$lib/utils/hash';
+import { attributeMunicipality } from '$lib/utils/geo-attribution';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -248,14 +250,6 @@ async function fetchRoadIncidents(): Promise<SafetyAlert[]> {
 	}
 }
 
-function attributeMunicipality(lng: number, lat: number): string | undefined {
-	for (const m of municipalities) {
-		const [w, s, e, n] = m.bbox;
-		if (lng >= w && lng <= e && lat >= s && lat <= n) return m.slug;
-	}
-	return undefined;
-}
-
 function classifyWeatherSeverity(title: string): SafetyAlert['severity'] {
 	const lower = title.toLowerCase();
 	if (lower.includes('emergency') || lower.includes('tornado')) return 'emergency';
@@ -344,14 +338,6 @@ function getSeedAlerts(): SafetyAlert[] {
 function extractTag(xml: string, tag: string): string | null {
 	const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`));
 	return match ? match[1].trim() : null;
-}
-
-function hashCode(str: string): string {
-	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
-		hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-	}
-	return Math.abs(hash).toString(36);
 }
 
 export const GET: RequestHandler = async ({ url }) => {

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchWeatherTides } from '$lib/api/weather-tides';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { WeatherTidesData } from '$lib/types/index';
@@ -14,10 +13,6 @@
 		data = result.data || null;
 		loading = false;
 	}
-
-	onMount(() => {
-		loadData();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

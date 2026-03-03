@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchConstruction } from '$lib/api/construction';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { ConstructionEvent } from '$lib/types/index';
@@ -17,10 +16,6 @@
 		events = result.data || [];
 		loading = false;
 	}
-
-	onMount(() => {
-		loadEvents();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

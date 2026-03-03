@@ -2,7 +2,8 @@ import { json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 import type { WildlifeSighting } from '$lib/types/index';
-import { CRD_CENTER, municipalities } from '$lib/config/municipalities';
+import { CRD_CENTER } from '$lib/config/municipalities';
+import { attributeMunicipality } from '$lib/utils/geo-attribution';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -125,14 +126,6 @@ function mapIconicTaxon(taxon: string): WildlifeSighting['category'] {
 		default:
 			return 'other';
 	}
-}
-
-function attributeMunicipality(lng: number, lat: number): string | undefined {
-	for (const m of municipalities) {
-		const [w, s, e, n] = m.bbox;
-		if (lng >= w && lng <= e && lat >= s && lat <= n) return m.slug;
-	}
-	return undefined;
 }
 
 function getSeedData(): WildlifeSighting[] {
