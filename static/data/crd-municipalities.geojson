@@ -1,0 +1,148 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "slug": "victoria", "name": "Victoria", "color": "#2B6CB0" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.395, 48.402], [-123.329, 48.402], [-123.329, 48.445],
+          [-123.395, 48.445], [-123.395, 48.402]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "saanich", "name": "Saanich", "color": "#2F855A" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.465, 48.430], [-123.280, 48.430], [-123.280, 48.530],
+          [-123.465, 48.530], [-123.465, 48.430]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "esquimalt", "name": "Esquimalt", "color": "#6B46C1" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.445, 48.424], [-123.382, 48.424], [-123.382, 48.455],
+          [-123.445, 48.455], [-123.445, 48.424]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "oak-bay", "name": "Oak Bay", "color": "#D69E2E" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.350, 48.410], [-123.290, 48.410], [-123.290, 48.460],
+          [-123.350, 48.460], [-123.350, 48.410]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "langford", "name": "Langford", "color": "#C53030" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.540, 48.430], [-123.430, 48.430], [-123.430, 48.500],
+          [-123.540, 48.500], [-123.540, 48.430]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "colwood", "name": "Colwood", "color": "#00B5D8" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.520, 48.410], [-123.440, 48.410], [-123.440, 48.460],
+          [-123.520, 48.460], [-123.520, 48.410]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "sooke", "name": "Sooke", "color": "#38A169" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.770, 48.350], [-123.680, 48.350], [-123.680, 48.420],
+          [-123.770, 48.420], [-123.770, 48.350]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "sidney", "name": "Sidney", "color": "#DD6B20" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.420, 48.635], [-123.380, 48.635], [-123.380, 48.665],
+          [-123.420, 48.665], [-123.420, 48.635]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "north-saanich", "name": "North Saanich", "color": "#3182CE" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.490, 48.610], [-123.350, 48.610], [-123.350, 48.700],
+          [-123.490, 48.700], [-123.490, 48.610]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "central-saanich", "name": "Central Saanich", "color": "#805AD5" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.440, 48.540], [-123.330, 48.540], [-123.330, 48.610],
+          [-123.440, 48.610], [-123.440, 48.540]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "view-royal", "name": "View Royal", "color": "#E53E3E" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.480, 48.440], [-123.410, 48.440], [-123.410, 48.480],
+          [-123.480, 48.480], [-123.480, 48.440]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "highlands", "name": "Highlands", "color": "#319795" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.540, 48.480], [-123.440, 48.480], [-123.440, 48.540],
+          [-123.540, 48.540], [-123.540, 48.480]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "slug": "metchosin", "name": "Metchosin", "color": "#975A16" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-123.600, 48.350], [-123.460, 48.350], [-123.460, 48.440],
+          [-123.600, 48.440], [-123.600, 48.350]
+        ]]
+      }
+    }
+  ]
+}
