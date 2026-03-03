@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 import type { WildlifeSighting } from '$lib/types/index';
 import { CRD_CENTER, municipalities } from '$lib/config/municipalities';
@@ -62,6 +63,43 @@ async function fetchINaturalist(): Promise<WildlifeSighting[]> {
 					source: 'inaturalist'
 				};
 			});
+	} catch {
+		return [];
+	}
+}
+
+/** Fetch recent bird observations from eBird in the CRD area */
+async function fetchEBird(): Promise<WildlifeSighting[]> {
+	const apiKey = env.EBIRD_API_KEY;
+	if (!apiKey) return [];
+	try {
+		const params = new URLSearchParams({
+			lat: String(CRD_CENTER[1]),
+			lng: String(CRD_CENTER[0]),
+			dist: '25',
+			maxResults: '30',
+			sort: 'date',
+			cat: 'species',
+			back: '14'
+		});
+		const response = await fetch(`https://api.ebird.org/v2/data/obs/geo/recent?${params}`, {
+			headers: { 'X-eBirdApiToken': apiKey },
+			signal: AbortSignal.timeout(10000)
+		});
+		if (!response.ok) return [];
+		const data = await response.json();
+		return data.map((obs: Record<string, unknown>) => ({
+			id: `ebird-${obs.subId}-${obs.speciesCode}`,
+			species: String(obs.sciName || ''),
+			commonName: String(obs.comName || 'Unknown'),
+			category: 'bird' as const,
+			observedAt: String(obs.obsDt || ''),
+			location: obs.locName ? String(obs.locName) : undefined,
+			coordinates: [Number(obs.lng), Number(obs.lat)] as [number, number],
+			observer: undefined,
+			municipality: attributeMunicipality(Number(obs.lng), Number(obs.lat)),
+			source: 'ebird'
+		}));
 	} catch {
 		return [];
 	}
@@ -202,11 +240,12 @@ export const GET: RequestHandler = async ({ url }) => {
 	const category = url.searchParams.get('category');
 	const limit = parseInt(url.searchParams.get('limit') || '20');
 
-	let sightings = await fetchINaturalist();
-
-	if (sightings.length === 0) {
-		sightings = getSeedData();
-	}
+	const [inatResult, ebirdResult] = await Promise.allSettled([fetchINaturalist(), fetchEBird()]);
+	let sightings = [
+		...(inatResult.status === 'fulfilled' ? inatResult.value : []),
+		...(ebirdResult.status === 'fulfilled' ? ebirdResult.value : [])
+	];
+	if (sightings.length === 0) sightings = getSeedData();
 
 	if (municipality) {
 		sightings = sightings.filter((s) => s.municipality === municipality);
