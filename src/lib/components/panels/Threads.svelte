@@ -2,6 +2,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { supabase } from '$lib/supabase';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import type { ThreadMessage } from '$lib/types/index';
 
 	interface Thread {
@@ -18,6 +19,7 @@
 
 	let threads = $state<Thread[]>([]);
 	let loading = $state(false);
+	let error = $state<string | null>(null);
 	let showNew = $state(false);
 	let newTitle = $state('');
 	let newMessage = $state('');
@@ -30,12 +32,17 @@
 	async function loadThreads() {
 		if (!supabase || !authStore.isAuthenticated) return;
 		loading = true;
-		const { data } = await supabase
+		error = null;
+		const { data, error: dbError } = await supabase
 			.from('threads')
 			.select('*')
 			.eq('user_id', authStore.user!.id)
 			.order('last_message_at', { ascending: false });
-		threads = (data || []) as Thread[];
+		if (dbError) {
+			error = dbError.message;
+		} else {
+			threads = (data || []) as Thread[];
+		}
 		loading = false;
 	}
 
@@ -145,6 +152,8 @@
 		</div>
 	{:else if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadThreads} />
 	{:else if selectedThread && activeThread}
 		<!-- Detail view -->
 		<div class="thread-detail">
