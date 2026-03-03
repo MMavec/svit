@@ -11,6 +11,25 @@ export interface Municipality {
 	councilUrl?: string;
 }
 
+export interface SavedItem {
+	id: string;
+	itemType:
+		| 'meeting'
+		| 'news'
+		| 'development'
+		| 'bylaw'
+		| 'event'
+		| 'wildlife'
+		| 'thread'
+		| 'other';
+	externalId: string;
+	title: string;
+	description?: string;
+	municipality?: string;
+	url?: string;
+	savedAt: string;
+}
+
 export interface PanelConfig {
 	id: string;
 	title: string;

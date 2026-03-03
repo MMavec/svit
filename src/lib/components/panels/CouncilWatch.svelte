@@ -4,6 +4,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { Meeting } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
 	let meetings = $state<Meeting[]>([]);
 	let loading = $state(true);
@@ -106,6 +107,14 @@
 							<div class="meeting-location">{meeting.location}</div>
 						{/if}
 					</div>
+					<BookmarkButton
+						itemType="meeting"
+						externalId={meeting.id}
+						title={meeting.title}
+						description={meeting.body}
+						municipality={meeting.municipality}
+						url={meeting.agendaUrl}
+					/>
 					<div class="meeting-actions">
 						{#if meeting.agendaUrl}
 							<a

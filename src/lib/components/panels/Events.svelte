@@ -4,6 +4,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { CommunityEvent } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
 	let events = $state<CommunityEvent[]>([]);
 	let loading = $state(true);
@@ -100,6 +101,14 @@
 						{#if event.free}
 							<span class="free-badge">FREE</span>
 						{/if}
+						<BookmarkButton
+							itemType="event"
+							externalId={event.id}
+							title={event.title}
+							description={event.description}
+							municipality={event.municipality}
+							url={event.url}
+						/>
 					</div>
 					<div class="event-title">
 						{#if event.url}
