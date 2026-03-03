@@ -60,13 +60,16 @@ Every panel follows the same structure: local `$state` for data/loading, `onMoun
 
 ### Reactive State (Svelte 5 Runes)
 
-Five stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
+Eight stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
 
 - **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
 - **`theme.svelte.ts`** — Dark/light theme. Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark.
 - **`layout.svelte.ts`** — Panel grid positions (id → {x, y, w, h}). Methods: `getPosition()`, `updatePosition()`, `reset()`.
 - **`refresh.svelte.ts`** — Auto-refresh toggle + per-panel intervals. Methods: `toggle()`, `getInterval(panelId)`.
 - **`auth.svelte.ts`** — Supabase auth state (user, session, loading). Methods: `signInWithEmail()`, `signUpWithEmail()`, `signOut()`, `resetPassword()`.
+- **`bookmarks.svelte.ts`** — Item bookmarking with localStorage persistence. Methods: `add()`, `remove()`, `removeByExternalId()`, `has()`, `getByType()`. Used by `BookmarkButton.svelte` in council, news, development, and events panels.
+- **`search.svelte.ts`** — Cross-panel global search with 300ms debounce. Searches 5 API sources (council, news, development, events, safety). Methods: `open()`, `close()`, query getter/setter. Keyboard shortcut: Cmd+K / Ctrl+K.
+- **`panel.svelte.ts`** — Panel collapse/minimize state with localStorage persistence.
 
 ### API Proxy Pattern
 
@@ -86,7 +89,7 @@ Cache tiers: 5min (news, social, transit, safety), 15min (council, development, 
 
 | Route                    | External Source                                                                                                    | Seed Fallback                                         |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| `GET /api/council`       | eSCRIBE WebMethods (Victoria, Langford)                                                                            | 20 meetings across 5 municipalities                   |
+| `GET /api/council`       | eSCRIBE WebMethods (Victoria, Langford) + CivicWeb HTML scraping (9 municipalities)                                | 20 meetings across 5 municipalities                   |
 | `GET /api/news`          | 8 RSS feeds (CHEK, VicNews, VictoriaBuzz, SaanichNews, OakBayNews, GoldstreamGazette, PeninsulaNewsReview, CBC BC) | None needed (live feeds work)                         |
 | `GET /api/social`        | Bluesky AT Protocol search (#yyj, #yyjpoli)                                                                        | 5 representative posts                                |
 | `GET /api/development`   | Victoria Open Data ArcGIS Hub                                                                                      | 6 applications across 4 municipalities                |
@@ -97,9 +100,9 @@ Cache tiers: 5min (news, social, transit, safety), 15min (council, development, 
 | `GET /api/housing`       | CMHC housing indicators (Victoria CMA)                                                                             | 10 metrics (median price, rent, vacancy, starts)      |
 | `GET /api/events`        | Tourism Victoria events feed                                                                                       | 8 events across 6 municipalities                      |
 | `GET /api/budget`        | Static (future: open data portals)                                                                                 | 15 items across Victoria, Saanich, Langford           |
-| `GET /api/wildlife`      | iNaturalist API (research-grade CRD observations)                                                                  | 8 sightings (orca, eagle, heron, seal, etc.)          |
+| `GET /api/wildlife`      | iNaturalist API + eBird API v2 (CRD observations, 25km radius)                                                     | 8 sightings (orca, eagle, heron, seal, etc.)          |
 | `GET /api/trees`         | iNaturalist (CRD tree observations)                                                                                | 8 trees (Garry Oak, Douglas Fir, Arbutus, etc.)       |
-| `GET /api/environment`   | AQICN air quality via `AQICN_API_TOKEN` (dynamic import)                                                           | 8 readings (AQI, PM2.5, UV, pollen, water quality)    |
+| `GET /api/environment`   | AQICN air quality via `AQICN_API_TOKEN` + ONC ocean temperature (VENUS observatory)                                | 8 readings (AQI, PM2.5, UV, pollen, water, ocean)     |
 
 All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`. Development accepts `?flagged=true`. Construction accepts `?event_type=CONSTRUCTION|INCIDENT`. Events accepts `?category=`. Budget accepts `?type=revenue|expenditure`. Wildlife accepts `?category=`. Trees accepts `?heritage=true`.
 
@@ -125,9 +128,8 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 ### Key Data Sources (Planned but Not Yet Implemented)
 
 - Legistar REST API for CRD/Esquimalt — API returns setup error, needs Granicus contact
-- CivicWeb portals (Oak Bay, Colwood, Sooke, Sidney, N.Saanich, Metchosin) — HTML scrape
-- eBird API (requires `EBIRD_API_KEY`), OBIS — additional wildlife/nature sources
 - CRD ArcGIS REST (`mapservices.crd.bc.ca/arcgis/rest/services/`) — environment, parks
+- OBIS — additional marine/ocean biodiversity observations
 
 ### Theme System
 
@@ -171,7 +173,9 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 - **Municipality attribution** — every data item tagged with its municipality slug for filtering. Attribution uses coordinate-in-bbox matching first, then text matching against municipality names.
 - **Seed data** — every API route has hardcoded fallback arrays for when live APIs fail. Routes never throw.
 - **Prettier**: tabs, single quotes, no trailing commas, 100-char width, svelte plugin
-- **Testing**: vitest and playwright are configured in devDependencies but no test files exist yet
+- **Testing**: Vitest with jsdom environment (`npm run test` — 24 tests across 3 files). Test setup mocks localStorage + matchMedia. Tests in `src/lib/*/__tests__/`. Playwright configured for e2e.
+- **Loading states**: `PanelSkeleton.svelte` component provides shimmer skeletons (variants: `list`, `cards`, `chart`, `map`). All panels use it during loading.
+- **Error boundaries**: `PanelError.svelte` wraps panels with `{#snippet}` for graceful error display and retry.
 
 ## Environment Variables
 
@@ -199,11 +203,28 @@ Additional future tables:
 - `layout_preferences` — saved panel grid positions (JSONB)
 - `saved_items` — bookmarked meetings/bylaws/news (item_type, external_id, metadata JSONB)
 
+### Cross-Panel Features
+
+- **Global Search** (`SearchOverlay.svelte`): Full-screen overlay searching council, news, development, events, safety. Cmd+K shortcut. Results categorized with badges.
+- **Item Bookmarks** (`BookmarkButton.svelte` + `bookmarks.svelte.ts`): Star icon on council, news, development, event items. localStorage-persisted. Flyout in header shows saved items.
+- **Monitor Matching** (`monitor-matcher.ts`): MyMonitors panel scans 5 API sources for keyword matches. Case-insensitive, source-filtered, grouped by monitor with expandable match lists.
+
 ## Implementation Status
 
-Phases 0–4 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
+Phases 0–5 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
 
-### Recent Improvements
+### Phase 5 Additions
+
+- **Data expansion**: eBird API (wildlife), CivicWeb HTML scraping for 9 municipalities (council), ONC ocean temperature (environment)
+- **Loading skeletons**: `PanelSkeleton.svelte` with shimmer animation (4 variants)
+- **Error boundaries**: `PanelError.svelte` with snippet-based error wrapping
+- **Global search**: Cross-panel search overlay with Cmd+K shortcut
+- **Item bookmarks**: Star-based bookmarking with header flyout
+- **Monitor matching engine**: Real-time keyword scanning across 5 data sources
+- **Threads conversations**: Two-view thread detail with message list and reply input
+- **Vitest unit tests**: 24 tests (monitor-matcher, bookmarks store, API fetcher)
+
+### Earlier Improvements
 
 - Real CRD municipality boundary polygons from BC WFS (replaced bbox rectangles)
 - USGS earthquake integration in Safety & Emergency panel
