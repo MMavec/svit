@@ -3,6 +3,7 @@
 	import ThemeToggle from '$lib/components/theme/ThemeToggle.svelte';
 	import { refreshStore } from '$lib/stores/refresh.svelte';
 	import { layoutStore } from '$lib/stores/layout.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 </script>
 
 <header class="app-header">
@@ -45,6 +46,30 @@
 			</svg>
 		</button>
 		<ThemeToggle />
+		{#if authStore.isAuthenticated}
+			<button
+				class="header-btn user-btn"
+				onclick={() => authStore.signOut()}
+				title="Sign out"
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+					<circle cx="12" cy="7" r="4"/>
+				</svg>
+			</button>
+		{:else}
+			<button
+				class="header-btn sign-in-btn"
+				onclick={() => (authStore.showAuthModal = true)}
+				title="Sign in for campaign tools"
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+					<polyline points="10 17 15 12 10 7"/>
+					<line x1="15" y1="12" x2="3" y2="12"/>
+				</svg>
+			</button>
+		{/if}
 	</div>
 </header>
 
@@ -123,6 +148,16 @@
 	}
 
 	.header-btn.active {
+		color: var(--accent-secondary);
+		border-color: var(--accent-secondary);
+	}
+
+	.user-btn {
+		color: var(--accent-secondary);
+		border-color: var(--accent-secondary);
+	}
+
+	.sign-in-btn:hover {
 		color: var(--accent-secondary);
 		border-color: var(--accent-secondary);
 	}

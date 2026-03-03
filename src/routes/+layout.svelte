@@ -1,15 +1,18 @@
 <script lang="ts">
 	import '../app.css';
 	import { theme } from '$lib/stores/theme.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import StarrySky from '$lib/components/theme/StarrySky.svelte';
 	import CloudySky from '$lib/components/theme/CloudySky.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
+	import AuthModal from '$lib/components/auth/AuthModal.svelte';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
 
 	onMount(() => {
 		theme.init();
+		authStore.initialize();
 	});
 </script>
 
@@ -28,6 +31,9 @@
 		<Header />
 		{@render children()}
 	</div>
+
+	<!-- Auth modal -->
+	<AuthModal />
 </div>
 
 <style>
