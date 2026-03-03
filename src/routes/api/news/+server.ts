@@ -1,0 +1,172 @@
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import { newsSources } from '$lib/config/news-sources';
+import type { NewsItem } from '$lib/types/index';
+
+const CACHE_MAX_AGE = 300; // 5 minutes
+
+/** Parse RSS XML into NewsItem objects */
+function parseRss(xml: string, sourceSlug: string, sourceName: string): NewsItem[] {
+	const items: NewsItem[] = [];
+	const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+	let match;
+
+	while ((match = itemRegex.exec(xml)) !== null) {
+		const itemXml = match[1];
+
+		const title = extractTag(itemXml, 'title');
+		const link = extractTag(itemXml, 'link');
+		const description = extractTag(itemXml, 'description');
+		const pubDate = extractTag(itemXml, 'pubDate');
+		const author = extractTag(itemXml, 'dc:creator') || extractTag(itemXml, 'author');
+		const categories = extractAllTags(itemXml, 'category');
+
+		// Try to extract image from description or media tags
+		const imageUrl =
+			extractAttr(itemXml, 'media:content', 'url') ||
+			extractAttr(itemXml, 'enclosure', 'url') ||
+			extractImageFromHtml(description);
+
+		if (title && link) {
+			items.push({
+				id: `${sourceSlug}-${hashCode(link)}`,
+				title: stripCdata(title),
+				description: stripHtml(stripCdata(description || '')).slice(0, 300),
+				url: link.trim(),
+				source: sourceName,
+				sourceSlug,
+				published: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
+				author: author ? stripCdata(author) : undefined,
+				imageUrl: imageUrl || undefined,
+				categories: categories.map((c) => stripCdata(c))
+			});
+		}
+	}
+
+	return items;
+}
+
+function extractTag(xml: string, tag: string): string {
+	const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i');
+	const match = regex.exec(xml);
+	return match ? match[1].trim() : '';
+}
+
+function extractAllTags(xml: string, tag: string): string[] {
+	const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'gi');
+	const results: string[] = [];
+	let match;
+	while ((match = regex.exec(xml)) !== null) {
+		results.push(match[1].trim());
+	}
+	return results;
+}
+
+function extractAttr(xml: string, tag: string, attr: string): string {
+	const regex = new RegExp(`<${tag}[^>]*${attr}="([^"]*)"`, 'i');
+	const match = regex.exec(xml);
+	return match ? match[1] : '';
+}
+
+function extractImageFromHtml(html: string): string {
+	const match = /<img[^>]+src="([^"]+)"/.exec(html);
+	return match ? match[1] : '';
+}
+
+function stripCdata(str: string): string {
+	return str.replace(/<!\[CDATA\[([\s\S]*?)]]>/g, '$1').trim();
+}
+
+function stripHtml(str: string): string {
+	return str.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#8217;/g, "'").replace(/&#8220;/g, '"').replace(/&#8221;/g, '"').trim();
+}
+
+function hashCode(str: string): string {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charCodeAt(i);
+		hash = ((hash << 5) - hash + char) | 0;
+	}
+	return Math.abs(hash).toString(36);
+}
+
+export const GET: RequestHandler = async ({ url }) => {
+	const municipality = url.searchParams.get('municipality');
+	const limit = parseInt(url.searchParams.get('limit') || '50');
+	const sourceFilter = url.searchParams.get('source');
+
+	// Filter sources by municipality if requested
+	let sources = newsSources;
+	if (sourceFilter) {
+		sources = sources.filter((s) => s.slug === sourceFilter);
+	}
+
+	// Fetch all feeds in parallel
+	const feedPromises = sources.map(async (source) => {
+		try {
+			const response = await fetch(source.feedUrl, {
+				headers: { 'User-Agent': 'SVIT/1.0 (civic-dashboard)' },
+				signal: AbortSignal.timeout(8000)
+			});
+			if (!response.ok) return [];
+			const xml = await response.text();
+			const items = parseRss(xml, source.slug, source.name);
+
+			// Attribute municipality: use source's default, or try to detect from content
+			return items.map((item) => ({
+				...item,
+				municipality: item.municipality || source.municipality || attributeMunicipality(item.title + ' ' + item.description)
+			}));
+		} catch {
+			return [];
+		}
+	});
+
+	const allFeeds = await Promise.all(feedPromises);
+	let items = allFeeds.flat();
+
+	// Filter by municipality if requested
+	if (municipality) {
+		items = items.filter((item) => !item.municipality || item.municipality === municipality);
+	}
+
+	// Sort by published date (newest first) and limit
+	items.sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+	items = items.slice(0, limit);
+
+	return json(
+		{ data: items, meta: { total: items.length, municipality } },
+		{
+			headers: {
+				'Cache-Control': `public, s-maxage=${CACHE_MAX_AGE}, stale-while-revalidate=600`
+			}
+		}
+	);
+};
+
+/** Simple municipality attribution from text content */
+function attributeMunicipality(text: string): string | undefined {
+	const lower = text.toLowerCase();
+	const patterns: [string, string[]][] = [
+		['victoria', ['victoria', 'downtown victoria', 'james bay', 'fernwood', 'fairfield']],
+		['saanich', ['saanich', 'gordon head', 'cordova bay', 'royal oak']],
+		['esquimalt', ['esquimalt']],
+		['oak-bay', ['oak bay']],
+		['langford', ['langford', 'westhills', 'bear mountain']],
+		['colwood', ['colwood']],
+		['sooke', ['sooke']],
+		['sidney', ['sidney']],
+		['north-saanich', ['north saanich']],
+		['central-saanich', ['central saanich', 'brentwood bay']],
+		['view-royal', ['view royal']],
+		['highlands', ['highlands']],
+		['metchosin', ['metchosin']]
+	];
+
+	for (const [slug, keywords] of patterns) {
+		if (keywords.some((kw) => lower.includes(kw))) {
+			return slug;
+		}
+	}
+	return undefined;
+}

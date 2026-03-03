@@ -1,0 +1,274 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { fetchSafetyAlerts } from '$lib/api/safety';
+	import { municipalityStore } from '$lib/stores/municipality.svelte';
+	import type { SafetyAlert } from '$lib/types/index';
+
+	let alerts = $state<SafetyAlert[]>([]);
+	let loading = $state(true);
+
+	async function loadAlerts() {
+		loading = true;
+		const result = await fetchSafetyAlerts({
+			municipality: municipalityStore.slug
+		});
+		alerts = result.data || [];
+		loading = false;
+	}
+
+	onMount(() => {
+		loadAlerts();
+	});
+
+	$effect(() => {
+		const _slug = municipalityStore.slug;
+		loadAlerts();
+	});
+
+	function severityColor(severity: SafetyAlert['severity']): string {
+		switch (severity) {
+			case 'emergency':
+				return '#e53e3e';
+			case 'warning':
+				return '#dd6b20';
+			case 'watch':
+				return '#d69e2e';
+			case 'advisory':
+				return '#63b3ed';
+		}
+	}
+
+	function typeIcon(type: SafetyAlert['type']): string {
+		switch (type) {
+			case 'weather':
+				return 'W';
+			case 'wildfire':
+				return 'F';
+			case 'road-incident':
+				return 'R';
+			case 'earthquake':
+				return 'E';
+			case 'tsunami':
+				return 'T';
+			default:
+				return '!';
+		}
+	}
+
+	function typeLabel(type: SafetyAlert['type']): string {
+		switch (type) {
+			case 'weather':
+				return 'Weather';
+			case 'wildfire':
+				return 'Wildfire';
+			case 'road-incident':
+				return 'Road';
+			case 'earthquake':
+				return 'Earthquake';
+			case 'tsunami':
+				return 'Tsunami';
+			default:
+				return 'Alert';
+		}
+	}
+
+	function timeAgo(iso: string): string {
+		const diff = Date.now() - new Date(iso).getTime();
+		const mins = Math.floor(diff / 60000);
+		if (mins < 60) return `${mins}m ago`;
+		const hours = Math.floor(mins / 60);
+		if (hours < 24) return `${hours}h ago`;
+		const days = Math.floor(hours / 24);
+		return `${days}d ago`;
+	}
+</script>
+
+<div class="safety">
+	{#if loading}
+		<div class="loading">Checking alerts...</div>
+	{:else if alerts.length === 0}
+		<div class="all-clear">
+			<div class="check-icon">&#10003;</div>
+			<div class="clear-text">No active alerts</div>
+			<div class="clear-sub">All clear in the CRD</div>
+		</div>
+	{:else}
+		<div class="alert-list">
+			{#each alerts as alert (alert.id)}
+				<div class="alert-card" style="border-left: 3px solid {severityColor(alert.severity)}">
+					<div class="alert-header">
+						<span
+							class="type-badge"
+							style="background: {severityColor(alert.severity)}"
+						>
+							{typeIcon(alert.type)}
+						</span>
+						<span class="severity-label" style="color: {severityColor(alert.severity)}">
+							{alert.severity.toUpperCase()}
+						</span>
+						<span class="type-label">{typeLabel(alert.type)}</span>
+						<span class="alert-time">{timeAgo(alert.issued)}</span>
+					</div>
+					<div class="alert-title">{alert.title}</div>
+					{#if alert.description}
+						<div class="alert-desc">{alert.description}</div>
+					{/if}
+					<div class="alert-footer">
+						<span class="source-agency">{alert.sourceAgency}</span>
+						{#if alert.url}
+							<a href={alert.url} target="_blank" rel="noopener" class="more-link">
+								More info
+							</a>
+						{/if}
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
+</div>
+
+<style>
+	.safety {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	.all-clear {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		flex: 1;
+		gap: 4px;
+	}
+
+	.check-icon {
+		font-size: 2rem;
+		color: var(--accent-secondary, #68d391);
+		line-height: 1;
+	}
+
+	.clear-text {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--accent-secondary, #68d391);
+	}
+
+	.clear-sub {
+		font-size: 0.6875rem;
+		color: var(--text-tertiary);
+	}
+
+	.alert-list {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		overflow-y: auto;
+		flex: 1;
+	}
+
+	.alert-card {
+		padding: 8px;
+		padding-left: 10px;
+		border-radius: 8px;
+		background: var(--bg-surface-hover);
+		transition: background 0.2s;
+	}
+
+	.alert-card:hover {
+		background: var(--bg-surface-elevated);
+	}
+
+	.alert-header {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin-bottom: 4px;
+	}
+
+	.type-badge {
+		width: 18px;
+		height: 18px;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.5625rem;
+		font-weight: 700;
+		color: #fff;
+		flex-shrink: 0;
+	}
+
+	.severity-label {
+		font-size: 0.5625rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+	}
+
+	.type-label {
+		font-size: 0.6875rem;
+		color: var(--text-secondary);
+	}
+
+	.alert-time {
+		font-size: 0.625rem;
+		color: var(--text-tertiary);
+		margin-left: auto;
+	}
+
+	.alert-title {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--text-primary);
+		line-height: 1.3;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.alert-desc {
+		font-size: 0.6875rem;
+		color: var(--text-secondary);
+		line-height: 1.4;
+		margin-top: 2px;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.alert-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 4px;
+		font-size: 0.625rem;
+	}
+
+	.source-agency {
+		color: var(--text-tertiary);
+		font-style: italic;
+	}
+
+	.more-link {
+		color: var(--accent-primary);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.more-link:hover {
+		text-decoration: underline;
+	}
+
+	.loading {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 1;
+		font-size: 0.8125rem;
+		color: var(--text-tertiary);
+		font-style: italic;
+	}
+</style>
