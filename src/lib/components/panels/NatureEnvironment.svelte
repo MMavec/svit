@@ -108,10 +108,7 @@
 			{#each readings.filter((r) => r.metric !== 'Air Quality Index') as reading (reading.id)}
 				<div class="reading-card">
 					<div class="reading-header">
-						<span
-							class="type-badge"
-							style="background: {statusColor(reading.status)}"
-						>
+						<span class="type-badge" style="background: {statusColor(reading.status)}">
 							{typeIcon(reading.type)}
 						</span>
 						<span class="type-label">{typeLabel(reading.type)}</span>
@@ -122,10 +119,7 @@
 							{reading.value}
 							<span class="reading-unit">{reading.unit}</span>
 						</span>
-						<span
-							class="reading-status"
-							style="color: {statusColor(reading.status)}"
-						>
+						<span class="reading-status" style="color: {statusColor(reading.status)}">
 							{statusLabel(reading.status)}
 						</span>
 					</div>

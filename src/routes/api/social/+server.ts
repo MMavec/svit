@@ -68,7 +68,7 @@ function getSeedPosts(): SocialPost[] {
 			author: 'Victoria Civic Watch',
 			authorHandle: 'viccivicwatch.bsky.social',
 			content:
-				'Tonight\'s council meeting agenda includes the controversial rezoning proposal for 1200 Douglas St. Public hearing expected to draw a crowd. #yyj #yyjpoli',
+				"Tonight's council meeting agenda includes the controversial rezoning proposal for 1200 Douglas St. Public hearing expected to draw a crowd. #yyj #yyjpoli",
 			url: 'https://bsky.app',
 			platform: 'bluesky',
 			published: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),

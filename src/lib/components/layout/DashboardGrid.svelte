@@ -47,7 +47,9 @@
 	onMount(() => {
 		const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
 		isMobile = mq.matches;
-		const handler = (e: MediaQueryListEvent) => { isMobile = e.matches; };
+		const handler = (e: MediaQueryListEvent) => {
+			isMobile = e.matches;
+		};
 		mq.addEventListener('change', handler);
 		return () => mq.removeEventListener('change', handler);
 	});
@@ -111,9 +113,7 @@
 	}
 
 	// Sort panels by tier for priority rendering
-	const sortedPanels = $derived(
-		[...panels].sort((a, b) => a.tier - b.tier)
-	);
+	const sortedPanels = $derived([...panels].sort((a, b) => a.tier - b.tier));
 </script>
 
 <div
@@ -136,57 +136,55 @@
 			aria-label={panel.title}
 		>
 			<Panel config={panel}>
-				{#snippet children()}
-					{#if panel.id === 'council-watch'}
-						<CouncilWatch />
-					{:else if panel.id === 'bylaw-tracker'}
-						<BylawTracker />
-					{:else if panel.id === 'voices'}
-						<Voices />
-					{:else if panel.id === 'public-hearings'}
-						<PublicHearings />
-					{:else if panel.id === 'development-watch'}
-						<DevelopmentWatch />
-					{:else if panel.id === 'councillor-profiles'}
-						<CouncillorProfiles />
-					{:else if panel.id === 'local-wire'}
-						<LocalWire />
-					{:else if panel.id === 'crd-map'}
-						<CRDMapPanel />
-					{:else if panel.id === 'pulse'}
-						<Pulse />
-					{:else if panel.id === 'construction-roads'}
-						<ConstructionRoads />
-					{:else if panel.id === 'transit'}
-						<Transit />
-					{:else if panel.id === 'safety-emergency'}
-						<SafetyEmergency />
-					{:else if panel.id === 'weather-tides'}
-						<WeatherTides />
-					{:else if panel.id === 'housing'}
-						<Housing />
-					{:else if panel.id === 'events'}
-						<Events />
-					{:else if panel.id === 'budget-finance'}
-						<BudgetFinance />
-					{:else if panel.id === 'wildlife-marine'}
-						<WildlifeMarine />
-					{:else if panel.id === 'trees-urban-forest'}
-						<TreesUrbanForest />
-					{:else if panel.id === 'nature-environment'}
-						<NatureEnvironment />
-					{:else if panel.id === 'my-monitors'}
-						<MyMonitors />
-					{:else if panel.id === 'connections'}
-						<Connections />
-					{:else if panel.id === 'threads'}
-						<Threads />
-					{:else if panel.id === 'demographics'}
-						<Demographics />
-					{:else}
-						<div class="panel-placeholder">Coming soon...</div>
-					{/if}
-				{/snippet}
+				{#if panel.id === 'council-watch'}
+					<CouncilWatch />
+				{:else if panel.id === 'bylaw-tracker'}
+					<BylawTracker />
+				{:else if panel.id === 'voices'}
+					<Voices />
+				{:else if panel.id === 'public-hearings'}
+					<PublicHearings />
+				{:else if panel.id === 'development-watch'}
+					<DevelopmentWatch />
+				{:else if panel.id === 'councillor-profiles'}
+					<CouncillorProfiles />
+				{:else if panel.id === 'local-wire'}
+					<LocalWire />
+				{:else if panel.id === 'crd-map'}
+					<CRDMapPanel />
+				{:else if panel.id === 'pulse'}
+					<Pulse />
+				{:else if panel.id === 'construction-roads'}
+					<ConstructionRoads />
+				{:else if panel.id === 'transit'}
+					<Transit />
+				{:else if panel.id === 'safety-emergency'}
+					<SafetyEmergency />
+				{:else if panel.id === 'weather-tides'}
+					<WeatherTides />
+				{:else if panel.id === 'housing'}
+					<Housing />
+				{:else if panel.id === 'events'}
+					<Events />
+				{:else if panel.id === 'budget-finance'}
+					<BudgetFinance />
+				{:else if panel.id === 'wildlife-marine'}
+					<WildlifeMarine />
+				{:else if panel.id === 'trees-urban-forest'}
+					<TreesUrbanForest />
+				{:else if panel.id === 'nature-environment'}
+					<NatureEnvironment />
+				{:else if panel.id === 'my-monitors'}
+					<MyMonitors />
+				{:else if panel.id === 'connections'}
+					<Connections />
+				{:else if panel.id === 'threads'}
+					<Threads />
+				{:else if panel.id === 'demographics'}
+					<Demographics />
+				{:else}
+					<div class="panel-placeholder">Coming soon...</div>
+				{/if}
 			</Panel>
 		</div>
 	{/each}
@@ -202,7 +200,9 @@
 	.grid-cell {
 		position: absolute;
 		padding: 6px;
-		transition: top 0.3s ease, left 0.3s ease;
+		transition:
+			top 0.3s ease,
+			left 0.3s ease;
 		z-index: 1;
 	}
 

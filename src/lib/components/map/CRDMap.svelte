@@ -83,8 +83,8 @@
 	function updateFeatureSource() {
 		if (!map || !mapReady) return;
 
-		const geojson: GeoJSON.FeatureCollection = {
-			type: 'FeatureCollection',
+		const geojson = {
+			type: 'FeatureCollection' as const,
 			features: features
 				.filter((f) => f.coordinates)
 				.map((f) => ({
@@ -151,7 +151,8 @@
 		map.on('click', 'feature-circles', (e) => {
 			if (!e.features || !e.features[0]) return;
 			const props = e.features[0].properties;
-			const coords = (e.features[0].geometry as GeoJSON.Point).coordinates as [number, number];
+			const geom = e.features[0].geometry as unknown as { coordinates: [number, number] };
+			const coords = geom.coordinates;
 
 			popup
 				?.setLngLat(coords)

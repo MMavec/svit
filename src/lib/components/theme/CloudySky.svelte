@@ -10,17 +10,9 @@
 	}
 
 	let clouds = $state<Cloud[]>([]);
-	let containerWidth = $state(1200);
 
 	onMount(() => {
-		containerWidth = window.innerWidth;
 		generateClouds();
-
-		function handleResize() {
-			containerWidth = window.innerWidth;
-		}
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
 	});
 
 	function generateClouds() {
@@ -40,7 +32,7 @@
 	<div class="sun"></div>
 
 	<!-- Clouds -->
-	{#each clouds as cloud, i}
+	{#each clouds as cloud, i (i)}
 		<svg
 			class="cloud"
 			viewBox="0 0 200 80"
@@ -79,7 +71,13 @@
 		right: 12%;
 		width: 80px;
 		height: 80px;
-		background: radial-gradient(circle, #fff7b0 0%, #ffe066 30%, rgba(255, 200, 50, 0.3) 60%, transparent 70%);
+		background: radial-gradient(
+			circle,
+			#fff7b0 0%,
+			#ffe066 30%,
+			rgba(255, 200, 50, 0.3) 60%,
+			transparent 70%
+		);
 		border-radius: 50%;
 		box-shadow:
 			0 0 60px rgba(255, 220, 80, 0.4),
@@ -94,35 +92,67 @@
 
 	/* Generate drift keyframes for each cloud */
 	@keyframes drift-0 {
-		from { transform: translateX(-200px); }
-		to { transform: translateX(calc(100vw + 200px)); }
+		from {
+			transform: translateX(-200px);
+		}
+		to {
+			transform: translateX(calc(100vw + 200px));
+		}
 	}
 	@keyframes drift-1 {
-		from { transform: translateX(-200px); }
-		to { transform: translateX(calc(100vw + 200px)); }
+		from {
+			transform: translateX(-200px);
+		}
+		to {
+			transform: translateX(calc(100vw + 200px));
+		}
 	}
 	@keyframes drift-2 {
-		from { transform: translateX(-200px); }
-		to { transform: translateX(calc(100vw + 200px)); }
+		from {
+			transform: translateX(-200px);
+		}
+		to {
+			transform: translateX(calc(100vw + 200px));
+		}
 	}
 	@keyframes drift-3 {
-		from { transform: translateX(-200px); }
-		to { transform: translateX(calc(100vw + 200px)); }
+		from {
+			transform: translateX(-200px);
+		}
+		to {
+			transform: translateX(calc(100vw + 200px));
+		}
 	}
 	@keyframes drift-4 {
-		from { transform: translateX(-200px); }
-		to { transform: translateX(calc(100vw + 200px)); }
+		from {
+			transform: translateX(-200px);
+		}
+		to {
+			transform: translateX(calc(100vw + 200px));
+		}
 	}
 	@keyframes drift-5 {
-		from { transform: translateX(-200px); }
-		to { transform: translateX(calc(100vw + 200px)); }
+		from {
+			transform: translateX(-200px);
+		}
+		to {
+			transform: translateX(calc(100vw + 200px));
+		}
 	}
 	@keyframes drift-6 {
-		from { transform: translateX(-200px); }
-		to { transform: translateX(calc(100vw + 200px)); }
+		from {
+			transform: translateX(-200px);
+		}
+		to {
+			transform: translateX(calc(100vw + 200px));
+		}
 	}
 	@keyframes drift-7 {
-		from { transform: translateX(-200px); }
-		to { transform: translateX(calc(100vw + 200px)); }
+		from {
+			transform: translateX(-200px);
+		}
+		to {
+			transform: translateX(calc(100vw + 200px));
+		}
 	}
 </style>

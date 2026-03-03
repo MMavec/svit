@@ -82,14 +82,10 @@
 			.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 	);
 
-	const closedHearings = $derived(
-		filteredHearings.filter((h) => h.status === 'closed')
-	);
+	const closedHearings = $derived(filteredHearings.filter((h) => h.status === 'closed'));
 
 	function daysUntil(iso: string): string {
-		const days = Math.ceil(
-			(new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-		);
+		const days = Math.ceil((new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 		if (days === 0) return 'Today';
 		if (days === 1) return 'Tomorrow';
 		return `In ${days} days`;
@@ -133,7 +129,9 @@
 						{/if}
 						<div class="hearing-actions">
 							{#if hearing.submissionUrl}
-								<a href={hearing.submissionUrl} target="_blank" rel="noopener" class="action-link">Submit Comment</a>
+								<a href={hearing.submissionUrl} target="_blank" rel="noopener" class="action-link"
+									>Submit Comment</a
+								>
 							{/if}
 							{#if hearing.relatedBylaw}
 								<span class="related-bylaw">Bylaw {hearing.relatedBylaw}</span>
@@ -232,6 +230,7 @@
 		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		margin-bottom: 4px;

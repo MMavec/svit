@@ -103,10 +103,7 @@
 			{#each sightings as sighting (sighting.id)}
 				<div class="sighting-card">
 					<div class="sighting-header">
-						<span
-							class="cat-badge"
-							style="background: {categoryColor(sighting.category)}"
-						>
+						<span class="cat-badge" style="background: {categoryColor(sighting.category)}">
 							{categoryIcon(sighting.category)}
 						</span>
 						<span class="cat-label" style="color: {categoryColor(sighting.category)}">

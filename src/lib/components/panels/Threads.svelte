@@ -89,9 +89,7 @@
 		<div class="auth-prompt">
 			<div class="auth-icon">&#128172;</div>
 			<p class="auth-text">Sign in to create discussion threads</p>
-			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}>
-				Sign In
-			</button>
+			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
 		</div>
 	{:else if loading}
 		<div class="loading">Loading threads...</div>
@@ -135,12 +133,18 @@
 						<div class="thread-preview">{thread.last_message}</div>
 					{/if}
 					<div class="thread-footer">
-						<span class="message-count">{thread.message_count || 0} message{(thread.message_count || 0) !== 1 ? 's' : ''}</span>
+						<span class="message-count"
+							>{thread.message_count || 0} message{(thread.message_count || 0) !== 1
+								? 's'
+								: ''}</span
+						>
 						<button class="delete-btn" onclick={() => deleteThread(thread.id)}>Delete</button>
 					</div>
 				</div>
 			{:else}
-				<div class="empty">No threads yet — start a discussion about council items, bylaws, or anything civic</div>
+				<div class="empty">
+					No threads yet — start a discussion about council items, bylaws, or anything civic
+				</div>
 			{/each}
 		</div>
 	{/if}
@@ -303,6 +307,7 @@
 		line-height: 1.3;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

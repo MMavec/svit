@@ -79,7 +79,15 @@ export interface Bylaw {
 	number?: string;
 	title: string;
 	description?: string;
-	status: 'proposed' | 'first-reading' | 'second-reading' | 'public-hearing' | 'third-reading' | 'adopted' | 'defeated' | 'withdrawn';
+	status:
+		| 'proposed'
+		| 'first-reading'
+		| 'second-reading'
+		| 'public-hearing'
+		| 'third-reading'
+		| 'adopted'
+		| 'defeated'
+		| 'withdrawn';
 	municipality: string;
 	introducedDate?: string;
 	lastActionDate?: string;
@@ -163,7 +171,14 @@ export interface DevelopmentApplication {
 	description: string;
 	applicant?: string;
 	type: 'residential' | 'commercial' | 'mixed-use' | 'institutional' | 'industrial' | 'other';
-	status: 'proposed' | 'under-review' | 'approved' | 'under-construction' | 'complete' | 'denied' | 'withdrawn';
+	status:
+		| 'proposed'
+		| 'under-review'
+		| 'approved'
+		| 'under-construction'
+		| 'complete'
+		| 'denied'
+		| 'withdrawn';
 	municipality: string;
 	storeys?: number;
 	units?: number;
@@ -237,14 +252,7 @@ export interface SafetyAlert {
 
 export interface PulseMetric {
 	id: string;
-	category:
-		| 'council'
-		| 'development'
-		| 'news'
-		| 'social'
-		| 'construction'
-		| 'transit'
-		| 'safety';
+	category: 'council' | 'development' | 'news' | 'social' | 'construction' | 'transit' | 'safety';
 	label: string;
 	currentCount: number;
 	trend: number; // positive = up, negative = down, 0 = flat

@@ -27,9 +27,7 @@
 	});
 
 	const filteredEvents = $derived(
-		activeFilter === 'all'
-			? events
-			: events.filter((e) => e.eventType === activeFilter)
+		activeFilter === 'all' ? events : events.filter((e) => e.eventType === activeFilter)
 	);
 
 	function severityColor(severity: ConstructionEvent['severity']): string {
@@ -69,7 +67,11 @@
 
 <div class="construction">
 	<div class="filter-tabs">
-		<button class="tab" class:active={activeFilter === 'all'} onclick={() => (activeFilter = 'all')}>
+		<button
+			class="tab"
+			class:active={activeFilter === 'all'}
+			onclick={() => (activeFilter = 'all')}
+		>
 			All ({events.length})
 		</button>
 		<button
@@ -95,10 +97,7 @@
 			{#each filteredEvents as event (event.id)}
 				<div class="event-card">
 					<div class="event-header">
-						<span
-							class="severity-badge"
-							style="background: {severityColor(event.severity)}"
-						>
+						<span class="severity-badge" style="background: {severityColor(event.severity)}">
 							{event.severity}
 						</span>
 						<span class="event-type">
@@ -225,6 +224,7 @@
 		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
+		line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

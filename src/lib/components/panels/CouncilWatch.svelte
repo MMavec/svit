@@ -49,12 +49,6 @@
 		});
 	}
 
-	function formatTime(iso: string, time?: string): string {
-		if (time) return time;
-		const d = new Date(iso);
-		return d.toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' });
-	}
-
 	function statusBadgeClass(status: Meeting['status']): string {
 		switch (status) {
 			case 'in-progress':
@@ -92,9 +86,7 @@
 			{#each viewMode === 'upcoming' ? upcomingMeetings : pastMeetings as meeting (meeting.id)}
 				<div class="meeting-item">
 					<div class="meeting-date-col">
-						<span class="meeting-day"
-							>{new Date(meeting.date).getDate()}</span
-						>
+						<span class="meeting-day">{new Date(meeting.date).getDate()}</span>
 						<span class="meeting-month"
 							>{new Date(meeting.date).toLocaleDateString('en-CA', { month: 'short' })}</span
 						>
@@ -115,10 +107,22 @@
 					</div>
 					<div class="meeting-actions">
 						{#if meeting.agendaUrl}
-							<a href={meeting.agendaUrl} target="_blank" rel="noopener" class="action-link" title="View agenda">Agenda</a>
+							<a
+								href={meeting.agendaUrl}
+								target="_blank"
+								rel="noopener"
+								class="action-link"
+								title="View agenda">Agenda</a
+							>
 						{/if}
 						{#if meeting.minutesUrl}
-							<a href={meeting.minutesUrl} target="_blank" rel="noopener" class="action-link" title="View minutes">Minutes</a>
+							<a
+								href={meeting.minutesUrl}
+								target="_blank"
+								rel="noopener"
+								class="action-link"
+								title="View minutes">Minutes</a
+							>
 						{/if}
 					</div>
 				</div>

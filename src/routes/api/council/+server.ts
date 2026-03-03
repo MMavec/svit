@@ -11,10 +11,7 @@ const CACHE_MAX_AGE = 900; // 15 minutes
  */
 
 /** Fetch meetings from eSCRIBE portal (Victoria, Langford) */
-async function fetchEscribeMeetings(
-	baseUrl: string,
-	municipalitySlug: string
-): Promise<Meeting[]> {
+async function fetchEscribeMeetings(baseUrl: string, municipalitySlug: string): Promise<Meeting[]> {
 	try {
 		// eSCRIBE exposes a GetCalendarMeetings WebMethod
 		const now = new Date();
@@ -23,21 +20,18 @@ async function fetchEscribeMeetings(
 		const threeMonthsAhead = new Date(now);
 		threeMonthsAhead.setMonth(threeMonthsAhead.getMonth() + 3);
 
-		const response = await fetch(
-			`${baseUrl}/MeetingsCalendarView.aspx/GetCalendarMeetings`,
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json; charset=utf-8',
-					Accept: 'application/json'
-				},
-				body: JSON.stringify({
-					start: formatEscribeDate(threeMonthsAgo),
-					end: formatEscribeDate(threeMonthsAhead)
-				}),
-				signal: AbortSignal.timeout(10000)
-			}
-		);
+		const response = await fetch(`${baseUrl}/MeetingsCalendarView.aspx/GetCalendarMeetings`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+				Accept: 'application/json'
+			},
+			body: JSON.stringify({
+				start: formatEscribeDate(threeMonthsAgo),
+				end: formatEscribeDate(threeMonthsAhead)
+			}),
+			signal: AbortSignal.timeout(10000)
+		});
 
 		if (!response.ok) {
 			// Fallback: try to scrape the meeting list page

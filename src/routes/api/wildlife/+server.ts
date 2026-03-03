@@ -16,17 +16,13 @@ async function fetchINaturalist(): Promise<WildlifeSighting[]> {
 			order_by: 'observed_on',
 			per_page: '30',
 			quality_grade: 'research',
-			iconic_taxa:
-				'Aves,Mammalia,Actinopterygii,Reptilia,Amphibia,Mollusca,Arachnida,Insecta'
+			iconic_taxa: 'Aves,Mammalia,Actinopterygii,Reptilia,Amphibia,Mollusca,Arachnida,Insecta'
 		});
 
-		const response = await fetch(
-			`https://api.inaturalist.org/v1/observations?${params}`,
-			{
-				headers: { 'User-Agent': 'SVIT/1.0', Accept: 'application/json' },
-				signal: AbortSignal.timeout(10000)
-			}
-		);
+		const response = await fetch(`https://api.inaturalist.org/v1/observations?${params}`, {
+			headers: { 'User-Agent': 'SVIT/1.0', Accept: 'application/json' },
+			signal: AbortSignal.timeout(10000)
+		});
 
 		if (!response.ok) return [];
 
@@ -158,7 +154,7 @@ function getSeedData(): WildlifeSighting[] {
 			category: 'bird',
 			observedAt: '2026-03-02T09:20:00-08:00',
 			location: 'Gorge Waterway, Esquimalt',
-			coordinates: [-123.400, 48.443],
+			coordinates: [-123.4, 48.443],
 			observer: 'hummingbird_fan',
 			municipality: 'esquimalt',
 			source: 'seed'
@@ -193,7 +189,7 @@ function getSeedData(): WildlifeSighting[] {
 			category: 'marine-mammal',
 			observedAt: '2026-03-01T12:00:00-08:00',
 			location: 'Haro Strait off Sidney',
-			coordinates: [-123.370, 48.650],
+			coordinates: [-123.37, 48.65],
 			observer: 'whale_research_bc',
 			municipality: 'sidney',
 			source: 'seed'
@@ -221,9 +217,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 
 	// Sort by observation date (newest first)
-	sightings.sort(
-		(a, b) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime()
-	);
+	sightings.sort((a, b) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime());
 
 	sightings = sightings.slice(0, limit);
 

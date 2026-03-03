@@ -47,12 +47,9 @@ async function fetchBCTransitAlerts(): Promise<TransitAlert[]> {
 			return [];
 		}
 
-		const response = await fetch(
-			'https://bct.tmix.se/gtfs-realtime/alerts.pb?operatorIds=48',
-			{
-				signal: AbortSignal.timeout(10000)
-			}
-		);
+		const response = await fetch('https://bct.tmix.se/gtfs-realtime/alerts.pb?operatorIds=48', {
+			signal: AbortSignal.timeout(10000)
+		});
 
 		if (!response.ok) return [];
 
@@ -82,15 +79,9 @@ async function fetchBCTransitAlerts(): Promise<TransitAlert[]> {
 
 			// Determine severity from effect
 			let severity: TransitAlert['severity'] = 'INFO';
-			if (
-				effect === 'NO_SERVICE' ||
-				effect === 'SIGNIFICANT_DELAYS'
-			) {
+			if (effect === 'NO_SERVICE' || effect === 'SIGNIFICANT_DELAYS') {
 				severity = 'SEVERE';
-			} else if (
-				effect === 'REDUCED_SERVICE' ||
-				effect === 'DETOUR'
-			) {
+			} else if (effect === 'REDUCED_SERVICE' || effect === 'DETOUR') {
 				severity = 'WARNING';
 			}
 

@@ -83,35 +83,30 @@ function parseCurrentConditions(xml: string): WeatherConditions | null {
 	if (!block) return null;
 	const cc = block[0];
 
-	const station =
-		cc.match(/<station[^>]*>([^<]*)<\/station>/)?.[1] || 'Victoria';
+	const station = cc.match(/<station[^>]*>([^<]*)<\/station>/)?.[1] || 'Victoria';
 	const temperature = parseFloat(
 		cc.match(/<temperature[^>]*unitType="metric"[^>]*>([^<]*)<\/temperature>/)?.[1] || ''
 	);
-	const condition =
-		cc.match(/<condition>([^<]*)<\/condition>/)?.[1] || 'Unknown';
-	const iconCode =
-		cc.match(/<iconCode[^>]*>([^<]*)<\/iconCode>/)?.[1] || '00';
+	const condition = cc.match(/<condition>([^<]*)<\/condition>/)?.[1] || 'Unknown';
+	const iconCode = cc.match(/<iconCode[^>]*>([^<]*)<\/iconCode>/)?.[1] || '00';
 	const humidity = parseFloat(
 		cc.match(/<relativeHumidity[^>]*>([^<]*)<\/relativeHumidity>/)?.[1] || '0'
 	);
 	const windSpeed = parseFloat(
 		cc.match(/<speed[^>]*unitType="metric"[^>]*>([^<]*)<\/speed>/)?.[1] || '0'
 	);
-	const windGustStr =
-		cc.match(/<gust[^>]*unitType="metric"[^>]*>([^<]*)<\/gust>/)?.[1];
-	const windDirection =
-		cc.match(/<direction>([^<]*)<\/direction>/)?.[1] || '';
+	const windGustStr = cc.match(/<gust[^>]*unitType="metric"[^>]*>([^<]*)<\/gust>/)?.[1];
+	const windDirection = cc.match(/<direction>([^<]*)<\/direction>/)?.[1] || '';
 	const pressure = parseFloat(
 		cc.match(/<pressure[^>]*unitType="metric"[^>]*>([^<]*)<\/pressure>/)?.[1] || '0'
 	);
-	const pressureTrend =
-		cc.match(/<pressure[^>]*tendency="([^"]*)"[^>]*>/)?.[1] || undefined;
+	const pressureTrend = cc.match(/<pressure[^>]*tendency="([^"]*)"[^>]*>/)?.[1] || undefined;
 	const visibility = parseFloat(
 		cc.match(/<visibility[^>]*unitType="metric"[^>]*>([^<]*)<\/visibility>/)?.[1] || ''
 	);
-	const dateStamp =
-		cc.match(/<dateTime[^>]*zone="UTC"[^>]*>[\s\S]*?<timeStamp>([^<]*)<\/timeStamp>[\s\S]*?<\/dateTime>/)?.[1];
+	const dateStamp = cc.match(
+		/<dateTime[^>]*zone="UTC"[^>]*>[\s\S]*?<timeStamp>([^<]*)<\/timeStamp>[\s\S]*?<\/dateTime>/
+	)?.[1];
 
 	if (isNaN(temperature)) return null;
 
@@ -139,16 +134,19 @@ function parseForecast(xml: string): WeatherForecast[] {
 	const entries = xml.match(/<forecast>[\s\S]*?<\/forecast>/g) || [];
 
 	for (const entry of entries.slice(0, 6)) {
-		const period =
-			entry.match(/<period[^>]*>([^<]*)<\/period>/)?.[1] || '';
-		const summary =
-			entry.match(/<textSummary>([^<]*)<\/textSummary>/)?.[1] || '';
+		const period = entry.match(/<period[^>]*>([^<]*)<\/period>/)?.[1] || '';
+		const summary = entry.match(/<textSummary>([^<]*)<\/textSummary>/)?.[1] || '';
 		const iconCode =
-			entry.match(/<abbreviatedForecast>[\s\S]*?<iconCode[^>]*>([^<]*)<\/iconCode>[\s\S]*?<\/abbreviatedForecast>/)?.[1] || '00';
+			entry.match(
+				/<abbreviatedForecast>[\s\S]*?<iconCode[^>]*>([^<]*)<\/iconCode>[\s\S]*?<\/abbreviatedForecast>/
+			)?.[1] || '00';
 		const condition =
-			entry.match(/<abbreviatedForecast>[\s\S]*?<textSummary>([^<]*)<\/textSummary>[\s\S]*?<\/abbreviatedForecast>/)?.[1] || '';
-		const pop =
-			entry.match(/<abbreviatedForecast>[\s\S]*?<pop[^>]*>([^<]*)<\/pop>[\s\S]*?<\/abbreviatedForecast>/)?.[1];
+			entry.match(
+				/<abbreviatedForecast>[\s\S]*?<textSummary>([^<]*)<\/textSummary>[\s\S]*?<\/abbreviatedForecast>/
+			)?.[1] || '';
+		const pop = entry.match(
+			/<abbreviatedForecast>[\s\S]*?<pop[^>]*>([^<]*)<\/pop>[\s\S]*?<\/abbreviatedForecast>/
+		)?.[1];
 
 		// Temperature: check class attribute for high/low
 		const tempMatch = entry.match(
@@ -222,7 +220,11 @@ async function fetchTideData(): Promise<{
 		}
 
 		let current: TideObservation | null = null;
-		if (obsResult.status === 'fulfilled' && Array.isArray(obsResult.value) && obsResult.value.length > 0) {
+		if (
+			obsResult.status === 'fulfilled' &&
+			Array.isArray(obsResult.value) &&
+			obsResult.value.length > 0
+		) {
 			const latest = obsResult.value[obsResult.value.length - 1];
 			current = {
 				time: latest.eventDate || latest.time || now.toISOString(),
@@ -332,9 +334,7 @@ export const GET: RequestHandler = async () => {
 	]);
 
 	const weather =
-		weatherResult.status === 'fulfilled'
-			? weatherResult.value
-			: { current: null, forecast: [] };
+		weatherResult.status === 'fulfilled' ? weatherResult.value : { current: null, forecast: [] };
 
 	const tides =
 		tideResult.status === 'fulfilled'

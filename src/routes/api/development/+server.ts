@@ -32,12 +32,18 @@ async function fetchVictoriaDevPermits(): Promise<DevelopmentApplication[]> {
 		const data = await response.json();
 		if (!data.features) return await fetchVictoriaArcGIS();
 
-		return data.features.map((f: { properties?: Record<string, unknown>; attributes?: Record<string, unknown>; geometry?: { coordinates?: [number, number] } }) => {
-			const props: Record<string, unknown> = f.properties || f.attributes || {};
-			const geometry = f.geometry;
+		return data.features.map(
+			(f: {
+				properties?: Record<string, unknown>;
+				attributes?: Record<string, unknown>;
+				geometry?: { coordinates?: [number, number] };
+			}) => {
+				const props: Record<string, unknown> = f.properties || f.attributes || {};
+				const geometry = f.geometry;
 
-			return mapToDevApplication(props, geometry, 'victoria');
-		});
+				return mapToDevApplication(props, geometry, 'victoria');
+			}
+		);
 	} catch {
 		return await fetchVictoriaArcGIS();
 	}
@@ -66,12 +72,18 @@ async function fetchVictoriaArcGIS(): Promise<DevelopmentApplication[]> {
 		const data = await response.json();
 		if (!data.features) return [];
 
-		return data.features.map((f: { attributes: Record<string, unknown>; geometry?: { x: number; y: number } }) => {
-			const coords: [number, number] | undefined = f.geometry
-				? [f.geometry.x, f.geometry.y]
-				: undefined;
-			return mapToDevApplication(f.attributes, coords ? { coordinates: coords } : undefined, 'victoria');
-		});
+		return data.features.map(
+			(f: { attributes: Record<string, unknown>; geometry?: { x: number; y: number } }) => {
+				const coords: [number, number] | undefined = f.geometry
+					? [f.geometry.x, f.geometry.y]
+					: undefined;
+				return mapToDevApplication(
+					f.attributes,
+					coords ? { coordinates: coords } : undefined,
+					'victoria'
+				);
+			}
+		);
 	} catch {
 		return [];
 	}
@@ -112,9 +124,7 @@ function mapToDevApplication(
 		units: units || undefined,
 		zoningCurrent: zoningCurrent || undefined,
 		zoningProposed: zoningProposed || undefined,
-		submittedDate: props.APPLICATION_DATE
-			? normalizeDate(props.APPLICATION_DATE)
-			: undefined,
+		submittedDate: props.APPLICATION_DATE ? normalizeDate(props.APPLICATION_DATE) : undefined,
 		coordinates: geometry?.coordinates,
 		flagged: flagReasons.length > 0,
 		flagReasons: flagReasons.length > 0 ? flagReasons : undefined,
@@ -152,7 +162,7 @@ function getSeedDevelopments(): DevelopmentApplication[] {
 			units: 45,
 			flagged: true,
 			flagReasons: ['6 storeys'],
-			coordinates: [-123.3580, 48.4265],
+			coordinates: [-123.358, 48.4265],
 			source: 'seed'
 		},
 		{
@@ -165,7 +175,7 @@ function getSeedDevelopments(): DevelopmentApplication[] {
 			storeys: 3,
 			units: 24,
 			flagged: false,
-			coordinates: [-123.3560, 48.4380],
+			coordinates: [-123.356, 48.438],
 			source: 'seed'
 		},
 		{
@@ -193,7 +203,7 @@ function getSeedDevelopments(): DevelopmentApplication[] {
 			units: 72,
 			flagged: true,
 			flagReasons: ['6 storeys'],
-			coordinates: [-123.3400, 48.4540],
+			coordinates: [-123.34, 48.454],
 			source: 'seed'
 		},
 		{
@@ -207,7 +217,7 @@ function getSeedDevelopments(): DevelopmentApplication[] {
 			units: 32,
 			flagged: true,
 			flagReasons: ['4 storeys'],
-			coordinates: [-123.4140, 48.4320],
+			coordinates: [-123.414, 48.432],
 			source: 'seed'
 		}
 	];
@@ -234,9 +244,17 @@ function normalizeStatus(str: string): DevelopmentApplication['status'] {
 function normalizeType(str: string): DevelopmentApplication['type'] {
 	const lower = str.toLowerCase();
 	if (lower.includes('mixed')) return 'mixed-use';
-	if (lower.includes('commerc') || lower.includes('retail') || lower.includes('office')) return 'commercial';
-	if (lower.includes('resid') || lower.includes('housing') || lower.includes('apartment') || lower.includes('townhouse')) return 'residential';
-	if (lower.includes('instit') || lower.includes('school') || lower.includes('hospital')) return 'institutional';
+	if (lower.includes('commerc') || lower.includes('retail') || lower.includes('office'))
+		return 'commercial';
+	if (
+		lower.includes('resid') ||
+		lower.includes('housing') ||
+		lower.includes('apartment') ||
+		lower.includes('townhouse')
+	)
+		return 'residential';
+	if (lower.includes('instit') || lower.includes('school') || lower.includes('hospital'))
+		return 'institutional';
 	if (lower.includes('indust')) return 'industrial';
 	return 'other';
 }

@@ -16,7 +16,7 @@ export const municipalities: Municipality[] = [
 		name: 'Saanich',
 		abbreviation: 'SAN',
 		color: '#2F855A',
-		bbox: [-123.465, 48.430, -123.280, 48.530],
+		bbox: [-123.465, 48.43, -123.28, 48.53],
 		population: 117735,
 		councilSource: 'civicweb'
 	},
@@ -35,7 +35,7 @@ export const municipalities: Municipality[] = [
 		name: 'Oak Bay',
 		abbreviation: 'OAK',
 		color: '#D69E2E',
-		bbox: [-123.350, 48.410, -123.290, 48.460],
+		bbox: [-123.35, 48.41, -123.29, 48.46],
 		population: 18015,
 		councilSource: 'civicweb'
 	},
@@ -44,7 +44,7 @@ export const municipalities: Municipality[] = [
 		name: 'Langford',
 		abbreviation: 'LAN',
 		color: '#C53030',
-		bbox: [-123.540, 48.430, -123.430, 48.500],
+		bbox: [-123.54, 48.43, -123.43, 48.5],
 		population: 46584,
 		councilSource: 'escribemeetings',
 		councilUrl: 'https://pub-langford.escribemeetings.com'
@@ -54,7 +54,7 @@ export const municipalities: Municipality[] = [
 		name: 'Colwood',
 		abbreviation: 'COL',
 		color: '#00B5D8',
-		bbox: [-123.520, 48.410, -123.440, 48.460],
+		bbox: [-123.52, 48.41, -123.44, 48.46],
 		population: 18961,
 		councilSource: 'civicweb'
 	},
@@ -63,7 +63,7 @@ export const municipalities: Municipality[] = [
 		name: 'Sooke',
 		abbreviation: 'SOO',
 		color: '#38A169',
-		bbox: [-123.770, 48.350, -123.680, 48.420],
+		bbox: [-123.77, 48.35, -123.68, 48.42],
 		population: 15054,
 		councilSource: 'civicweb'
 	},
@@ -72,7 +72,7 @@ export const municipalities: Municipality[] = [
 		name: 'Sidney',
 		abbreviation: 'SID',
 		color: '#DD6B20',
-		bbox: [-123.420, 48.635, -123.380, 48.665],
+		bbox: [-123.42, 48.635, -123.38, 48.665],
 		population: 12402,
 		councilSource: 'civicweb'
 	},
@@ -81,7 +81,7 @@ export const municipalities: Municipality[] = [
 		name: 'North Saanich',
 		abbreviation: 'NSA',
 		color: '#3182CE',
-		bbox: [-123.490, 48.610, -123.350, 48.700],
+		bbox: [-123.49, 48.61, -123.35, 48.7],
 		population: 12236,
 		councilSource: 'civicweb'
 	},
@@ -90,7 +90,7 @@ export const municipalities: Municipality[] = [
 		name: 'Central Saanich',
 		abbreviation: 'CSA',
 		color: '#805AD5',
-		bbox: [-123.440, 48.540, -123.330, 48.610],
+		bbox: [-123.44, 48.54, -123.33, 48.61],
 		population: 18681,
 		councilSource: 'civicweb'
 	},
@@ -99,7 +99,7 @@ export const municipalities: Municipality[] = [
 		name: 'View Royal',
 		abbreviation: 'VRO',
 		color: '#E53E3E',
-		bbox: [-123.480, 48.440, -123.410, 48.480],
+		bbox: [-123.48, 48.44, -123.41, 48.48],
 		population: 11575,
 		councilSource: 'civicweb'
 	},
@@ -108,7 +108,7 @@ export const municipalities: Municipality[] = [
 		name: 'Highlands',
 		abbreviation: 'HIG',
 		color: '#319795',
-		bbox: [-123.540, 48.480, -123.440, 48.540],
+		bbox: [-123.54, 48.48, -123.44, 48.54],
 		population: 2442,
 		councilSource: 'diligent',
 		councilUrl: 'https://highlandsbc.diligent.community'
@@ -118,14 +118,14 @@ export const municipalities: Municipality[] = [
 		name: 'Metchosin',
 		abbreviation: 'MET',
 		color: '#975A16',
-		bbox: [-123.600, 48.350, -123.460, 48.440],
+		bbox: [-123.6, 48.35, -123.46, 48.44],
 		population: 5078,
 		councilSource: 'civicweb'
 	}
 ];
 
 /** Full CRD bounding box encompassing all municipalities */
-export const CRD_BBOX: [number, number, number, number] = [-123.770, 48.300, -123.280, 48.700];
+export const CRD_BBOX: [number, number, number, number] = [-123.77, 48.3, -123.28, 48.7];
 
 /** CRD center point (roughly Victoria harbour) */
 export const CRD_CENTER: [number, number] = [-123.365, 48.428];

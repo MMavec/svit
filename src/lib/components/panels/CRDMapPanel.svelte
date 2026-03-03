@@ -34,11 +34,7 @@
 			severity: evt.severity,
 			municipality: evt.municipality,
 			color:
-				evt.severity === 'MAJOR'
-					? '#e53e3e'
-					: evt.severity === 'MODERATE'
-						? '#f6ad55'
-						: '#68d391',
+				evt.severity === 'MAJOR' ? '#e53e3e' : evt.severity === 'MODERATE' ? '#f6ad55' : '#68d391',
 			icon: evt.eventType === 'INCIDENT' ? 'alert' : 'construction'
 		};
 	}

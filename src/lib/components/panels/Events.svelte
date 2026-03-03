@@ -73,9 +73,7 @@
 	}
 
 	function daysUntil(iso: string): string {
-		const diff = Math.ceil(
-			(new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-		);
+		const diff = Math.ceil((new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 		if (diff < 0) return 'Past';
 		if (diff === 0) return 'Today';
 		if (diff === 1) return 'Tomorrow';
@@ -93,10 +91,7 @@
 			{#each events as event (event.id)}
 				<div class="event-card">
 					<div class="event-header">
-						<span
-							class="cat-badge"
-							style="background: {categoryColor(event.category)}"
-						>
+						<span class="cat-badge" style="background: {categoryColor(event.category)}">
 							{categoryIcon(event.category)}
 						</span>
 						<span class="event-date">{formatDate(event.date)}</span>
@@ -203,6 +198,7 @@
 		line-height: 1.3;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
@@ -223,6 +219,7 @@
 		margin-top: 2px;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

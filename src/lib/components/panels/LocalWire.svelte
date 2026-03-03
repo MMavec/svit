@@ -74,11 +74,7 @@
 
 <div class="local-wire">
 	<div class="source-tabs">
-		<button
-			class="tab"
-			class:active={activeSource === null}
-			onclick={() => selectSource(null)}
-		>
+		<button class="tab" class:active={activeSource === null} onclick={() => selectSource(null)}>
 			All
 		</button>
 		{#each newsSources as src (src.slug)}
@@ -106,10 +102,7 @@
 					{/if}
 					<div class="article-body">
 						<div class="article-meta">
-							<span
-								class="source-badge"
-								style="background: {sourceColor(article.sourceSlug)}"
-							>
+							<span class="source-badge" style="background: {sourceColor(article.sourceSlug)}">
 								{sourceName(article.sourceSlug)}
 							</span>
 							<span class="article-time">{timeAgo(article.published)}</span>
@@ -249,6 +242,7 @@
 		margin: 0;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
@@ -260,6 +254,7 @@
 		margin: 3px 0 0;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

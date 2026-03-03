@@ -9,18 +9,22 @@
 
 	let { config, children }: Props = $props();
 
-	const STORAGE_KEY = `svit-collapsed-${config.id}`;
-	let collapsed = $state(
-		typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY) === '1'
-	);
+	let collapsed = $state(false);
+
+	$effect.pre(() => {
+		if (typeof window !== 'undefined') {
+			collapsed = localStorage.getItem(`svit-collapsed-${config.id}`) === '1';
+		}
+	});
 
 	function toggleCollapse() {
 		collapsed = !collapsed;
 		if (typeof window !== 'undefined') {
+			const key = `svit-collapsed-${config.id}`;
 			if (collapsed) {
-				localStorage.setItem(STORAGE_KEY, '1');
+				localStorage.setItem(key, '1');
 			} else {
-				localStorage.removeItem(STORAGE_KEY);
+				localStorage.removeItem(key);
 			}
 		}
 	}
@@ -33,15 +37,25 @@
 		<span class="panel-tier">T{config.tier}</span>
 		<button
 			class="collapse-btn"
-			onclick={(e) => { e.stopPropagation(); toggleCollapse(); }}
+			onclick={(e) => {
+				e.stopPropagation();
+				toggleCollapse();
+			}}
 			aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
 			title={collapsed ? 'Expand' : 'Collapse'}
 		>
-			<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+			<svg
+				width="12"
+				height="12"
+				viewBox="0 0 12 12"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+			>
 				{#if collapsed}
-					<polyline points="3,4.5 6,7.5 9,4.5"/>
+					<polyline points="3,4.5 6,7.5 9,4.5" />
 				{:else}
-					<polyline points="3,7.5 6,4.5 9,7.5"/>
+					<polyline points="3,7.5 6,4.5 9,7.5" />
 				{/if}
 			</svg>
 		</button>

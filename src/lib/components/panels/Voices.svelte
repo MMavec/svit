@@ -5,9 +5,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { SocialPost, NewsItem } from '$lib/types/index';
 
-	type VoiceItem =
-		| { type: 'social'; data: SocialPost }
-		| { type: 'news'; data: NewsItem };
+	type VoiceItem = { type: 'social'; data: SocialPost } | { type: 'news'; data: NewsItem };
 
 	let items = $state<VoiceItem[]>([]);
 	let loading = $state(true);
@@ -50,9 +48,7 @@
 	});
 
 	const filteredItems = $derived(
-		activeFilter === 'all'
-			? items
-			: items.filter((i) => i.type === activeFilter)
+		activeFilter === 'all' ? items : items.filter((i) => i.type === activeFilter)
 	);
 
 	function timeAgo(iso: string): string {
@@ -68,9 +64,19 @@
 
 <div class="voices">
 	<div class="filter-tabs">
-		<button class="tab" class:active={activeFilter === 'all'} onclick={() => (activeFilter = 'all')}>All</button>
-		<button class="tab" class:active={activeFilter === 'social'} onclick={() => (activeFilter = 'social')}>Social</button>
-		<button class="tab" class:active={activeFilter === 'news'} onclick={() => (activeFilter = 'news')}>News</button>
+		<button class="tab" class:active={activeFilter === 'all'} onclick={() => (activeFilter = 'all')}
+			>All</button
+		>
+		<button
+			class="tab"
+			class:active={activeFilter === 'social'}
+			onclick={() => (activeFilter = 'social')}>Social</button
+		>
+		<button
+			class="tab"
+			class:active={activeFilter === 'news'}
+			onclick={() => (activeFilter = 'news')}>News</button
+		>
 	</div>
 
 	{#if loading}
@@ -239,6 +245,7 @@
 		color: var(--text-primary);
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
@@ -249,6 +256,7 @@
 		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
+		line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
@@ -256,6 +264,7 @@
 	.news-desc {
 		margin-top: 2px;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 	}
 
 	.voice-stats {

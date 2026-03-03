@@ -84,14 +84,11 @@
 			{#each alerts as alert (alert.id)}
 				<div class="alert-card">
 					<div class="alert-header">
-						<span
-							class="severity-dot"
-							style="background: {severityColor(alert.severity)}"
-						></span>
+						<span class="severity-dot" style="background: {severityColor(alert.severity)}"></span>
 						<span class="effect-label">{effectLabel(alert.effect)}</span>
 						{#if alert.routeIds && alert.routeIds.length > 0}
 							<div class="route-badges">
-								{#each alert.routeIds.slice(0, 4) as route}
+								{#each alert.routeIds.slice(0, 4) as route (route)}
 									<span class="route-badge">{route}</span>
 								{/each}
 							</div>
@@ -189,6 +186,7 @@
 		line-height: 1.3;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
@@ -200,6 +198,7 @@
 		margin-top: 2px;
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
+		line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

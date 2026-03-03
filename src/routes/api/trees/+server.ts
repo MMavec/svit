@@ -21,13 +21,10 @@ async function fetchTreeObservations(): Promise<TreeObservation[]> {
 			taxon_name: 'Pinopsida,Magnoliopsida' // Conifers + broadleaf trees
 		});
 
-		const response = await fetch(
-			`https://api.inaturalist.org/v1/observations?${params}`,
-			{
-				headers: { 'User-Agent': 'SVIT/1.0', Accept: 'application/json' },
-				signal: AbortSignal.timeout(10000)
-			}
-		);
+		const response = await fetch(`https://api.inaturalist.org/v1/observations?${params}`, {
+			headers: { 'User-Agent': 'SVIT/1.0', Accept: 'application/json' },
+			signal: AbortSignal.timeout(10000)
+		});
 
 		if (!response.ok) return [];
 
@@ -129,7 +126,7 @@ function getSeedData(): TreeObservation[] {
 			commonName: 'Bigleaf Maple',
 			observedAt: '2026-03-02T09:30:00-08:00',
 			location: 'Mount Douglas Park, Saanich',
-			coordinates: [-123.340, 48.492],
+			coordinates: [-123.34, 48.492],
 			heritage: false,
 			municipality: 'saanich',
 			source: 'seed'
@@ -140,7 +137,7 @@ function getSeedData(): TreeObservation[] {
 			commonName: 'Western Hemlock',
 			observedAt: '2026-02-26T15:00:00-08:00',
 			location: 'East Sooke Regional Park',
-			coordinates: [-123.650, 48.370],
+			coordinates: [-123.65, 48.37],
 			heritage: false,
 			municipality: 'sooke',
 			source: 'seed'

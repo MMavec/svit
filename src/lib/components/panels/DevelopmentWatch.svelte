@@ -125,7 +125,7 @@
 
 					{#if app.flagReasons && app.flagReasons.length > 0}
 						<div class="flag-reasons">
-							{#each app.flagReasons as reason}
+							{#each app.flagReasons as reason, i (i)}
 								<span class="flag-reason">{reason}</span>
 							{/each}
 						</div>
@@ -255,6 +255,7 @@
 		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		margin-bottom: 4px;

@@ -10,13 +10,10 @@ const [CRD_WEST, CRD_SOUTH, CRD_EAST, CRD_NORTH] = CRD_BBOX;
 /** Fetch Environment Canada weather alerts for Greater Victoria (zone bc43) */
 async function fetchWeatherAlerts(): Promise<SafetyAlert[]> {
 	try {
-		const response = await fetch(
-			'https://weather.gc.ca/rss/battleboard/bc43_e.xml',
-			{
-				headers: { 'User-Agent': 'SVIT/1.0' },
-				signal: AbortSignal.timeout(8000)
-			}
-		);
+		const response = await fetch('https://weather.gc.ca/rss/battleboard/bc43_e.xml', {
+			headers: { 'User-Agent': 'SVIT/1.0' },
+			signal: AbortSignal.timeout(8000)
+		});
 
 		if (!response.ok) return [];
 
@@ -90,43 +87,39 @@ async function fetchWildfireAlerts(): Promise<SafetyAlert[]> {
 		const data = await response.json();
 		if (!data.features || !Array.isArray(data.features)) return [];
 
-		return data.features.map(
-			(f: {
-				attributes: Record<string, unknown>;
-			}) => {
-				const a = f.attributes;
-				const lat = Number(a.LATITUDE || 0);
-				const lng = Number(a.LONGITUDE || 0);
-				const name = String(a.INCIDENT_NAME || 'Unknown Fire');
-				const status = String(a.FIRE_STATUS || 'Active');
-				const size = a.CURRENT_SIZE ? `${a.CURRENT_SIZE} ha` : '';
+		return data.features.map((f: { attributes: Record<string, unknown> }) => {
+			const a = f.attributes;
+			const lat = Number(a.LATITUDE || 0);
+			const lng = Number(a.LONGITUDE || 0);
+			const name = String(a.INCIDENT_NAME || 'Unknown Fire');
+			const status = String(a.FIRE_STATUS || 'Active');
+			const size = a.CURRENT_SIZE ? `${a.CURRENT_SIZE} ha` : '';
 
-				return {
-					id: `bcws-${hashCode(name + lat)}`,
-					title: name,
-					description: [
-						status,
-						size,
-						a.GEOGRAPHIC_DESCRIPTION ? String(a.GEOGRAPHIC_DESCRIPTION) : '',
-						a.FIRE_CAUSE ? `Cause: ${a.FIRE_CAUSE}` : ''
-					]
-						.filter(Boolean)
-						.join(' — '),
-					type: 'wildfire' as const,
-					severity: classifyFireSeverity(status),
-					status: 'active' as const,
-					location: a.GEOGRAPHIC_DESCRIPTION ? String(a.GEOGRAPHIC_DESCRIPTION) : undefined,
-					coordinates: lat && lng ? [lng, lat] as [number, number] : undefined,
-					issued: a.IGNITION_DATE
-						? new Date(Number(a.IGNITION_DATE)).toISOString()
-						: new Date().toISOString(),
-					url: a.FIRE_URL ? String(a.FIRE_URL) : undefined,
-					sourceAgency: 'BC Wildfire Service',
-					municipality: attributeMunicipality(lng, lat),
-					source: 'bcws'
-				};
-			}
-		);
+			return {
+				id: `bcws-${hashCode(name + lat)}`,
+				title: name,
+				description: [
+					status,
+					size,
+					a.GEOGRAPHIC_DESCRIPTION ? String(a.GEOGRAPHIC_DESCRIPTION) : '',
+					a.FIRE_CAUSE ? `Cause: ${a.FIRE_CAUSE}` : ''
+				]
+					.filter(Boolean)
+					.join(' — '),
+				type: 'wildfire' as const,
+				severity: classifyFireSeverity(status),
+				status: 'active' as const,
+				location: a.GEOGRAPHIC_DESCRIPTION ? String(a.GEOGRAPHIC_DESCRIPTION) : undefined,
+				coordinates: lat && lng ? ([lng, lat] as [number, number]) : undefined,
+				issued: a.IGNITION_DATE
+					? new Date(Number(a.IGNITION_DATE)).toISOString()
+					: new Date().toISOString(),
+				url: a.FIRE_URL ? String(a.FIRE_URL) : undefined,
+				sourceAgency: 'BC Wildfire Service',
+				municipality: attributeMunicipality(lng, lat),
+				source: 'bcws'
+			};
+		});
 	} catch {
 		return [];
 	}
@@ -149,10 +142,9 @@ async function fetchEarthquakes(): Promise<SafetyAlert[]> {
 			limit: '20'
 		});
 
-		const response = await fetch(
-			`https://earthquake.usgs.gov/fdsnws/event/1/query?${params}`,
-			{ signal: AbortSignal.timeout(10000) }
-		);
+		const response = await fetch(`https://earthquake.usgs.gov/fdsnws/event/1/query?${params}`, {
+			signal: AbortSignal.timeout(10000)
+		});
 
 		if (!response.ok) return [];
 
@@ -236,9 +228,7 @@ async function fetchRoadIncidents(): Promise<SafetyAlert[]> {
 
 			alerts.push({
 				id: `incident-${hashCode(String(evt.id))}`,
-				title: evt.roads?.[0]?.name
-					? `Road Incident — ${evt.roads[0].name}`
-					: 'Road Incident',
+				title: evt.roads?.[0]?.name ? `Road Incident — ${evt.roads[0].name}` : 'Road Incident',
 				description: String(evt.description || ''),
 				type: 'road-incident',
 				severity,
@@ -327,7 +317,7 @@ function getSeedAlerts(): SafetyAlert[] {
 			severity: 'watch',
 			status: 'active',
 			location: 'Mount Douglas Park',
-			coordinates: [-123.340, 48.490],
+			coordinates: [-123.34, 48.49],
 			issued: '2026-02-28T16:00:00-08:00',
 			sourceAgency: 'BC Wildfire Service',
 			municipality: 'saanich',
@@ -342,7 +332,7 @@ function getSeedAlerts(): SafetyAlert[] {
 			severity: 'advisory',
 			status: 'active',
 			location: 'Highway 1',
-			coordinates: [-123.440, 48.457],
+			coordinates: [-123.44, 48.457],
 			issued: '2026-03-02T08:15:00-08:00',
 			sourceAgency: 'DriveBC',
 			municipality: 'view-royal',
