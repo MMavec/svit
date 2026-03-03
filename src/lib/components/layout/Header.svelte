@@ -4,7 +4,19 @@
 	import { refreshStore } from '$lib/stores/refresh.svelte';
 	import { layoutStore } from '$lib/stores/layout.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { bookmarkStore } from '$lib/stores/bookmarks.svelte';
+
+	let showBookmarks = $state(false);
+	let bookmarkCount = $derived(bookmarkStore.items.length);
+
+	function closeBookmarks(e: MouseEvent) {
+		if (!(e.target as HTMLElement).closest('.bookmarks-flyout, .bookmark-header-btn')) {
+			showBookmarks = false;
+		}
+	}
 </script>
+
+<svelte:window onclick={closeBookmarks} />
 
 <header class="app-header">
 	<div class="header-left">
@@ -63,6 +75,65 @@
 				<rect x="3" y="14" width="7" height="7" />
 			</svg>
 		</button>
+		<div class="bookmark-wrapper">
+			<button
+				class="header-btn bookmark-header-btn"
+				class:active={showBookmarks || bookmarkCount > 0}
+				onclick={() => (showBookmarks = !showBookmarks)}
+				title="Bookmarks"
+				aria-label="Bookmarks ({bookmarkCount})"
+			>
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill={bookmarkCount > 0 ? 'currentColor' : 'none'}
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<polygon
+						points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+					/>
+				</svg>
+				{#if bookmarkCount > 0}
+					<span class="bookmark-badge">{bookmarkCount}</span>
+				{/if}
+			</button>
+			{#if showBookmarks}
+				<div class="bookmarks-flyout">
+					<div class="flyout-header">
+						<span class="flyout-title">Bookmarks</span>
+						<span class="flyout-count">{bookmarkCount}</span>
+					</div>
+					{#if bookmarkStore.items.length === 0}
+						<div class="flyout-empty">No bookmarks yet</div>
+					{:else}
+						<div class="flyout-list">
+							{#each bookmarkStore.items as item (item.id)}
+								<div class="flyout-item">
+									<div class="flyout-item-info">
+										<span class="flyout-item-type">{item.itemType}</span>
+										<span class="flyout-item-title">{item.title}</span>
+									</div>
+									<button
+										class="flyout-remove"
+										onclick={(e) => {
+											e.stopPropagation();
+											bookmarkStore.remove(item.id);
+										}}
+										title="Remove"
+									>
+										&times;
+									</button>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</div>
 		<ThemeToggle />
 		{#if authStore.isAuthenticated}
 			<button class="header-btn user-btn" onclick={() => authStore.signOut()} title="Sign out">
@@ -192,6 +263,135 @@
 	.sign-in-btn:hover {
 		color: var(--accent-secondary);
 		border-color: var(--accent-secondary);
+	}
+
+	.bookmark-wrapper {
+		position: relative;
+	}
+
+	.bookmark-badge {
+		position: absolute;
+		top: -2px;
+		right: -2px;
+		font-size: 0.5rem;
+		font-weight: 700;
+		min-width: 14px;
+		height: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 7px;
+		background: var(--accent-warning, #d69e2e);
+		color: #fff;
+		pointer-events: none;
+	}
+
+	.bookmarks-flyout {
+		position: absolute;
+		top: calc(100% + 8px);
+		right: 0;
+		width: 280px;
+		max-height: 360px;
+		background: var(--bg-surface);
+		border: 1px solid var(--border-primary);
+		border-radius: 10px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+		z-index: 100;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.flyout-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 10px 12px;
+		border-bottom: 1px solid var(--border-primary);
+	}
+
+	.flyout-title {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+
+	.flyout-count {
+		font-size: 0.625rem;
+		font-family: 'Geist Mono', monospace;
+		color: var(--text-tertiary);
+	}
+
+	.flyout-empty {
+		padding: 20px;
+		text-align: center;
+		font-size: 0.75rem;
+		color: var(--text-tertiary);
+		font-style: italic;
+	}
+
+	.flyout-list {
+		overflow-y: auto;
+		flex: 1;
+	}
+
+	.flyout-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 12px;
+		border-bottom: 1px solid var(--border-primary);
+	}
+
+	.flyout-item:last-child {
+		border-bottom: none;
+	}
+
+	.flyout-item:hover {
+		background: var(--bg-surface-hover);
+	}
+
+	.flyout-item-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.flyout-item-type {
+		font-size: 0.5625rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--accent-primary);
+		letter-spacing: 0.05em;
+		display: block;
+	}
+
+	.flyout-item-title {
+		font-size: 0.6875rem;
+		color: var(--text-primary);
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.flyout-remove {
+		width: 20px;
+		height: 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		background: transparent;
+		color: var(--text-tertiary);
+		cursor: pointer;
+		border-radius: 4px;
+		font-size: 1rem;
+		flex-shrink: 0;
+	}
+
+	.flyout-remove:hover {
+		color: var(--accent-danger);
+		background: var(--bg-surface-hover);
 	}
 
 	@media (min-width: 768px) {

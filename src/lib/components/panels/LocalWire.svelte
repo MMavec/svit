@@ -6,6 +6,7 @@
 	import { newsSources } from '$lib/config/news-sources';
 	import type { NewsItem } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
 	let articles = $state<NewsItem[]>([]);
 	let loading = $state(true);
@@ -113,6 +114,14 @@
 							<p class="article-excerpt">{article.description}</p>
 						{/if}
 					</div>
+					<BookmarkButton
+						itemType="news"
+						externalId={article.id}
+						title={article.title}
+						description={article.description}
+						municipality={article.municipality}
+						url={article.url}
+					/>
 				</a>
 			{:else}
 				<div class="empty">No news articles found</div>

@@ -4,6 +4,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { DevelopmentApplication } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
 	let applications = $state<DevelopmentApplication[]>([]);
 	let loading = $state(true);
@@ -101,6 +102,13 @@
 						{#if app.flagged}
 							<span class="flag-badge" title={app.flagReasons?.join(', ')}>!</span>
 						{/if}
+						<BookmarkButton
+							itemType="development"
+							externalId={app.id}
+							title={app.address}
+							description={app.description}
+							municipality={app.municipality}
+						/>
 					</div>
 
 					<div class="dev-desc">{app.description}</div>
