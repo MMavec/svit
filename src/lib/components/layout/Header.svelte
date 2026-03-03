@@ -27,9 +27,18 @@
 			aria-label={refreshStore.enabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
 			title={refreshStore.enabled ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
 		>
-			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<polyline points="23 4 23 10 17 10"/>
-				<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+			<svg
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<polyline points="23 4 23 10 17 10" />
+				<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
 			</svg>
 		</button>
 		<button
@@ -38,23 +47,37 @@
 			aria-label="Reset layout"
 			title="Reset panel layout"
 		>
-			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<rect x="3" y="3" width="7" height="7"/>
-				<rect x="14" y="3" width="7" height="7"/>
-				<rect x="14" y="14" width="7" height="7"/>
-				<rect x="3" y="14" width="7" height="7"/>
+			<svg
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<rect x="3" y="3" width="7" height="7" />
+				<rect x="14" y="3" width="7" height="7" />
+				<rect x="14" y="14" width="7" height="7" />
+				<rect x="3" y="14" width="7" height="7" />
 			</svg>
 		</button>
 		<ThemeToggle />
 		{#if authStore.isAuthenticated}
-			<button
-				class="header-btn user-btn"
-				onclick={() => authStore.signOut()}
-				title="Sign out"
-			>
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-					<circle cx="12" cy="7" r="4"/>
+			<button class="header-btn user-btn" onclick={() => authStore.signOut()} title="Sign out">
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+					<circle cx="12" cy="7" r="4" />
 				</svg>
 			</button>
 		{:else}
@@ -63,10 +86,19 @@
 				onclick={() => (authStore.showAuthModal = true)}
 				title="Sign in for campaign tools"
 			>
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-					<polyline points="10 17 15 12 10 7"/>
-					<line x1="15" y1="12" x2="3" y2="12"/>
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+					<polyline points="10 17 15 12 10 7" />
+					<line x1="15" y1="12" x2="3" y2="12" />
 				</svg>
 			</button>
 		{/if}

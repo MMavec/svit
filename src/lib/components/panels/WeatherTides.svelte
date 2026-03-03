@@ -54,26 +54,42 @@
 
 	function weatherIcon(code: string): string {
 		const icons: Record<string, string> = {
-			'00': '\u2600\uFE0F', '01': '\u2600\uFE0F',
-			'02': '\u26C5', '03': '\u2601\uFE0F',
+			'00': '\u2600\uFE0F',
+			'01': '\u2600\uFE0F',
+			'02': '\u26C5',
+			'03': '\u2601\uFE0F',
 			'04': '\u2601\uFE0F',
-			'05': '\u2601\uFE0F', '06': '\uD83C\uDF27\uFE0F',
-			'07': '\uD83C\uDF27\uFE0F', '08': '\uD83C\uDF28\uFE0F',
-			'09': '\u26C8\uFE0F', '10': '\u2601\uFE0F',
-			'11': '\uD83C\uDF27\uFE0F', '12': '\uD83C\uDF27\uFE0F',
-			'13': '\uD83C\uDF27\uFE0F', '14': '\uD83C\uDF28\uFE0F',
-			'15': '\uD83C\uDF28\uFE0F', '16': '\u2744\uFE0F',
-			'17': '\u2744\uFE0F', '18': '\u2744\uFE0F',
+			'05': '\u2601\uFE0F',
+			'06': '\uD83C\uDF27\uFE0F',
+			'07': '\uD83C\uDF27\uFE0F',
+			'08': '\uD83C\uDF28\uFE0F',
+			'09': '\u26C8\uFE0F',
+			'10': '\u2601\uFE0F',
+			'11': '\uD83C\uDF27\uFE0F',
+			'12': '\uD83C\uDF27\uFE0F',
+			'13': '\uD83C\uDF27\uFE0F',
+			'14': '\uD83C\uDF28\uFE0F',
+			'15': '\uD83C\uDF28\uFE0F',
+			'16': '\u2744\uFE0F',
+			'17': '\u2744\uFE0F',
+			'18': '\u2744\uFE0F',
 			'19': '\u26C8\uFE0F',
-			'23': '\uD83C\uDF2B\uFE0F', '24': '\uD83C\uDF2B\uFE0F',
+			'23': '\uD83C\uDF2B\uFE0F',
+			'24': '\uD83C\uDF2B\uFE0F',
 			'25': '\uD83C\uDF2A\uFE0F',
 			'26': '\uD83C\uDF26\uFE0F',
-			'27': '\uD83C\uDF25\uFE0F', '28': '\uD83C\uDF26\uFE0F',
-			'30': '\uD83C\uDF19', '31': '\uD83C\uDF19',
-			'32': '\uD83C\uDF19', '33': '\u2601\uFE0F',
-			'34': '\u2601\uFE0F', '35': '\u2601\uFE0F',
-			'36': '\uD83C\uDF27\uFE0F', '37': '\uD83C\uDF28\uFE0F',
-			'38': '\uD83C\uDF27\uFE0F', '39': '\u26C8\uFE0F'
+			'27': '\uD83C\uDF25\uFE0F',
+			'28': '\uD83C\uDF26\uFE0F',
+			'30': '\uD83C\uDF19',
+			'31': '\uD83C\uDF19',
+			'32': '\uD83C\uDF19',
+			'33': '\u2601\uFE0F',
+			'34': '\u2601\uFE0F',
+			'35': '\u2601\uFE0F',
+			'36': '\uD83C\uDF27\uFE0F',
+			'37': '\uD83C\uDF28\uFE0F',
+			'38': '\uD83C\uDF27\uFE0F',
+			'39': '\u26C8\uFE0F'
 		};
 		return icons[code] || '\u2601\uFE0F';
 	}
@@ -95,7 +111,8 @@
 				</div>
 				<div class="current-details">
 					<span class="detail" title="Wind">
-						{data.weather.current.windDirection} {data.weather.current.windSpeed} km/h
+						{data.weather.current.windDirection}
+						{data.weather.current.windSpeed} km/h
 						{#if data.weather.current.windGust}
 							(G{data.weather.current.windGust})
 						{/if}
@@ -104,7 +121,8 @@
 						{data.weather.current.humidity}%
 					</span>
 					<span class="detail" title="Pressure">
-						{pressureArrow(data.weather.current.pressureTrend)} {data.weather.current.pressure} hPa
+						{pressureArrow(data.weather.current.pressureTrend)}
+						{data.weather.current.pressure} hPa
 					</span>
 				</div>
 			</div>
@@ -113,7 +131,7 @@
 		<!-- Forecast Strip -->
 		{#if data.weather.forecast.length > 0}
 			<div class="forecast-strip">
-				{#each data.weather.forecast.slice(0, 4) as fc}
+				{#each data.weather.forecast.slice(0, 4) as fc (fc.period)}
 					<div class="forecast-item" title={fc.summary}>
 						<div class="fc-period">{fc.period}</div>
 						<div class="fc-icon">{weatherIcon(fc.iconCode)}</div>
@@ -140,15 +158,21 @@
 				<div class="tide-current">
 					<span class="tide-now-label">Now</span>
 					<span class="tide-now-value">{data.tides.current.height.toFixed(1)}m</span>
-					<span class="tide-direction">{tideDirection(data.tides.current.height, data.tides.predictions)}</span>
+					<span class="tide-direction"
+						>{tideDirection(data.tides.current.height, data.tides.predictions)}</span
+					>
 				</div>
 			{/if}
 
 			{#if data.tides.predictions.length > 0}
 				<div class="tide-list">
-					{#each data.tides.predictions.slice(0, 4) as pred}
+					{#each data.tides.predictions.slice(0, 4) as pred (pred.time)}
 						<div class="tide-row">
-							<span class="tide-type" class:tide-high={pred.type === 'high'} class:tide-low={pred.type === 'low'}>
+							<span
+								class="tide-type"
+								class:tide-high={pred.type === 'high'}
+								class:tide-low={pred.type === 'low'}
+							>
 								{pred.type === 'high' ? '\u25B2' : '\u25BC'}
 								{pred.type === 'high' ? 'High' : 'Low'}
 							</span>

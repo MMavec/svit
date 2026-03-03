@@ -11,12 +11,9 @@ async function fetchAirQuality(): Promise<EnvironmentReading[]> {
 	if (!token) return [];
 
 	try {
-		const response = await fetch(
-			`https://api.waqi.info/feed/victoria-topaz/?token=${token}`,
-			{
-				signal: AbortSignal.timeout(8000)
-			}
-		);
+		const response = await fetch(`https://api.waqi.info/feed/victoria-topaz/?token=${token}`, {
+			signal: AbortSignal.timeout(8000)
+		});
 
 		if (!response.ok) return [];
 
@@ -218,7 +215,7 @@ function getSeedData(): EnvironmentReading[] {
 			unit: 'CFU/100mL',
 			status: 'good',
 			location: 'Elk/Beaver Lake',
-			coordinates: [-123.380, 48.490],
+			coordinates: [-123.38, 48.49],
 			observedAt: '2026-03-01T09:00:00-08:00',
 			municipality: 'saanich',
 			source: 'seed'
@@ -231,10 +228,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const type = url.searchParams.get('type');
 	const limit = parseInt(url.searchParams.get('limit') || '20');
 
-	const [aqiResult, uvResult] = await Promise.allSettled([
-		fetchAirQuality(),
-		fetchUVIndex()
-	]);
+	const [aqiResult, uvResult] = await Promise.allSettled([fetchAirQuality(), fetchUVIndex()]);
 
 	let readings: EnvironmentReading[] = [
 		...(aqiResult.status === 'fulfilled' ? aqiResult.value : []),

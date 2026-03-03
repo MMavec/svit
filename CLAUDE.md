@@ -46,6 +46,7 @@ Municipality selector → municipalityStore (reactive) → panels read store.slu
 Single-page dashboard with a 12-column draggable grid (60px rows, 12px gap). Panels are absolutely positioned via `layoutStore` and draggable from their headers via pointer events. Layout persists to localStorage.
 
 23 panels across 4 priority tiers:
+
 - **Tier 1** (implemented): Council Watch, Bylaw Tracker, Voices, Public Hearings, Development Watch, Councillor Profiles
 - **Tier 2** (implemented): Local Wire, CRD Map (MapLibre), Pulse (D3), Construction & Roads, Transit, Safety & Emergency
 - **Tier 3** (implemented): Weather & Tides, Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment
@@ -60,6 +61,7 @@ Every panel follows the same structure: local `$state` for data/loading, `onMoun
 ### Reactive State (Svelte 5 Runes)
 
 Five stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
+
 - **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
 - **`theme.svelte.ts`** — Dark/light theme. Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark.
 - **`layout.svelte.ts`** — Panel grid positions (id → {x, y, w, h}). Methods: `getPosition()`, `updatePosition()`, `reset()`.
@@ -69,6 +71,7 @@ Five stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorag
 ### API Proxy Pattern
 
 All external data fetched through SvelteKit server routes at `src/routes/api/*/+server.ts`. Each route:
+
 - Fetches from external APIs with timeout (`AbortSignal.timeout`)
 - Falls back to seed data when live APIs are unavailable
 - Tags items with municipality slugs for client-side filtering
@@ -81,22 +84,22 @@ Cache tiers: 5min (news, social, transit, safety), 15min (council, development, 
 
 ### Implemented API Routes
 
-| Route | External Source | Seed Fallback |
-|-------|----------------|---------------|
-| `GET /api/council` | eSCRIBE WebMethods (Victoria, Langford) | 20 meetings across 5 municipalities |
-| `GET /api/news` | 8 RSS feeds (CHEK, VicNews, VictoriaBuzz, SaanichNews, OakBayNews, GoldstreamGazette, PeninsulaNewsReview, CBC BC) | None needed (live feeds work) |
-| `GET /api/social` | Bluesky AT Protocol search (#yyj, #yyjpoli) | 5 representative posts |
-| `GET /api/development` | Victoria Open Data ArcGIS Hub | 6 applications across 4 municipalities |
-| `GET /api/construction` | DriveBC Open511 (Vancouver Island, filtered to CRD bbox) | 5 events across 4 municipalities |
-| `GET /api/transit` | BC Transit GTFS-RT alerts (operator 48, protobuf) | 3 service alerts |
-| `GET /api/safety` | Environment Canada ATOM + BC Wildfire ArcGIS + DriveBC incidents | 4 alerts (weather + wildfire + road) |
-| `GET /api/weather-tides` | Environment Canada CityPage XML (s0000828) + CHS IWLS tides API (Victoria Harbour 07120) | Current conditions + 4 forecasts + 4 tide predictions |
-| `GET /api/housing` | CMHC housing indicators (Victoria CMA) | 10 metrics (median price, rent, vacancy, starts) |
-| `GET /api/events` | Tourism Victoria events feed | 8 events across 6 municipalities |
-| `GET /api/budget` | Static (future: open data portals) | 15 items across Victoria, Saanich, Langford |
-| `GET /api/wildlife` | iNaturalist API (research-grade CRD observations) | 8 sightings (orca, eagle, heron, seal, etc.) |
-| `GET /api/trees` | iNaturalist (CRD tree observations) | 8 trees (Garry Oak, Douglas Fir, Arbutus, etc.) |
-| `GET /api/environment` | AQICN air quality via `AQICN_API_TOKEN` (dynamic import) | 8 readings (AQI, PM2.5, UV, pollen, water quality) |
+| Route                    | External Source                                                                                                    | Seed Fallback                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| `GET /api/council`       | eSCRIBE WebMethods (Victoria, Langford)                                                                            | 20 meetings across 5 municipalities                   |
+| `GET /api/news`          | 8 RSS feeds (CHEK, VicNews, VictoriaBuzz, SaanichNews, OakBayNews, GoldstreamGazette, PeninsulaNewsReview, CBC BC) | None needed (live feeds work)                         |
+| `GET /api/social`        | Bluesky AT Protocol search (#yyj, #yyjpoli)                                                                        | 5 representative posts                                |
+| `GET /api/development`   | Victoria Open Data ArcGIS Hub                                                                                      | 6 applications across 4 municipalities                |
+| `GET /api/construction`  | DriveBC Open511 (Vancouver Island, filtered to CRD bbox)                                                           | 5 events across 4 municipalities                      |
+| `GET /api/transit`       | BC Transit GTFS-RT alerts (operator 48, protobuf)                                                                  | 3 service alerts                                      |
+| `GET /api/safety`        | Environment Canada ATOM + BC Wildfire ArcGIS + DriveBC incidents + USGS FDSN earthquakes                           | 4 alerts (weather + wildfire + road + earthquake)     |
+| `GET /api/weather-tides` | Environment Canada CityPage XML (s0000828) + CHS IWLS tides API (Victoria Harbour 07120)                           | Current conditions + 4 forecasts + 4 tide predictions |
+| `GET /api/housing`       | CMHC housing indicators (Victoria CMA)                                                                             | 10 metrics (median price, rent, vacancy, starts)      |
+| `GET /api/events`        | Tourism Victoria events feed                                                                                       | 8 events across 6 municipalities                      |
+| `GET /api/budget`        | Static (future: open data portals)                                                                                 | 15 items across Victoria, Saanich, Langford           |
+| `GET /api/wildlife`      | iNaturalist API (research-grade CRD observations)                                                                  | 8 sightings (orca, eagle, heron, seal, etc.)          |
+| `GET /api/trees`         | iNaturalist (CRD tree observations)                                                                                | 8 trees (Garry Oak, Douglas Fir, Arbutus, etc.)       |
+| `GET /api/environment`   | AQICN air quality via `AQICN_API_TOKEN` (dynamic import)                                                           | 8 readings (AQI, PM2.5, UV, pollen, water quality)    |
 
 All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`. Development accepts `?flagged=true`. Construction accepts `?event_type=CONSTRUCTION|INCIDENT`. Events accepts `?category=`. Budget accepts `?type=revenue|expenditure`. Wildlife accepts `?category=`. Trees accepts `?heritage=true`.
 
@@ -139,17 +142,36 @@ All colors are CSS custom properties (`--bg-surface`, `--text-primary`, `--accen
 
 In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant rezonings are automatically flagged with red badges and `flagReasons` array.
 
+### Adding a New Panel
+
+1. Define the interface in `src/lib/types/index.ts`
+2. Create API route at `src/routes/api/<name>/+server.ts` (with seed fallback)
+3. Create API client at `src/lib/api/<name>.ts` wrapping `apiFetch<T>()`
+4. Create panel component at `src/lib/components/panels/<Name>.svelte` following the panel pattern
+5. Add entry to `src/lib/config/panels.ts` (id, title, icon, tier, defaultPosition, minW, minH)
+6. Import and wire into `DashboardGrid.svelte` (add import + `{:else if panel.id === '<id>'}` branch)
+
+### CRD Geographic Constants
+
+13 municipalities: `victoria`, `saanich`, `esquimalt`, `oak-bay`, `langford`, `colwood`, `sooke`, `sidney`, `north-saanich`, `central-saanich`, `view-royal`, `highlands`, `metchosin`. Config in `src/lib/config/municipalities.ts` with slugs, bboxes, colors, council source types.
+
+- `CRD_BBOX`: `[-123.770, 48.300, -123.280, 48.700]` — used for USGS, DriveBC, and other bbox-filtered APIs
+- `CRD_CENTER`: `[-123.365, 48.428]` — Victoria Harbour, used for MapLibre default view
+
 ## Conventions
 
 - **Svelte 5 runes only** — no legacy `writable`/`readable` stores
+- **Svelte 5 event handling** — no modifier syntax (`onclick|stopPropagation` is invalid). Use wrapper functions: `onclick={(e) => { e.stopPropagation(); handler(); }}`
 - **Stores** in `.svelte.ts` files using `$state`, `$derived`, `$effect`
 - **TypeScript strict** — all interfaces in `src/lib/types/index.ts`
+- **SSR disabled** — `src/routes/+layout.ts` exports `ssr = false` (client-only SPA)
 - **Panel components** in `src/lib/components/panels/`, each manages its own data loading + municipality reactivity
 - **API clients** in `src/lib/api/`, thin wrappers around `apiFetch<T>()`
 - **`$lib/` imports must NOT use `.ts` extensions** — only relative imports can (due to `rewriteRelativeImportExtensions: true` in tsconfig)
 - **Municipality attribution** — every data item tagged with its municipality slug for filtering. Attribution uses coordinate-in-bbox matching first, then text matching against municipality names.
 - **Seed data** — every API route has hardcoded fallback arrays for when live APIs fail. Routes never throw.
 - **Prettier**: tabs, single quotes, no trailing commas, 100-char width, svelte plugin
+- **Testing**: vitest and playwright are configured in devDependencies but no test files exist yet
 
 ## Environment Variables
 
@@ -166,12 +188,14 @@ PUBLIC_MAPTILER_KEY=        # Free tier (optional — currently using CARTO base
 ## Database (Supabase — Phase 4)
 
 Supabase with 4 tables (all with RLS):
+
 - `profiles` — extends auth.users (display_name, default_municipality, theme_preference)
 - `monitors` — custom keyword alerts (keyword, municipality filter, source filter)
 - `connections` — civic contact tracking (name, municipality, relationship, notes)
 - `threads` — discussion threads (title, municipality, messages JSONB)
 
 Additional future tables:
+
 - `layout_preferences` — saved panel grid positions (JSONB)
 - `saved_items` — bookmarked meetings/bylaws/news (item_type, external_id, metadata JSONB)
 
@@ -180,6 +204,7 @@ Additional future tables:
 Phases 0–4 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
 
 ### Recent Improvements
+
 - Real CRD municipality boundary polygons from BC WFS (replaced bbox rectangles)
 - USGS earthquake integration in Safety & Emergency panel
 - Auto-refresh system with per-panel intervals and header toggle

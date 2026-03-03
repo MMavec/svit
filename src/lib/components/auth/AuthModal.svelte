@@ -58,7 +58,13 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div class="modal-backdrop" role="presentation" onclick={close}>
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<div class="modal" role="dialog" aria-label="Authentication" onclick={(e) => e.stopPropagation()}>
+		<!-- svelte-ignore a11y_interactive_supports_focus -->
+		<div
+			class="modal"
+			role="dialog"
+			aria-label="Authentication"
+			onclick={(e) => e.stopPropagation()}
+		>
 			<button class="close-btn" onclick={close} aria-label="Close">&times;</button>
 
 			<h2 class="modal-title">
@@ -77,7 +83,12 @@
 					</p>
 				</div>
 			{:else}
-				<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+				<form
+					onsubmit={(e) => {
+						e.preventDefault();
+						handleSubmit();
+					}}
+				>
 					<label class="field">
 						<span>Email</span>
 						<input type="email" bind:value={email} required autocomplete="email" />
@@ -86,7 +97,13 @@
 					{#if mode !== 'reset'}
 						<label class="field">
 							<span>Password</span>
-							<input type="password" bind:value={password} required minlength="6" autocomplete={mode === 'login' ? 'current-password' : 'new-password'} />
+							<input
+								type="password"
+								bind:value={password}
+								required
+								minlength="6"
+								autocomplete={mode === 'login' ? 'current-password' : 'new-password'}
+							/>
 						</label>
 					{/if}
 

@@ -166,9 +166,7 @@
 	}
 
 	const currentDemographics = $derived(
-		municipalityStore.slug
-			? DEMOGRAPHICS[municipalityStore.slug] || null
-			: getCRDAggregate()
+		municipalityStore.slug ? DEMOGRAPHICS[municipalityStore.slug] || null : getCRDAggregate()
 	);
 
 	function formatNumber(n: number): string {
@@ -230,7 +228,11 @@
 		<button class="tab" class:active={viewMode === 'stats'} onclick={() => (viewMode = 'stats')}>
 			Stats
 		</button>
-		<button class="tab" class:active={viewMode === 'compare'} onclick={() => (viewMode = 'compare')}>
+		<button
+			class="tab"
+			class:active={viewMode === 'compare'}
+			onclick={() => (viewMode = 'compare')}
+		>
 			Compare
 		</button>
 	</div>
@@ -240,12 +242,16 @@
 			<div class="empty">No demographic data available</div>
 		{:else}
 			<div class="stats-grid">
-				{#each stats as stat}
+				{#each stats as stat (stat.label)}
 					<div class="stat-card">
 						<div class="stat-label">{stat.label}</div>
 						<div class="stat-value">{stat.value}</div>
 						{#if stat.change}
-							<div class="stat-change" class:up={stat.changeDir === 'up'} class:down={stat.changeDir === 'down'}>
+							<div
+								class="stat-change"
+								class:up={stat.changeDir === 'up'}
+								class:down={stat.changeDir === 'down'}
+							>
 								{stat.change} (2021 Census)
 							</div>
 						{/if}
@@ -256,11 +262,8 @@
 		{/if}
 	{:else}
 		<div class="compare-list">
-			{#each rankedMunicipalities as m}
-				<div
-					class="compare-row"
-					class:highlighted={municipalityStore.slug === m.slug}
-				>
+			{#each rankedMunicipalities as m (m.slug)}
+				<div class="compare-row" class:highlighted={municipalityStore.slug === m.slug}>
 					<span class="compare-name" style="color: {m.color}">{m.name}</span>
 					<span class="compare-pop">{formatNumber(m.demographics!.population)}</span>
 					<div class="compare-bar-container">

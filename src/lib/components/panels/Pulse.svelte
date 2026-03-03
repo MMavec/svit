@@ -133,7 +133,9 @@
 			.domain([0, data.length - 1])
 			.range([0, width]);
 		const maxVal = Math.max(...data, 1);
-		const y = scaleLinear().domain([0, maxVal]).range([height - 2, 2]);
+		const y = scaleLinear()
+			.domain([0, maxVal])
+			.range([height - 2, 2]);
 		const l = line<number>()
 			.x((_, i) => x(i))
 			.y((d) => y(d))
@@ -174,12 +176,7 @@
 					<span class="metric-label">{metric.label}</span>
 					<div class="sparkline-container">
 						{#if metric.sparkline.length >= 2}
-							<svg
-								width="64"
-								height="20"
-								viewBox="0 0 64 20"
-								class="sparkline"
-							>
+							<svg width="64" height="20" viewBox="0 0 64 20" class="sparkline">
 								<path
 									d={sparklinePath(metric.sparkline, 64, 20)}
 									fill="none"

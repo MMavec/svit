@@ -78,7 +78,16 @@ function stripCdata(str: string): string {
 }
 
 function stripHtml(str: string): string {
-	return str.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#8217;/g, "'").replace(/&#8220;/g, '"').replace(/&#8221;/g, '"').trim();
+	return str
+		.replace(/<[^>]*>/g, '')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&#8217;/g, "'")
+		.replace(/&#8220;/g, '"')
+		.replace(/&#8221;/g, '"')
+		.trim();
 }
 
 function hashCode(str: string): string {
@@ -115,7 +124,10 @@ export const GET: RequestHandler = async ({ url }) => {
 			// Attribute municipality: use source's default, or try to detect from content
 			return items.map((item) => ({
 				...item,
-				municipality: item.municipality || source.municipality || attributeMunicipality(item.title + ' ' + item.description)
+				municipality:
+					item.municipality ||
+					source.municipality ||
+					attributeMunicipality(item.title + ' ' + item.description)
 			}));
 		} catch {
 			return [];

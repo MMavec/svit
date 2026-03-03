@@ -7,7 +7,6 @@
 
 	let alerts = $state<SafetyAlert[]>([]);
 	let loading = $state(true);
-	let lastUpdated = $state<Date | null>(null);
 	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	async function loadAlerts() {
@@ -17,7 +16,6 @@
 		});
 		alerts = result.data || [];
 		loading = false;
-		lastUpdated = new Date();
 	}
 
 	function startRefreshTimer() {
@@ -69,9 +67,7 @@
 		filterType ? alerts.filter((a) => a.type === filterType) : alerts
 	);
 
-	const alertTypes = $derived(
-		[...new Set(alerts.map((a) => a.type))]
-	);
+	const alertTypes = $derived([...new Set(alerts.map((a) => a.type))]);
 
 	function typeIcon(type: SafetyAlert['type']): string {
 		switch (type) {
@@ -130,9 +126,15 @@
 	{:else}
 		{#if alertTypes.length > 1}
 			<div class="filter-chips">
-				<button class="chip" class:active={filterType === null} onclick={() => (filterType = null)}>All ({alerts.length})</button>
-				{#each alertTypes as type}
-					<button class="chip" class:active={filterType === type} onclick={() => (filterType = filterType === type ? null : type)}>
+				<button class="chip" class:active={filterType === null} onclick={() => (filterType = null)}
+					>All ({alerts.length})</button
+				>
+				{#each alertTypes as type (type)}
+					<button
+						class="chip"
+						class:active={filterType === type}
+						onclick={() => (filterType = filterType === type ? null : type)}
+					>
 						{typeLabel(type)} ({alerts.filter((a) => a.type === type).length})
 					</button>
 				{/each}
@@ -142,10 +144,7 @@
 			{#each filteredAlerts as alert (alert.id)}
 				<div class="alert-card" style="border-left: 3px solid {severityColor(alert.severity)}">
 					<div class="alert-header">
-						<span
-							class="type-badge"
-							style="background: {severityColor(alert.severity)}"
-						>
+						<span class="type-badge" style="background: {severityColor(alert.severity)}">
 							{typeIcon(alert.type)}
 						</span>
 						<span class="severity-label" style="color: {severityColor(alert.severity)}">
@@ -161,9 +160,7 @@
 					<div class="alert-footer">
 						<span class="source-agency">{alert.sourceAgency}</span>
 						{#if alert.url}
-							<a href={alert.url} target="_blank" rel="noopener" class="more-link">
-								More info
-							</a>
+							<a href={alert.url} target="_blank" rel="noopener" class="more-link"> More info </a>
 						{/if}
 					</div>
 				</div>
@@ -294,6 +291,7 @@
 		line-height: 1.3;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
@@ -305,6 +303,7 @@
 		margin-top: 2px;
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
+		line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

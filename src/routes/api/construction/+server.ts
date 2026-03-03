@@ -9,9 +9,7 @@ const CACHE_MAX_AGE = 900; // 15 minutes
 const [CRD_WEST, CRD_SOUTH, CRD_EAST, CRD_NORTH] = CRD_BBOX;
 
 /** Fetch active events from DriveBC Open511 API */
-async function fetchDriveBCEvents(
-	eventType?: string
-): Promise<ConstructionEvent[]> {
+async function fetchDriveBCEvents(eventType?: string): Promise<ConstructionEvent[]> {
 	try {
 		const params = new URLSearchParams({
 			area_id: 'drivebc.ca/2', // Vancouver Island District
@@ -23,13 +21,10 @@ async function fetchDriveBCEvents(
 			params.set('event_type', eventType);
 		}
 
-		const response = await fetch(
-			`https://api.open511.gov.bc.ca/events?${params}`,
-			{
-				headers: { 'User-Agent': 'SVIT/1.0' },
-				signal: AbortSignal.timeout(10000)
-			}
-		);
+		const response = await fetch(`https://api.open511.gov.bc.ca/events?${params}`, {
+			headers: { 'User-Agent': 'SVIT/1.0' },
+			signal: AbortSignal.timeout(10000)
+		});
 
 		if (!response.ok) return [];
 
@@ -102,7 +97,10 @@ function attributeMunicipality(
 	}
 
 	// Fall back to text matching
-	const text = [description, ...(roads || []).map((r) => r.name)].filter(Boolean).join(' ').toLowerCase();
+	const text = [description, ...(roads || []).map((r) => r.name)]
+		.filter(Boolean)
+		.join(' ')
+		.toLowerCase();
 	for (const m of municipalities) {
 		if (text.includes(m.name.toLowerCase())) return m.slug;
 	}
@@ -186,7 +184,7 @@ function getSeedEvents(): ConstructionEvent[] {
 			severity: 'MINOR',
 			status: 'ACTIVE',
 			roads: [{ name: 'Highway 17', direction: 'N' }],
-			coordinates: [-123.370, 48.495],
+			coordinates: [-123.37, 48.495],
 			created: '2026-03-01T15:30:00-08:00',
 			updated: '2026-03-01T15:30:00-08:00',
 			municipality: 'saanich',

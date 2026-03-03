@@ -66,7 +66,8 @@
 			id: 'lan-bylaw-1',
 			number: 'L-2026-007',
 			title: 'Affordable Housing Reserve Fund Bylaw',
-			description: 'Establishes dedicated fund for affordable housing from development cost charges',
+			description:
+				'Establishes dedicated fund for affordable housing from development cost charges',
 			status: 'third-reading',
 			municipality: 'langford',
 			introducedDate: '2026-01-20',
@@ -119,15 +120,11 @@
 	const activeBylaws = $derived(
 		filteredBylaws
 			.filter((b) => !['adopted', 'defeated', 'withdrawn'].includes(b.status))
-			.sort(
-				(a, b) => statusOrder.indexOf(b.status) - statusOrder.indexOf(a.status)
-			)
+			.sort((a, b) => statusOrder.indexOf(b.status) - statusOrder.indexOf(a.status))
 	);
 
 	const completedBylaws = $derived(
-		filteredBylaws.filter((b) =>
-			['adopted', 'defeated', 'withdrawn'].includes(b.status)
-		)
+		filteredBylaws.filter((b) => ['adopted', 'defeated', 'withdrawn'].includes(b.status))
 	);
 
 	function pipelineProgress(status: Bylaw['status']): number {
@@ -151,7 +148,9 @@
 				<div class="pipeline-bar">
 					<div
 						class="pipeline-fill"
-						style="width: {pipelineProgress(bylaw.status)}%; background: {statusColors[bylaw.status]}"
+						style="width: {pipelineProgress(bylaw.status)}%; background: {statusColors[
+							bylaw.status
+						]}"
 					></div>
 				</div>
 				<div class="bylaw-meta">
@@ -166,7 +165,10 @@
 					{/if}
 					{#if bylaw.lastActionDate}
 						<span class="bylaw-date"
-							>{new Date(bylaw.lastActionDate).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}</span
+							>{new Date(bylaw.lastActionDate).toLocaleDateString('en-CA', {
+								month: 'short',
+								day: 'numeric'
+							})}</span
 						>
 					{/if}
 				</div>
@@ -254,12 +256,14 @@
 		text-overflow: ellipsis;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 	}
 
 	.compact .bylaw-title {
 		font-size: 0.75rem;
 		-webkit-line-clamp: 1;
+		line-clamp: 1;
 		flex: 1;
 	}
 

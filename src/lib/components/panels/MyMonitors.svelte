@@ -79,9 +79,7 @@
 		<div class="auth-prompt">
 			<div class="auth-icon">&#128274;</div>
 			<p class="auth-text">Sign in to create custom keyword monitors</p>
-			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}>
-				Sign In
-			</button>
+			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
 		</div>
 	{:else if loading}
 		<div class="loading">Loading monitors...</div>
@@ -102,7 +100,7 @@
 					class="keyword-input"
 				/>
 				<div class="source-toggles">
-					{#each SOURCE_OPTIONS as src}
+					{#each SOURCE_OPTIONS as src (src.id)}
 						<button
 							class="source-chip"
 							class:active={newSources.includes(src.id)}
@@ -144,7 +142,9 @@
 				</div>
 			{:else}
 				<div class="empty">
-					{showAdd ? 'Create your first monitor above' : 'No monitors yet — tap + Add to create one'}
+					{showAdd
+						? 'Create your first monitor above'
+						: 'No monitors yet — tap + Add to create one'}
 				</div>
 			{/each}
 		</div>

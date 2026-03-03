@@ -51,8 +51,7 @@
 		}
 
 		let shootingStarTimer = 0;
-		let shootingStar: { x: number; y: number; vx: number; vy: number; life: number } | null =
-			null;
+		let shootingStar: { x: number; y: number; vx: number; vy: number; life: number } | null = null;
 
 		function updateShootingStar(time: number) {
 			if (!shootingStar && time > shootingStarTimer) {
@@ -85,10 +84,7 @@
 				ctx.strokeStyle = gradient;
 				ctx.lineWidth = 1.5;
 				ctx.moveTo(shootingStar.x, shootingStar.y);
-				ctx.lineTo(
-					shootingStar.x - shootingStar.vx * 8,
-					shootingStar.y - shootingStar.vy * 8
-				);
+				ctx.lineTo(shootingStar.x - shootingStar.vx * 8, shootingStar.y - shootingStar.vy * 8);
 				ctx.stroke();
 			}
 		}

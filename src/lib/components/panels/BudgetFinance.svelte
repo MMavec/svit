@@ -28,9 +28,7 @@
 
 	let filteredItems = $derived(items.filter((i) => i.type === viewType));
 
-	let totalAmount = $derived(
-		filteredItems.reduce((sum, i) => sum + i.amount, 0)
-	);
+	let totalAmount = $derived(filteredItems.reduce((sum, i) => sum + i.amount, 0));
 
 	function formatAmount(amount: number): string {
 		if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
@@ -79,10 +77,7 @@
 						<span class="bar-amount">{formatAmount(item.amount)}</span>
 					</div>
 					<div class="bar-track">
-						<div
-							class="bar-fill"
-							style="width: {barWidth(item)}; background: {barColor(i)}"
-						></div>
+						<div class="bar-fill" style="width: {barWidth(item)}; background: {barColor(i)}"></div>
 					</div>
 					<div class="bar-meta">
 						<span class="bar-percent">{item.percentOfTotal}%</span>

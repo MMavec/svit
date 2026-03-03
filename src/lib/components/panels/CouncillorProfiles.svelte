@@ -55,9 +55,7 @@
 	{#if selectedCouncillor}
 		<!-- Councillor drilldown view -->
 		<div class="drilldown">
-			<button class="back-btn" onclick={() => (selectedCouncillor = null)}>
-				&larr; Back
-			</button>
+			<button class="back-btn" onclick={() => (selectedCouncillor = null)}> &larr; Back </button>
 			<div class="profile-header">
 				<div class="profile-avatar">
 					{selectedCouncillor.firstName.charAt(0)}{selectedCouncillor.lastName.charAt(0)}
@@ -65,11 +63,15 @@
 				<div class="profile-info">
 					<div class="profile-name">{selectedCouncillor.name}</div>
 					<div class="profile-role">
-						<span class="role-badge" style="background: {getMunicipalityColor(selectedCouncillor.municipality)}">
+						<span
+							class="role-badge"
+							style="background: {getMunicipalityColor(selectedCouncillor.municipality)}"
+						>
 							{selectedCouncillor.role === 'mayor' ? 'Mayor' : 'Councillor'}
 						</span>
 						<span class="muni-name">
-							{getMunicipality(selectedCouncillor.municipality)?.name || selectedCouncillor.municipality}
+							{getMunicipality(selectedCouncillor.municipality)?.name ||
+								selectedCouncillor.municipality}
 						</span>
 					</div>
 				</div>
@@ -78,7 +80,9 @@
 			{#if selectedCouncillor.email}
 				<div class="profile-detail">
 					<span class="detail-label">Email</span>
-					<a href="mailto:{selectedCouncillor.email}" class="detail-value">{selectedCouncillor.email}</a>
+					<a href="mailto:{selectedCouncillor.email}" class="detail-value"
+						>{selectedCouncillor.email}</a
+					>
 				</div>
 			{/if}
 
@@ -86,7 +90,7 @@
 				<div class="profile-detail">
 					<span class="detail-label">Committees</span>
 					<div class="committee-list">
-						{#each selectedCouncillor.committees as committee}
+						{#each selectedCouncillor.committees as committee (committee)}
 							<span class="committee-badge">{committee}</span>
 						{/each}
 					</div>
@@ -96,7 +100,8 @@
 			<div class="activity-section">
 				<div class="section-label">Activity Timeline</div>
 				<div class="activity-placeholder">
-					Activity data will populate from council meeting minutes, social media feeds, and news mentions.
+					Activity data will populate from council meeting minutes, social media feeds, and news
+					mentions.
 				</div>
 			</div>
 		</div>
@@ -104,10 +109,7 @@
 		<!-- Councillor list view -->
 		<div class="councillor-list">
 			{#each filteredCouncillors() as councillor (councillor.id)}
-				<button
-					class="councillor-item"
-					onclick={() => selectCouncillor(councillor)}
-				>
+				<button class="councillor-item" onclick={() => selectCouncillor(councillor)}>
 					<div
 						class="councillor-avatar"
 						style="background: {getMunicipalityColor(councillor.municipality)}"

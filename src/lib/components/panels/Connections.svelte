@@ -90,15 +90,15 @@
 		<div class="auth-prompt">
 			<div class="auth-icon">&#128279;</div>
 			<p class="auth-text">Sign in to track your civic connections</p>
-			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}>
-				Sign In
-			</button>
+			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
 		</div>
 	{:else if loading}
 		<div class="loading">Loading connections...</div>
 	{:else}
 		<div class="conn-header">
-			<span class="conn-count">{filteredConnections.length} connection{filteredConnections.length !== 1 ? 's' : ''}</span>
+			<span class="conn-count"
+				>{filteredConnections.length} connection{filteredConnections.length !== 1 ? 's' : ''}</span
+			>
 			<button class="add-btn" onclick={() => (showAdd = !showAdd)}>
 				{showAdd ? 'Cancel' : '+ Add'}
 			</button>
@@ -114,7 +114,7 @@
 				/>
 				<div class="form-row">
 					<select bind:value={newMunicipality} class="select-field">
-						{#each municipalities as m}
+						{#each municipalities as m (m.slug)}
 							<option value={m.slug}>{m.name}</option>
 						{/each}
 					</select>
@@ -125,7 +125,8 @@
 						<option value="working-with">Working with</option>
 					</select>
 				</div>
-				<textarea bind:value={newNotes} placeholder="Notes..." class="notes-input" rows="2"></textarea>
+				<textarea bind:value={newNotes} placeholder="Notes..." class="notes-input" rows="2"
+				></textarea>
 				<button class="save-btn" onclick={addConnection} disabled={!newName.trim()}>
 					Add Connection
 				</button>
@@ -140,7 +141,9 @@
 						<span class="conn-municipality" style="color: {municipalityColor(conn.municipality)}">
 							{municipalityName(conn.municipality)}
 						</span>
-						<span class="conn-relationship">{RELATIONSHIP_LABELS[conn.relationship] || conn.relationship}</span>
+						<span class="conn-relationship"
+							>{RELATIONSHIP_LABELS[conn.relationship] || conn.relationship}</span
+						>
 					</div>
 					{#if conn.notes}
 						<div class="conn-notes">{conn.notes}</div>
@@ -148,7 +151,10 @@
 					<div class="conn-footer">
 						{#if conn.last_contact}
 							<span class="last-contact">
-								Last contact: {new Date(conn.last_contact).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}
+								Last contact: {new Date(conn.last_contact).toLocaleDateString('en-CA', {
+									month: 'short',
+									day: 'numeric'
+								})}
 							</span>
 						{/if}
 						<button class="delete-btn" onclick={() => deleteConnection(conn.id)}>Remove</button>

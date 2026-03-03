@@ -27,13 +27,21 @@
 			<span class="dot" style="background:{municipalityStore.color}"></span>
 		{/if}
 		<span class="label">{municipalityStore.label}</span>
-		<svg class="chevron" class:open width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
-			<polyline points="3,4.5 6,7.5 9,4.5"/>
+		<svg
+			class="chevron"
+			class:open
+			width="12"
+			height="12"
+			viewBox="0 0 12 12"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+		>
+			<polyline points="3,4.5 6,7.5 9,4.5" />
 		</svg>
 	</button>
 
 	{#if open}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div class="backdrop" role="presentation" onclick={() => (open = false)}></div>
 		<div class="dropdown" role="listbox" aria-label="Select municipality">
 			<button
@@ -46,7 +54,7 @@
 				<span class="dot all"></span>
 				<span>All CRD</span>
 			</button>
-			{#each municipalities as m}
+			{#each municipalities as m (m.slug)}
 				<button
 					class="option"
 					class:selected={municipalityStore.slug === m.slug}
