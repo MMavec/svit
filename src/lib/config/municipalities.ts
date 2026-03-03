@@ -18,7 +18,8 @@ export const municipalities: Municipality[] = [
 		color: '#2F855A',
 		bbox: [-123.465, 48.43, -123.28, 48.53],
 		population: 117735,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://saanich.civicweb.net/Portal'
 	},
 	{
 		slug: 'esquimalt',
@@ -37,7 +38,8 @@ export const municipalities: Municipality[] = [
 		color: '#D69E2E',
 		bbox: [-123.35, 48.41, -123.29, 48.46],
 		population: 18015,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://oakbay.civicweb.net/Portal'
 	},
 	{
 		slug: 'langford',
@@ -56,7 +58,8 @@ export const municipalities: Municipality[] = [
 		color: '#00B5D8',
 		bbox: [-123.52, 48.41, -123.44, 48.46],
 		population: 18961,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://colwood.civicweb.net/Portal'
 	},
 	{
 		slug: 'sooke',
@@ -65,7 +68,8 @@ export const municipalities: Municipality[] = [
 		color: '#38A169',
 		bbox: [-123.77, 48.35, -123.68, 48.42],
 		population: 15054,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://sooke.civicweb.net/Portal'
 	},
 	{
 		slug: 'sidney',
@@ -74,7 +78,8 @@ export const municipalities: Municipality[] = [
 		color: '#DD6B20',
 		bbox: [-123.42, 48.635, -123.38, 48.665],
 		population: 12402,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://sidney.civicweb.net/Portal'
 	},
 	{
 		slug: 'north-saanich',
@@ -83,7 +88,8 @@ export const municipalities: Municipality[] = [
 		color: '#3182CE',
 		bbox: [-123.49, 48.61, -123.35, 48.7],
 		population: 12236,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://northsaanich.civicweb.net/Portal'
 	},
 	{
 		slug: 'central-saanich',
@@ -92,7 +98,8 @@ export const municipalities: Municipality[] = [
 		color: '#805AD5',
 		bbox: [-123.44, 48.54, -123.33, 48.61],
 		population: 18681,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://centralsaanich.civicweb.net/Portal'
 	},
 	{
 		slug: 'view-royal',
@@ -101,7 +108,8 @@ export const municipalities: Municipality[] = [
 		color: '#E53E3E',
 		bbox: [-123.48, 48.44, -123.41, 48.48],
 		population: 11575,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://viewroyal.civicweb.net/Portal'
 	},
 	{
 		slug: 'highlands',
@@ -120,7 +128,8 @@ export const municipalities: Municipality[] = [
 		color: '#975A16',
 		bbox: [-123.6, 48.35, -123.46, 48.44],
 		population: 5078,
-		councilSource: 'civicweb'
+		councilSource: 'civicweb',
+		councilUrl: 'https://metchosin.civicweb.net/Portal'
 	}
 ];
 
