@@ -67,7 +67,7 @@ Single-page dashboard with a 12-column draggable grid (60px rows, 12px gap). Pan
 - **Tier 3** (implemented): Weather & Tides, Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment
 - **Tier 4** (implemented, requires account): My Monitors, Connections, Threads, Demographics
 
-Panel registration: `DashboardGrid.svelte` maps panel IDs to components via `{#if panel.id === 'xxx'}` chain. New panels must be imported and added there.
+Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components via `{#if panel.id === 'xxx'}` chain (static imports, not dynamic). New panels must be imported and added there.
 
 ### Panel Component Pattern
 
@@ -77,8 +77,8 @@ Every panel follows the same structure: local `$state` for data/loading, `$effec
 
 Seven stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
 
-- **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
-- **`theme.svelte.ts`** — Dark/light theme. Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark.
+- **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`, `isAllCRD`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
+- **`theme.svelte.ts`** — Dark/light theme (exported as `theme`, not `themeStore`). Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark. Methods: `toggle()`, `init()`.
 - **`layout.svelte.ts`** — Panel grid positions (id → {x, y, w, h}). Methods: `getPosition()`, `updatePosition()`, `reset()`.
 - **`refresh.svelte.ts`** — Auto-refresh toggle + per-panel intervals. Methods: `toggle()`, `getInterval(panelId)`.
 - **`auth.svelte.ts`** — Supabase auth state (user, session, loading). Methods: `signInWithEmail()`, `signUpWithEmail()`, `signOut()`, `resetPassword()`.
@@ -187,7 +187,7 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 - **Municipality attribution** — every data item tagged with its municipality slug for filtering. Attribution uses coordinate-in-bbox matching first, then text matching against municipality names.
 - **Seed data** — every API route has hardcoded fallback arrays for when live APIs fail. Routes never throw.
 - **Prettier**: tabs, single quotes, no trailing commas, 100-char width, svelte plugin
-- **Testing**: Vitest with jsdom environment (`npm run test`). Test setup mocks localStorage + matchMedia. Tests colocated at `src/lib/*/__tests__/*.test.ts`. Playwright configured for e2e.
+- **Testing**: Vitest with jsdom environment (`npm run test`). `globals: true` in vite config — `describe`, `it`, `expect` available without imports. Test setup (`src/test-setup.ts`) mocks localStorage + matchMedia. Tests colocated at `src/lib/*/__tests__/*.test.ts`.
 - **ESLint**: `@typescript-eslint/no-unused-vars` allows `_` prefix for unused vars/args. In `.svelte.ts` files, `svelte/prefer-svelte-reactivity` flags `new Date()` — extract to helper functions.
 - **Loading states**: `PanelSkeleton.svelte` component provides shimmer skeletons (variants: `list`, `card`, `chart`, `hero`). All panels use it during loading.
 
@@ -225,7 +225,7 @@ Additional future tables:
 
 ## Implementation Status
 
-Phases 0–5 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
+Phases 0–6 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
 
 ### Phase 5 Additions
 
@@ -236,6 +236,13 @@ Phases 0–5 complete. All 23 panels are live across all 4 tiers. Tier 4 panels 
 - **Monitor matching engine**: Real-time keyword scanning across 5 data sources
 - **Threads conversations**: Two-view thread detail with message list and reply input
 - **Vitest unit tests**: 24 tests (monitor-matcher, bookmarks store, API fetcher)
+
+### Phase 6: Production Hardening
+
+- **Councillor data**: 92 verified elected officials across all 13 CRD municipalities (was 40 with test data)
+- **Double-fetch elimination**: Removed redundant `onMount` load calls from 14 panels — `$effect` handles initial load
+- **Shared utilities**: Extracted `hashCode()` and `attributeMunicipality()` to `src/lib/utils/` (was duplicated across 13 routes)
+- **Bug fixes**: Pulse timer leak (missing `onDestroy`), search debounce timer cleanup, `$derived.by` fix, ThreadMessage type dedup
 
 ### Earlier Improvements
 
