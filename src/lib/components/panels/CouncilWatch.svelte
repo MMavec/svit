@@ -246,7 +246,7 @@
 	}
 
 	.badge-live {
-		background: #c53030;
+		background: var(--status-critical);
 		color: white;
 		animation: pulse-live 2s infinite;
 	}

@@ -90,13 +90,13 @@
 		padding: 6px 10px;
 		background: rgba(104, 211, 145, 0.1);
 		border-radius: 6px;
-		border-left: 3px solid #68d391;
+		border-left: 3px solid var(--accent-secondary);
 	}
 
 	.heritage-count {
 		font-size: 1rem;
 		font-weight: 700;
-		color: #68d391;
+		color: var(--accent-secondary);
 		font-family: 'Geist Mono', monospace;
 	}
 
@@ -125,7 +125,7 @@
 	}
 
 	.tree-card.heritage {
-		border-left: 3px solid #68d391;
+		border-left: 3px solid var(--accent-secondary);
 		padding-left: 7px;
 	}
 
@@ -140,7 +140,7 @@
 		width: 16px;
 		height: 16px;
 		border-radius: 3px;
-		background: #68d391;
+		background: var(--accent-secondary);
 		display: flex;
 		align-items: center;
 		justify-content: center;

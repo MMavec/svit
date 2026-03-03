@@ -64,7 +64,7 @@
 				label: 'Council',
 				count: councilData.length,
 				sparkline: buildSparkline(councilData, (m: { date?: string }) => m.date),
-				color: 'var(--accent-primary, #63b3ed)'
+				color: 'var(--accent-primary)'
 			},
 			{
 				id: 'development',
@@ -72,7 +72,7 @@
 				label: 'Development',
 				count: devData.length,
 				sparkline: buildSparkline(devData, (d: { submittedDate?: string }) => d.submittedDate),
-				color: '#fc8181'
+				color: 'var(--accent-danger)'
 			},
 			{
 				id: 'news',
@@ -80,7 +80,7 @@
 				label: 'News',
 				count: newsData.length,
 				sparkline: buildSparkline(newsData, (n: { published?: string }) => n.published),
-				color: 'var(--accent-warning, #f6ad55)'
+				color: 'var(--accent-warning)'
 			},
 			{
 				id: 'social',
@@ -88,7 +88,7 @@
 				label: 'Social',
 				count: socialData.length,
 				sparkline: buildSparkline(socialData, (s: { published?: string }) => s.published),
-				color: '#b794f4'
+				color: 'var(--palette-lilac)'
 			},
 			{
 				id: 'construction',
@@ -96,7 +96,7 @@
 				label: 'Roads',
 				count: conData.length,
 				sparkline: buildSparkline(conData, (c: { updated?: string }) => c.updated),
-				color: '#f6ad55'
+				color: 'var(--accent-warning)'
 			},
 			{
 				id: 'transit',
@@ -104,7 +104,7 @@
 				label: 'Transit',
 				count: transitData.length,
 				sparkline: [transitData.length],
-				color: '#68d391'
+				color: 'var(--accent-secondary)'
 			},
 			{
 				id: 'safety',
@@ -112,7 +112,7 @@
 				label: 'Safety',
 				count: safetyData.length,
 				sparkline: [safetyData.length],
-				color: '#e53e3e'
+				color: 'var(--status-critical)'
 			}
 		];
 

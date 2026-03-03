@@ -58,13 +58,13 @@
 	function severityColor(severity: SafetyAlert['severity']): string {
 		switch (severity) {
 			case 'emergency':
-				return '#e53e3e';
+				return 'var(--status-critical)';
 			case 'warning':
-				return '#dd6b20';
+				return 'var(--status-high)';
 			case 'watch':
-				return '#d69e2e';
+				return 'var(--accent-warning)';
 			case 'advisory':
-				return '#63b3ed';
+				return 'var(--accent-primary)';
 		}
 	}
 
@@ -196,14 +196,14 @@
 
 	.check-icon {
 		font-size: 2rem;
-		color: var(--accent-secondary, #68d391);
+		color: var(--accent-secondary);
 		line-height: 1;
 	}
 
 	.clear-text {
 		font-size: 0.875rem;
 		font-weight: 600;
-		color: var(--accent-secondary, #68d391);
+		color: var(--accent-secondary);
 	}
 
 	.clear-sub {

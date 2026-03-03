@@ -154,7 +154,7 @@ Two PNW-themed modes controlled by `[data-theme="dark"]` / `[data-theme="light"]
 - **Dark (Starry Night)**: Canvas-animated stars + shooting star + aurora borealis. Frosted dark glass panels. Accents: teal `#63B3ED`, green `#68D391`, amber `#F6AD55`.
 - **Light (Sunny Skies)**: SVG animated clouds + sun glow. Frosted white glass panels. Accents: ocean `#2B6CB0`, forest `#2F855A`, gold `#D69E2E`.
 
-All colors are CSS custom properties (`--bg-surface`, `--text-primary`, `--accent-primary`, etc.) in `src/app.css`.
+All colors are CSS custom properties in `src/app.css`. Core accents: `--accent-primary`, `--accent-secondary`, `--accent-warning`, `--accent-danger`. Status severity: `--status-critical`, `--status-high`, `--status-hazardous`. Data viz palette: `--palette-purple`, `--palette-blue`, `--palette-cyan`, `--palette-green`, `--palette-lilac`, `--palette-pink`, `--palette-sky`, `--palette-muted`. All panel color functions use CSS vars — no hardcoded hex colors in panel components.
 
 ### Development Flagging
 
@@ -237,7 +237,7 @@ Additional future tables:
 
 ## Implementation Status
 
-Phases 0–8 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
+Phases 0–9 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
 
 ### Phase 5 Additions
 
@@ -269,6 +269,12 @@ Phases 0–8 complete. All 23 panels are live across all 4 tiers. Tier 4 panels 
 - **Panel wiring refactor**: Replaced 47-line `{#if}`/`{:else if}` chain in DashboardGrid with `panelComponents: Record<string, Component>` map + dynamic `<PanelComponent />` rendering
 - **Empty states**: All 12 generic empty messages replaced with contextual, domain-specific messages (e.g., "No active transit alerts — service is running normally")
 - **Data freshness indicators**: `DataFreshness.svelte` component shows relative timestamps in panel headers. Uses Svelte context pattern — `Panel.svelte` provides setter, `PanelSkeleton` triggers on unmount. Zero individual panel changes required.
+
+### Phase 9: Color System Standardization
+
+- **CSS color palette**: Added `--status-critical`, `--status-high`, `--status-hazardous` severity scale and `--palette-*` data visualization colors to both dark/light themes in `app.css`
+- **Hardcoded color elimination**: Replaced all ~50 hardcoded hex colors across 13 panel components with CSS custom properties. Status/category/severity color functions now use `var()` for full theme awareness.
+- **Consistent fallback removal**: Removed unnecessary `var(--x, #fallback)` patterns in Transit, ConstructionRoads, SafetyEmergency — `app.css` always provides values
 
 ### Earlier Improvements
 

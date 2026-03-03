@@ -31,15 +31,15 @@
 	function statusColor(status: EnvironmentReading['status']): string {
 		switch (status) {
 			case 'good':
-				return '#68d391';
+				return 'var(--accent-secondary)';
 			case 'moderate':
-				return '#d69e2e';
+				return 'var(--accent-warning)';
 			case 'unhealthy-sensitive':
-				return '#dd6b20';
+				return 'var(--status-high)';
 			case 'unhealthy':
-				return '#e53e3e';
+				return 'var(--status-critical)';
 			case 'hazardous':
-				return '#9b2c2c';
+				return 'var(--status-hazardous)';
 		}
 	}
 
