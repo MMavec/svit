@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { searchStore } from '$lib/stores/search.svelte';
+	import { searchCategoryColor } from '$lib/utils/color-maps';
 
 	let inputEl = $state<HTMLInputElement | null>(null);
 
@@ -37,23 +38,6 @@
 				return 'S';
 			default:
 				return '?';
-		}
-	}
-
-	function categoryColor(cat: string): string {
-		switch (cat) {
-			case 'Council':
-				return 'var(--accent-primary)';
-			case 'News':
-				return 'var(--accent-warning, #f6ad55)';
-			case 'Development':
-				return '#fc8181';
-			case 'Event':
-				return '#68d391';
-			case 'Safety':
-				return '#e53e3e';
-			default:
-				return 'var(--text-tertiary)';
 		}
 	}
 </script>
@@ -97,7 +81,16 @@
 				<kbd class="esc-hint">ESC</kbd>
 			</div>
 
-			<div class="search-results" aria-live="polite">
+			<div class="search-results">
+				<div class="visually-hidden" role="status" aria-live="polite">
+					{#if searchStore.searching}
+						Searching...
+					{:else if searchStore.query.length > 0 && searchStore.results.length === 0}
+						No results found
+					{:else if searchStore.results.length > 0}
+						{searchStore.results.length} result{searchStore.results.length === 1 ? '' : 's'} found
+					{/if}
+				</div>
 				{#if searchStore.searching}
 					<div class="search-status">Searching...</div>
 				{:else if searchStore.query.length > 0 && searchStore.results.length === 0}
@@ -105,7 +98,7 @@
 				{:else if searchStore.results.length > 0}
 					{#each searchStore.results as result (result.id)}
 						<div class="result-item">
-							<span class="result-badge" style="background: {categoryColor(result.category)}">
+							<span class="result-badge" style="background: {searchCategoryColor(result.category)}">
 								{categoryIcon(result.category)}
 							</span>
 							<div class="result-info">

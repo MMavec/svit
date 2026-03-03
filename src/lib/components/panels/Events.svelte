@@ -5,6 +5,7 @@
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
+	import { eventCategoryColor } from '$lib/utils/color-maps';
 
 	let events = $state<CommunityEvent[]>([]);
 	let loading = $state(true);
@@ -50,27 +51,6 @@
 		}
 	}
 
-	function categoryColor(cat: CommunityEvent['category']): string {
-		switch (cat) {
-			case 'arts':
-				return 'var(--palette-purple)';
-			case 'sports':
-				return 'var(--status-critical)';
-			case 'community':
-				return 'var(--palette-blue)';
-			case 'market':
-				return 'var(--palette-green)';
-			case 'festival':
-				return 'var(--accent-warning)';
-			case 'education':
-				return 'var(--palette-cyan)';
-			case 'government':
-				return 'var(--palette-muted)';
-			default:
-				return 'var(--text-tertiary)';
-		}
-	}
-
 	function formatDate(iso: string): string {
 		const d = new Date(iso);
 		return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
@@ -97,7 +77,7 @@
 			{#each events as event (event.id)}
 				<div class="event-card">
 					<div class="event-header">
-						<span class="cat-badge" style="background: {categoryColor(event.category)}">
+						<span class="cat-badge" style="background: {eventCategoryColor(event.category)}">
 							{categoryIcon(event.category)}
 						</span>
 						<span class="event-date">{formatDate(event.date)}</span>

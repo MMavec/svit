@@ -9,6 +9,54 @@
 		/>
 		<link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/favicon.svg" />
 		<title>SVIT — South Vancouver Island Tracker</title>
+
+		<!-- Open Graph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="SVIT — South Vancouver Island Tracker" />
+		<meta
+			property="og:description"
+			content="Real-time civic monitoring dashboard for the Capital Regional District, BC. Track council meetings, development applications, transit, safety alerts, and more."
+		/>
+		<meta property="og:url" content="https://svit.vercel.app" />
+		<meta property="og:image" content="https://svit.vercel.app/og-image.png" />
+		<meta property="og:locale" content="en_CA" />
+		<meta property="og:site_name" content="SVIT" />
+
+		<!-- Twitter Card -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="SVIT — South Vancouver Island Tracker" />
+		<meta
+			name="twitter:description"
+			content="Real-time civic monitoring dashboard for the Capital Regional District, BC."
+		/>
+		<meta name="twitter:image" content="https://svit.vercel.app/og-image.png" />
+
+		<!-- JSON-LD Structured Data -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "WebApplication",
+				"name": "SVIT — South Vancouver Island Tracker",
+				"description": "Real-time civic monitoring dashboard for the Capital Regional District, British Columbia. Council meetings, bylaws, development applications, transit alerts, safety alerts, and community events.",
+				"url": "https://svit.vercel.app",
+				"applicationCategory": "GovernmentApplication",
+				"operatingSystem": "Any",
+				"areaServed": {
+					"@type": "AdministrativeArea",
+					"name": "Capital Regional District",
+					"containedInPlace": {
+						"@type": "AdministrativeArea",
+						"name": "British Columbia, Canada"
+					}
+				},
+				"offers": {
+					"@type": "Offer",
+					"price": "0",
+					"priceCurrency": "CAD"
+				}
+			}
+		</script>
+
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

@@ -6,6 +6,7 @@
 	import type { SafetyAlert } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
+	import { safetyAlertColor } from '$lib/utils/color-maps';
 
 	let alerts = $state<SafetyAlert[]>([]);
 	let loading = $state(true);
@@ -54,19 +55,6 @@
 		const _enabled = refreshStore.enabled;
 		startRefreshTimer();
 	});
-
-	function severityColor(severity: SafetyAlert['severity']): string {
-		switch (severity) {
-			case 'emergency':
-				return 'var(--status-critical)';
-			case 'warning':
-				return 'var(--status-high)';
-			case 'watch':
-				return 'var(--accent-warning)';
-			case 'advisory':
-				return 'var(--accent-primary)';
-		}
-	}
 
 	let filterType = $state<string | null>(null);
 
@@ -151,12 +139,12 @@
 		{/if}
 		<div class="alert-list">
 			{#each filteredAlerts as alert (alert.id)}
-				<div class="alert-card" style="border-left: 3px solid {severityColor(alert.severity)}">
+				<div class="alert-card" style="border-left: 3px solid {safetyAlertColor(alert.severity)}">
 					<div class="alert-header">
-						<span class="type-badge" style="background: {severityColor(alert.severity)}">
+						<span class="type-badge" style="background: {safetyAlertColor(alert.severity)}">
 							{typeIcon(alert.type)}
 						</span>
-						<span class="severity-label" style="color: {severityColor(alert.severity)}">
+						<span class="severity-label" style="color: {safetyAlertColor(alert.severity)}">
 							{alert.severity.toUpperCase()}
 						</span>
 						<span class="type-label">{typeLabel(alert.type)}</span>
