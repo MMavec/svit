@@ -1,13 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { fetchNews } from '$lib/api/news';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
+	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import { newsSources } from '$lib/config/news-sources';
 	import type { NewsItem } from '$lib/types/index';
 
 	let articles = $state<NewsItem[]>([]);
 	let loading = $state(true);
 	let activeSource = $state<string | null>(null);
+	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	async function loadNews() {
 		loading = true;
@@ -20,13 +22,30 @@
 		loading = false;
 	}
 
+	function startRefreshTimer() {
+		if (refreshTimer) clearInterval(refreshTimer);
+		if (refreshStore.enabled) {
+			refreshTimer = setInterval(loadNews, REFRESH_INTERVALS['local-wire']);
+		}
+	}
+
 	onMount(() => {
 		loadNews();
+		startRefreshTimer();
+	});
+
+	onDestroy(() => {
+		if (refreshTimer) clearInterval(refreshTimer);
 	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;
 		loadNews();
+	});
+
+	$effect(() => {
+		const _enabled = refreshStore.enabled;
+		startRefreshTimer();
 	});
 
 	function selectSource(slug: string | null) {

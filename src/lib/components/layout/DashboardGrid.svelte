@@ -28,9 +28,23 @@
 	import TreesUrbanForest from '$lib/components/panels/TreesUrbanForest.svelte';
 	import NatureEnvironment from '$lib/components/panels/NatureEnvironment.svelte';
 
+	import { onMount } from 'svelte';
+
 	const COLS = 12;
 	const ROW_HEIGHT = 60;
 	const GAP = 12;
+	const MOBILE_BREAKPOINT = 768;
+
+	// Responsive state
+	let isMobile = $state(false);
+
+	onMount(() => {
+		const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+		isMobile = mq.matches;
+		const handler = (e: MediaQueryListEvent) => { isMobile = e.matches; };
+		mq.addEventListener('change', handler);
+		return () => mq.removeEventListener('change', handler);
+	});
 
 	// Drag state
 	let dragging = $state<string | null>(null);
@@ -98,8 +112,9 @@
 
 <div
 	class="dashboard-grid"
+	class:mobile={isMobile}
 	bind:this={gridEl}
-	style="height:{getGridHeight()}px"
+	style={isMobile ? '' : `height:${getGridHeight()}px`}
 	role="main"
 	aria-label="Dashboard panels"
 >
@@ -107,10 +122,10 @@
 		<div
 			class="grid-cell"
 			class:dragging={dragging === panel.id}
-			style={getPanelStyle(panel.id)}
-			onpointerdown={(e) => onPointerDown(e, panel.id)}
-			onpointermove={onPointerMove}
-			onpointerup={onPointerUp}
+			style={isMobile ? '' : getPanelStyle(panel.id)}
+			onpointerdown={isMobile ? undefined : (e) => onPointerDown(e, panel.id)}
+			onpointermove={isMobile ? undefined : onPointerMove}
+			onpointerup={isMobile ? undefined : onPointerUp}
 			role="region"
 			aria-label={panel.title}
 		>
@@ -185,5 +200,33 @@
 
 	.grid-cell > :global(.panel) {
 		height: 100%;
+	}
+
+	/* Mobile: stacked layout */
+	.dashboard-grid.mobile {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		height: auto !important;
+		padding: 0 8px;
+	}
+
+	.dashboard-grid.mobile .grid-cell {
+		position: static;
+		padding: 0;
+		transition: none;
+		min-height: 300px;
+	}
+
+	.dashboard-grid.mobile .grid-cell > :global(.panel) {
+		height: auto;
+		min-height: 280px;
+	}
+
+	/* Tablet: 2-column grid */
+	@media (min-width: 769px) and (max-width: 1024px) {
+		.dashboard-grid {
+			padding: 0 8px;
+		}
 	}
 </style>

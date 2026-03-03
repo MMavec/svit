@@ -1,10 +1,12 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { fetchTransitAlerts } from '$lib/api/transit';
+	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import type { TransitAlert } from '$lib/types/index';
 
 	let alerts = $state<TransitAlert[]>([]);
 	let loading = $state(true);
+	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	async function loadAlerts() {
 		loading = true;
@@ -13,8 +15,25 @@
 		loading = false;
 	}
 
+	function startRefreshTimer() {
+		if (refreshTimer) clearInterval(refreshTimer);
+		if (refreshStore.enabled) {
+			refreshTimer = setInterval(loadAlerts, REFRESH_INTERVALS['transit']);
+		}
+	}
+
 	onMount(() => {
 		loadAlerts();
+		startRefreshTimer();
+	});
+
+	onDestroy(() => {
+		if (refreshTimer) clearInterval(refreshTimer);
+	});
+
+	$effect(() => {
+		const _enabled = refreshStore.enabled;
+		startRefreshTimer();
 	});
 
 	function severityColor(severity: TransitAlert['severity']): string {
