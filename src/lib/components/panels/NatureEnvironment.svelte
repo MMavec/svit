@@ -66,6 +66,8 @@
 				return 'U';
 			case 'pollen':
 				return 'P';
+			case 'ocean-temperature':
+				return 'O';
 		}
 	}
 
@@ -79,6 +81,8 @@
 				return 'UV';
 			case 'pollen':
 				return 'Pollen';
+			case 'ocean-temperature':
+				return 'Ocean';
 		}
 	}
 
