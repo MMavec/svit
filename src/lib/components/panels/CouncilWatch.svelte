@@ -3,6 +3,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { Meeting } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
 	let meetings = $state<Meeting[]>([]);
@@ -77,7 +78,7 @@
 	{#if loading}
 		<PanelSkeleton variant="list" />
 	{:else if error}
-		<div class="error-msg">{error}</div>
+		<PanelError message={error} onRetry={loadMeetings} />
 	{:else}
 		<div class="meeting-list">
 			{#each viewMode === 'upcoming' ? upcomingMeetings : pastMeetings as meeting (meeting.id)}

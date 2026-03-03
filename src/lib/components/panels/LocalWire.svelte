@@ -6,21 +6,28 @@
 	import { newsSources } from '$lib/config/news-sources';
 	import type { NewsItem } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
 	let articles = $state<NewsItem[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 	let activeSource = $state<string | null>(null);
 	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	async function loadNews() {
 		loading = true;
+		error = null;
 		const result = await fetchNews({
 			municipality: municipalityStore.slug,
 			source: activeSource ?? undefined,
 			limit: 50
 		});
-		articles = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			articles = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -92,6 +99,8 @@
 
 	{#if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadNews} />
 	{:else}
 		<div class="article-list">
 			{#each articles as article (article.id)}

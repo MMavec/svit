@@ -4,6 +4,7 @@ import type { ConstructionEvent } from '$lib/types/index';
 import { CRD_BBOX, municipalities } from '$lib/config/municipalities';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -208,9 +209,9 @@ function getSeedEvents(): ConstructionEvent[] {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
 	const eventType = url.searchParams.get('event_type');
-	const limit = parseInt(url.searchParams.get('limit') || '50');
+	const limit = parseLimit(url.searchParams.get('limit'), 50);
 
 	let events = await fetchDriveBCEvents(eventType || undefined);
 

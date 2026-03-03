@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { HousingMetric } from '$lib/types/index';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -148,8 +149,8 @@ function getSeedData(municipality?: string | null): HousingMetric[] {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
-	const limit = parseInt(url.searchParams.get('limit') || '20');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
+	const limit = parseLimit(url.searchParams.get('limit'), 20);
 
 	// Try live data first
 	let metrics = await fetchCMHCStarts();

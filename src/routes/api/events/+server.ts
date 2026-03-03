@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import type { CommunityEvent } from '$lib/types/index';
 import { municipalities } from '$lib/config/municipalities';
 import { hashCode } from '$lib/utils/hash';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -200,9 +201,9 @@ function getSeedData(): CommunityEvent[] {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
 	const category = url.searchParams.get('category');
-	const limit = parseInt(url.searchParams.get('limit') || '20');
+	const limit = parseLimit(url.searchParams.get('limit'), 20);
 
 	let events = await fetchLiveEvents();
 

@@ -4,15 +4,22 @@
 	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import type { TransitAlert } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let alerts = $state<TransitAlert[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	async function loadAlerts() {
 		loading = true;
+		error = null;
 		const result = await fetchTransitAlerts();
-		alerts = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			alerts = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -80,6 +87,8 @@
 <div class="transit">
 	{#if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadAlerts} />
 	{:else}
 		<div class="alert-list">
 			{#each alerts as alert (alert.id)}

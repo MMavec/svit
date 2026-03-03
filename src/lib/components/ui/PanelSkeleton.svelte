@@ -6,7 +6,7 @@
 	let { variant = 'list' }: Props = $props();
 </script>
 
-<div class="skeleton skeleton-{variant}">
+<div class="skeleton skeleton-{variant}" role="status" aria-label="Loading">
 	{#if variant === 'list'}
 		<div class="skeleton-bar" style="width: 100%"></div>
 		<div class="skeleton-bar" style="width: 80%"></div>

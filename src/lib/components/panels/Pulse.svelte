@@ -10,6 +10,7 @@
 	import { fetchSafetyAlerts } from '$lib/api/safety';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	interface Metric {
 		id: string;
@@ -22,10 +23,12 @@
 
 	let metrics = $state<Metric[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 	let totalActivity = $derived(metrics.reduce((sum, m) => sum + m.count, 0));
 
 	async function loadMetrics() {
 		loading = true;
+		error = null;
 		const slug = municipalityStore.slug;
 
 		const [council, dev, news, social, construction, transit, safety] = await Promise.allSettled([
@@ -37,6 +40,14 @@
 			fetchTransitAlerts({ limit: 50 }),
 			fetchSafetyAlerts({ municipality: slug, limit: 50 })
 		]);
+
+		const results = [council, dev, news, social, construction, transit, safety];
+		const allFailed = results.every((r) => r.status === 'rejected');
+		if (allFailed) {
+			error = 'Unable to load activity data';
+			loading = false;
+			return;
+		}
 
 		const councilData = council.status === 'fulfilled' ? council.value.data || [] : [];
 		const devData = dev.status === 'fulfilled' ? dev.value.data || [] : [];
@@ -168,6 +179,8 @@
 <div class="pulse">
 	{#if loading}
 		<PanelSkeleton variant="chart" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadMetrics} />
 	{:else}
 		<div class="pulse-header">
 			<span class="total-count">{totalActivity}</span>

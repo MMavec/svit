@@ -3,16 +3,23 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { EnvironmentReading } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let readings = $state<EnvironmentReading[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 
 	async function loadData() {
 		loading = true;
+		error = null;
 		const result = await fetchEnvironmentReadings({
 			municipality: municipalityStore.slug
 		});
-		readings = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			readings = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -87,6 +94,8 @@
 <div class="nature">
 	{#if loading}
 		<PanelSkeleton variant="hero" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadData} />
 	{:else if readings.length === 0}
 		<div class="empty">No environmental data available</div>
 	{:else}

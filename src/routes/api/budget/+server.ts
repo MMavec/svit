@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { BudgetItem } from '$lib/types/index';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 86400; // 24 hours — budget data changes rarely
 
@@ -178,9 +179,9 @@ function getSeedData(): BudgetItem[] {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
 	const type = url.searchParams.get('type') as 'revenue' | 'expenditure' | null;
-	const limit = parseInt(url.searchParams.get('limit') || '30');
+	const limit = parseLimit(url.searchParams.get('limit'));
 
 	// Budget data is static/annual — always use seed data
 	// (future: fetch from municipality open data portals)

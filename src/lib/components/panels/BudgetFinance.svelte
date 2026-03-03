@@ -3,17 +3,24 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { BudgetItem } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let items = $state<BudgetItem[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 	let viewType = $state<'expenditure' | 'revenue'>('expenditure');
 
 	async function loadData() {
 		loading = true;
+		error = null;
 		const result = await fetchBudgetItems({
 			municipality: municipalityStore.slug
 		});
-		items = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			items = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -45,6 +52,8 @@
 <div class="budget">
 	{#if loading}
 		<PanelSkeleton variant="card" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadData} />
 	{:else if items.length === 0}
 		<div class="empty">No budget data available</div>
 	{:else}

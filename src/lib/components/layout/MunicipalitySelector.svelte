@@ -22,6 +22,7 @@
 		onclick={() => (open = !open)}
 		aria-expanded={open}
 		aria-haspopup="listbox"
+		aria-label="Select municipality"
 	>
 		{#if municipalityStore.current}
 			<span class="dot" style="background:{municipalityStore.color}"></span>

@@ -64,7 +64,7 @@
 	<div class="overlay-backdrop" onclick={() => searchStore.close()} role="presentation">
 		<!-- svelte-ignore a11y_interactive_supports_focus -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<div class="overlay-container" onclick={(e) => e.stopPropagation()} role="dialog">
+		<div class="overlay-container" onclick={(e) => e.stopPropagation()} role="dialog" aria-label="Search">
 			<div class="search-input-row">
 				<svg
 					class="search-icon"
@@ -85,13 +85,14 @@
 					type="text"
 					class="search-input"
 					placeholder="Search council, news, development, events, safety..."
+					aria-label="Search all panels"
 					value={searchStore.query}
 					oninput={(e) => (searchStore.query = e.currentTarget.value)}
 				/>
 				<kbd class="esc-hint">ESC</kbd>
 			</div>
 
-			<div class="search-results">
+			<div class="search-results" aria-live="polite">
 				{#if searchStore.searching}
 					<div class="search-status">Searching...</div>
 				{:else if searchStore.query.length > 0 && searchStore.results.length === 0}

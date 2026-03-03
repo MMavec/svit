@@ -3,17 +3,24 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { CommunityEvent } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
 	let events = $state<CommunityEvent[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 
 	async function loadData() {
 		loading = true;
+		error = null;
 		const result = await fetchEvents({
 			municipality: municipalityStore.slug
 		});
-		events = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			events = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -81,6 +88,8 @@
 <div class="events">
 	{#if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadData} />
 	{:else if events.length === 0}
 		<div class="empty">No upcoming events</div>
 	{:else}

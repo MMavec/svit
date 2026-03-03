@@ -5,7 +5,8 @@ const BASE = '/api';
 /** Generic fetcher for internal API routes with caching support */
 export async function apiFetch<T>(
 	path: string,
-	params?: Record<string, string | number | boolean | null | undefined>
+	params?: Record<string, string | number | boolean | null | undefined>,
+	signal?: AbortSignal
 ): Promise<ApiResponse<T>> {
 	const url = new URL(`${BASE}${path}`, window.location.origin);
 
@@ -17,7 +18,7 @@ export async function apiFetch<T>(
 		}
 	}
 
-	const response = await fetch(url.toString());
+	const response = await fetch(url.toString(), signal ? { signal } : undefined);
 
 	if (!response.ok) {
 		return {

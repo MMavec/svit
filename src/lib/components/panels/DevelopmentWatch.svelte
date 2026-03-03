@@ -3,19 +3,26 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { DevelopmentApplication } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
 	let applications = $state<DevelopmentApplication[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 	let showFlaggedOnly = $state(false);
 
 	async function loadDevelopments() {
 		loading = true;
+		error = null;
 		const result = await fetchDevelopments({
 			municipality: municipalityStore.slug,
 			flagged: showFlaggedOnly || undefined
 		});
-		applications = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			applications = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -87,6 +94,8 @@
 
 	{#if loading}
 		<PanelSkeleton variant="card" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadDevelopments} />
 	{:else}
 		<div class="dev-list">
 			{#each displayed as app (app.id)}

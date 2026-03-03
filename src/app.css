@@ -102,6 +102,12 @@ pre,
 	--scrollbar-thumb: rgba(43, 108, 176, 0.3);
 }
 
+/* === Focus === */
+*:focus-visible {
+	outline: 2px solid var(--accent-primary);
+	outline-offset: 2px;
+}
+
 /* === Utility === */
 .visually-hidden {
 	position: absolute;

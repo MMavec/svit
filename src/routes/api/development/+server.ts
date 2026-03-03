@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { DevelopmentApplication } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -270,9 +271,9 @@ function normalizeDate(val: unknown): string {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
 	const flaggedOnly = url.searchParams.get('flagged') === 'true';
-	const limit = parseInt(url.searchParams.get('limit') || '50');
+	const limit = parseLimit(url.searchParams.get('limit'), 50);
 
 	// Fetch from Victoria Open Data
 	let applications = await fetchVictoriaDevPermits();

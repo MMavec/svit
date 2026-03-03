@@ -3,16 +3,23 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { HousingMetric } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let metrics = $state<HousingMetric[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 
 	async function loadData() {
 		loading = true;
+		error = null;
 		const result = await fetchHousingMetrics({
 			municipality: municipalityStore.slug
 		});
-		metrics = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			metrics = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -51,6 +58,8 @@
 <div class="housing">
 	{#if loading}
 		<PanelSkeleton variant="card" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadData} />
 	{:else if metrics.length === 0}
 		<div class="empty">No housing data available</div>
 	{:else}

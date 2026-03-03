@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { EnvironmentReading } from '$lib/types/index';
 import { env } from '$env/dynamic/private';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -295,9 +296,9 @@ function getSeedData(): EnvironmentReading[] {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
 	const type = url.searchParams.get('type');
-	const limit = parseInt(url.searchParams.get('limit') || '20');
+	const limit = parseLimit(url.searchParams.get('limit'), 20);
 
 	const [aqiResult, uvResult, oncResult] = await Promise.allSettled([
 		fetchAirQuality(),
