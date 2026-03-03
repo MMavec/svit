@@ -36,11 +36,11 @@
 	function severityColor(severity: ConstructionEvent['severity']): string {
 		switch (severity) {
 			case 'MAJOR':
-				return 'var(--accent-danger, #e53e3e)';
+				return 'var(--accent-danger)';
 			case 'MODERATE':
-				return 'var(--accent-warning, #f6ad55)';
+				return 'var(--accent-warning)';
 			case 'MINOR':
-				return 'var(--accent-secondary, #68d391)';
+				return 'var(--accent-secondary)';
 			default:
 				return 'var(--text-tertiary)';
 		}

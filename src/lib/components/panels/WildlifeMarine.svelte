@@ -50,19 +50,19 @@
 	function categoryColor(cat: WildlifeSighting['category']): string {
 		switch (cat) {
 			case 'bird':
-				return '#d69e2e';
+				return 'var(--accent-warning)';
 			case 'marine-mammal':
-				return '#3182ce';
+				return 'var(--palette-blue)';
 			case 'fish':
-				return '#00b5d8';
+				return 'var(--palette-cyan)';
 			case 'invertebrate':
-				return '#805ad5';
+				return 'var(--palette-purple)';
 			case 'reptile':
-				return '#38a169';
+				return 'var(--palette-green)';
 			case 'plant':
-				return '#68d391';
+				return 'var(--accent-secondary)';
 			default:
-				return '#a0aec0';
+				return 'var(--palette-muted)';
 		}
 	}
 

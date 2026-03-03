@@ -53,21 +53,21 @@
 	function categoryColor(cat: CommunityEvent['category']): string {
 		switch (cat) {
 			case 'arts':
-				return '#805ad5';
+				return 'var(--palette-purple)';
 			case 'sports':
-				return '#e53e3e';
+				return 'var(--status-critical)';
 			case 'community':
-				return '#3182ce';
+				return 'var(--palette-blue)';
 			case 'market':
-				return '#38a169';
+				return 'var(--palette-green)';
 			case 'festival':
-				return '#d69e2e';
+				return 'var(--accent-warning)';
 			case 'education':
-				return '#00b5d8';
+				return 'var(--palette-cyan)';
 			case 'government':
-				return '#718096';
+				return 'var(--palette-muted)';
 			default:
-				return '#a0aec0';
+				return 'var(--text-tertiary)';
 		}
 	}
 
@@ -197,7 +197,7 @@
 	.free-badge {
 		font-size: 0.5rem;
 		font-weight: 700;
-		color: #68d391;
+		color: var(--accent-secondary);
 		background: rgba(104, 211, 145, 0.15);
 		padding: 1px 4px;
 		border-radius: 3px;

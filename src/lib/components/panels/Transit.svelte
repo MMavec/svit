@@ -47,11 +47,11 @@
 	function severityColor(severity: TransitAlert['severity']): string {
 		switch (severity) {
 			case 'SEVERE':
-				return 'var(--accent-danger, #e53e3e)';
+				return 'var(--accent-danger)';
 			case 'WARNING':
-				return 'var(--accent-warning, #f6ad55)';
+				return 'var(--accent-warning)';
 			case 'INFO':
-				return 'var(--accent-primary, #63b3ed)';
+				return 'var(--accent-primary)';
 			default:
 				return 'var(--text-tertiary)';
 		}

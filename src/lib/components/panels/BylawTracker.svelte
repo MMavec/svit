@@ -105,7 +105,7 @@
 		'second-reading': 'var(--accent-primary)',
 		'public-hearing': 'var(--accent-warning)',
 		'third-reading': 'var(--accent-secondary)',
-		adopted: '#38a169',
+		adopted: 'var(--palette-green)',
 		defeated: 'var(--accent-danger)',
 		withdrawn: 'var(--text-tertiary)'
 	};

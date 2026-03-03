@@ -46,9 +46,9 @@
 			case 'approved':
 				return 'var(--accent-secondary)';
 			case 'under-construction':
-				return '#dd6b20';
+				return 'var(--status-high)';
 			case 'complete':
-				return '#38a169';
+				return 'var(--palette-green)';
 			case 'denied':
 				return 'var(--accent-danger)';
 			case 'withdrawn':

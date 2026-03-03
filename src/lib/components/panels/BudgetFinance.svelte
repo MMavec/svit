@@ -44,7 +44,15 @@
 	}
 
 	function barColor(index: number): string {
-		const colors = ['#63b3ed', '#68d391', '#f6ad55', '#fc8181', '#b794f4', '#f687b3', '#76e4f7'];
+		const colors = [
+			'var(--accent-primary)',
+			'var(--accent-secondary)',
+			'var(--accent-warning)',
+			'var(--accent-danger)',
+			'var(--palette-lilac)',
+			'var(--palette-pink)',
+			'var(--palette-sky)'
+		];
 		return colors[index % colors.length];
 	}
 </script>
@@ -89,7 +97,9 @@
 						{#if item.changeFromPrior !== undefined}
 							<span
 								class="bar-change"
-								style="color: {item.changeFromPrior >= 0 ? '#68d391' : '#fc8181'}"
+								style="color: {item.changeFromPrior >= 0
+									? 'var(--accent-secondary)'
+									: 'var(--accent-danger)'}"
 							>
 								{item.changeFromPrior >= 0 ? '+' : ''}{item.changeFromPrior}%
 							</span>

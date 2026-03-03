@@ -43,8 +43,8 @@
 
 	function changeColor(change: number | undefined): string {
 		if (change === undefined) return 'var(--text-tertiary)';
-		if (change > 0) return '#68d391';
-		if (change < 0) return '#fc8181';
+		if (change > 0) return 'var(--accent-secondary)';
+		if (change < 0) return 'var(--accent-danger)';
 		return 'var(--text-tertiary)';
 	}
 

@@ -19,7 +19,7 @@
 			description: `${app.type} — ${app.status}${app.storeys ? ` (${app.storeys} storeys)` : ''}`,
 			severity: app.flagged ? 'high' : 'normal',
 			municipality: app.municipality,
-			color: app.flagged ? '#fc8181' : '#63b3ed',
+			color: app.flagged ? 'var(--accent-danger)' : 'var(--accent-primary)',
 			icon: 'building'
 		};
 	}
@@ -35,7 +35,11 @@
 			severity: evt.severity,
 			municipality: evt.municipality,
 			color:
-				evt.severity === 'MAJOR' ? '#e53e3e' : evt.severity === 'MODERATE' ? '#f6ad55' : '#68d391',
+				evt.severity === 'MAJOR'
+					? 'var(--status-critical)'
+					: evt.severity === 'MODERATE'
+						? 'var(--accent-warning)'
+						: 'var(--accent-secondary)',
 			icon: evt.eventType === 'INCIDENT' ? 'alert' : 'construction'
 		};
 	}
