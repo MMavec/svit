@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { TransitAlert } from '$lib/types/index';
+import { parseLimit } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -170,7 +171,7 @@ function getSeedAlerts(): TransitAlert[] {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const limit = parseInt(url.searchParams.get('limit') || '50');
+	const limit = parseLimit(url.searchParams.get('limit'), 50);
 
 	let alerts = await fetchBCTransitAlerts();
 

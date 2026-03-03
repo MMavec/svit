@@ -4,6 +4,7 @@ import type { SafetyAlert } from '$lib/types/index';
 import { CRD_BBOX } from '$lib/config/municipalities';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -341,8 +342,8 @@ function extractTag(xml: string, tag: string): string | null {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
-	const limit = parseInt(url.searchParams.get('limit') || '50');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
+	const limit = parseLimit(url.searchParams.get('limit'), 50);
 
 	// Fetch all sources in parallel — one failing source doesn't break others
 	const [weatherResult, fireResult, incidentResult, quakeResult] = await Promise.allSettled([

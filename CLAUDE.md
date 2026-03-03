@@ -190,6 +190,8 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 - **Testing**: Vitest with jsdom environment (`npm run test`). `globals: true` in vite config — `describe`, `it`, `expect` available without imports. Test setup (`src/test-setup.ts`) mocks localStorage + matchMedia. Tests colocated at `src/lib/*/__tests__/*.test.ts`.
 - **ESLint**: `@typescript-eslint/no-unused-vars` allows `_` prefix for unused vars/args. In `.svelte.ts` files, `svelte/prefer-svelte-reactivity` flags `new Date()` — extract to helper functions.
 - **Loading states**: `PanelSkeleton.svelte` component provides shimmer skeletons (variants: `list`, `card`, `chart`, `hero`). All panels use it during loading.
+- **Error states**: `PanelError.svelte` component with message and optional retry callback (`role="alert"`). All panels display it when API calls fail.
+- **API validation**: `parseLimit()` and `parseMunicipality()` from `$lib/utils/api-validation` — used in all API routes to clamp limits and validate municipality slugs.
 
 ## Environment Variables
 
@@ -225,7 +227,7 @@ Additional future tables:
 
 ## Implementation Status
 
-Phases 0–6 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
+Phases 0–7 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
 
 ### Phase 5 Additions
 
@@ -235,7 +237,7 @@ Phases 0–6 complete. All 23 panels are live across all 4 tiers. Tier 4 panels 
 - **Item bookmarks**: Star-based bookmarking with header flyout
 - **Monitor matching engine**: Real-time keyword scanning across 5 data sources
 - **Threads conversations**: Two-view thread detail with message list and reply input
-- **Vitest unit tests**: 24 tests (monitor-matcher, bookmarks store, API fetcher)
+- **Vitest unit tests**: 61 tests across 6 files (monitor-matcher, bookmarks, fetcher, hash, geo-attribution, api-validation)
 
 ### Phase 6: Production Hardening
 
@@ -243,6 +245,14 @@ Phases 0–6 complete. All 23 panels are live across all 4 tiers. Tier 4 panels 
 - **Double-fetch elimination**: Removed redundant `onMount` load calls from 14 panels — `$effect` handles initial load
 - **Shared utilities**: Extracted `hashCode()` and `attributeMunicipality()` to `src/lib/utils/` (was duplicated across 13 routes)
 - **Bug fixes**: Pulse timer leak (missing `onDestroy`), search debounce timer cleanup, `$derived.by` fix, ThreadMessage type dedup
+
+### Phase 7: Robustness & Quality
+
+- **Error handling**: `PanelError.svelte` component with retry — added to all 16 data panels (was only CouncilWatch)
+- **Input validation**: `parseLimit()` and `parseMunicipality()` utilities applied to 13 API routes — clamps limits, validates slugs
+- **Test expansion**: 24→61 tests — added hash, geo-attribution, api-validation test suites; geo-attribution ordering bug found and fixed
+- **Accessibility**: `role="alert"` on errors, `role="status"` on loading, `aria-live` on search results, `focus-visible` outline, aria-labels on buttons
+- **Fetcher**: Added optional `AbortSignal` parameter for request cancellation
 
 ### Earlier Improvements
 

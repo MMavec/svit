@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import type { Meeting } from '$lib/types/index';
 import { municipalities } from '$lib/config/municipalities';
 import { hashCode } from '$lib/utils/hash';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -236,8 +237,8 @@ function stripHtml(str: string): string {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
-	const limit = parseInt(url.searchParams.get('limit') || '30');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
+	const limit = parseLimit(url.searchParams.get('limit'));
 
 	const escribeSources = [
 		{ url: 'https://pub-victoria.escribemeetings.com', slug: 'victoria' },

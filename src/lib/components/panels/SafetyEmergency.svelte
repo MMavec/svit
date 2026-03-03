@@ -5,17 +5,24 @@
 	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import type { SafetyAlert } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let alerts = $state<SafetyAlert[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	async function loadAlerts() {
 		loading = true;
+		error = null;
 		const result = await fetchSafetyAlerts({
 			municipality: municipalityStore.slug
 		});
-		alerts = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			alerts = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -117,6 +124,8 @@
 <div class="safety">
 	{#if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadAlerts} />
 	{:else if alerts.length === 0}
 		<div class="all-clear">
 			<div class="check-icon">&#10003;</div>

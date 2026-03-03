@@ -4,15 +4,18 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { SocialPost, NewsItem } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	type VoiceItem = { type: 'social'; data: SocialPost } | { type: 'news'; data: NewsItem };
 
 	let items = $state<VoiceItem[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 	let activeFilter = $state<'all' | 'social' | 'news'>('all');
 
 	async function loadVoices() {
 		loading = true;
+		error = null;
 		const slug = municipalityStore.slug;
 
 		const [socialResult, newsResult] = await Promise.all([
@@ -20,21 +23,25 @@
 			fetchNews({ municipality: slug, limit: 20 })
 		]);
 
-		const socialItems: VoiceItem[] = (socialResult.data || []).map((p) => ({
-			type: 'social' as const,
-			data: p
-		}));
-		const newsItems: VoiceItem[] = (newsResult.data || []).map((n) => ({
-			type: 'news' as const,
-			data: n
-		}));
+		if (socialResult.error && newsResult.error) {
+			error = socialResult.error;
+		} else {
+			const socialItems: VoiceItem[] = (socialResult.data || []).map((p) => ({
+				type: 'social' as const,
+				data: p
+			}));
+			const newsItems: VoiceItem[] = (newsResult.data || []).map((n) => ({
+				type: 'news' as const,
+				data: n
+			}));
 
-		// Merge and sort by date
-		items = [...socialItems, ...newsItems].sort((a, b) => {
-			const dateA = a.type === 'social' ? a.data.published : a.data.published;
-			const dateB = b.type === 'social' ? b.data.published : b.data.published;
-			return new Date(dateB).getTime() - new Date(dateA).getTime();
-		});
+			// Merge and sort by date
+			items = [...socialItems, ...newsItems].sort((a, b) => {
+				const dateA = a.type === 'social' ? a.data.published : a.data.published;
+				const dateB = b.type === 'social' ? b.data.published : b.data.published;
+				return new Date(dateB).getTime() - new Date(dateA).getTime();
+			});
+		}
 		loading = false;
 	}
 
@@ -77,6 +84,8 @@
 
 	{#if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadVoices} />
 	{:else}
 		<div class="voice-list">
 			{#each filteredItems.slice(0, 25) as item (item.type === 'social' ? item.data.id : item.data.id)}

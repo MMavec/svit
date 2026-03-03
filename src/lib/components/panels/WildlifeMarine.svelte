@@ -3,16 +3,23 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { WildlifeSighting } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let sightings = $state<WildlifeSighting[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 
 	async function loadData() {
 		loading = true;
+		error = null;
 		const result = await fetchWildlifeSightings({
 			municipality: municipalityStore.slug
 		});
-		sightings = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			sightings = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -92,6 +99,8 @@
 <div class="wildlife">
 	{#if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadData} />
 	{:else if sightings.length === 0}
 		<div class="empty">No recent sightings</div>
 	{:else}

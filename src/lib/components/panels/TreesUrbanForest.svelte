@@ -3,16 +3,23 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { TreeObservation } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let trees = $state<TreeObservation[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 
 	async function loadData() {
 		loading = true;
+		error = null;
 		const result = await fetchTreeObservations({
 			municipality: municipalityStore.slug
 		});
-		trees = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			trees = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -37,6 +44,8 @@
 <div class="trees">
 	{#if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadData} />
 	{:else if trees.length === 0}
 		<div class="empty">No tree observations available</div>
 	{:else}

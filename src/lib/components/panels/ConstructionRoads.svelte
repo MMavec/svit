@@ -3,17 +3,24 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { ConstructionEvent } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let events = $state<ConstructionEvent[]>([]);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 	let activeFilter = $state<'all' | 'CONSTRUCTION' | 'INCIDENT'>('all');
 
 	async function loadEvents() {
 		loading = true;
+		error = null;
 		const result = await fetchConstruction({
 			municipality: municipalityStore.slug
 		});
-		events = result.data || [];
+		if (result.error) {
+			error = result.error;
+		} else {
+			events = result.data || [];
+		}
 		loading = false;
 	}
 
@@ -88,6 +95,8 @@
 
 	{#if loading}
 		<PanelSkeleton variant="list" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadEvents} />
 	{:else}
 		<div class="event-list">
 			{#each filteredEvents as event (event.id)}

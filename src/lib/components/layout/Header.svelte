@@ -145,6 +145,7 @@
 											bookmarkStore.remove(item.id);
 										}}
 										title="Remove"
+										aria-label="Remove bookmark"
 									>
 										&times;
 									</button>
@@ -157,7 +158,7 @@
 		</div>
 		<ThemeToggle />
 		{#if authStore.isAuthenticated}
-			<button class="header-btn user-btn" onclick={() => authStore.signOut()} title="Sign out">
+			<button class="header-btn user-btn" onclick={() => authStore.signOut()} title="Sign out" aria-label="Sign out">
 				<svg
 					width="16"
 					height="16"
@@ -177,6 +178,7 @@
 				class="header-btn sign-in-btn"
 				onclick={() => (authStore.showAuthModal = true)}
 				title="Sign in for campaign tools"
+				aria-label="Sign in"
 			>
 				<svg
 					width="16"

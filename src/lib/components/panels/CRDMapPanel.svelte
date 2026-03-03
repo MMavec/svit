@@ -4,8 +4,10 @@
 	import { fetchConstruction } from '$lib/api/construction';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { MapFeature, DevelopmentApplication, ConstructionEvent } from '$lib/types/index';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let features = $state<MapFeature[]>([]);
+	let error = $state<string | null>(null);
 
 	function devToFeature(app: DevelopmentApplication): MapFeature | null {
 		if (!app.coordinates) return null;
@@ -39,11 +41,17 @@
 	}
 
 	async function loadFeatures() {
+		error = null;
 		const slug = municipalityStore.slug;
 		const [devResult, conResult] = await Promise.all([
 			fetchDevelopments({ municipality: slug }),
 			fetchConstruction({ municipality: slug })
 		]);
+
+		if (devResult.error && conResult.error) {
+			error = devResult.error;
+			return;
+		}
 
 		const devFeatures = (devResult.data || [])
 			.map(devToFeature)
@@ -62,4 +70,8 @@
 	});
 </script>
 
-<CRDMap {features} />
+{#if error}
+	<PanelError message={error} onRetry={loadFeatures} />
+{:else}
+	<CRDMap {features} />
+{/if}

@@ -12,18 +12,20 @@ export function attributeMunicipality(lng: number, lat: number): string | undefi
 /** Attribute a municipality based on text content matching known place names and keywords */
 export function attributeMunicipalityByText(text: string): string | undefined {
 	const lower = text.toLowerCase();
+	// Multi-word municipalities must come before their substrings
+	// (e.g., "north saanich" before "saanich") to avoid false matches
 	const patterns: [string, string[]][] = [
+		['north-saanich', ['north saanich']],
+		['central-saanich', ['central saanich', 'brentwood bay', 'brentwood']],
+		['oak-bay', ['oak bay', '#oakbay']],
+		['view-royal', ['view royal']],
 		['victoria', ['victoria', 'downtown victoria', 'james bay', 'fernwood', 'fairfield', '#vic ']],
 		['saanich', ['saanich', '#saanich', 'gordon head', 'cordova bay', 'royal oak']],
 		['esquimalt', ['esquimalt']],
-		['oak-bay', ['oak bay', '#oakbay']],
 		['langford', ['langford', '#langford', 'westhills', 'bear mountain']],
 		['colwood', ['colwood']],
 		['sooke', ['sooke']],
 		['sidney', ['sidney']],
-		['north-saanich', ['north saanich']],
-		['central-saanich', ['central saanich', 'brentwood bay', 'brentwood']],
-		['view-royal', ['view royal']],
 		['highlands', ['highlands', 'highlands district']],
 		['metchosin', ['metchosin']]
 	];

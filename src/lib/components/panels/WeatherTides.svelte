@@ -3,14 +3,21 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { WeatherTidesData } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let data = $state<WeatherTidesData | null>(null);
 	let loading = $state(true);
+	let error = $state<string | null>(null);
 
 	async function loadData() {
 		loading = true;
+		error = null;
 		const result = await fetchWeatherTides();
-		data = result.data || null;
+		if (result.error) {
+			error = result.error;
+		} else {
+			data = result.data || null;
+		}
 		loading = false;
 	}
 
@@ -94,6 +101,8 @@
 <div class="weather-tides">
 	{#if loading}
 		<PanelSkeleton variant="hero" />
+	{:else if error}
+		<PanelError message={error} onRetry={loadData} />
 	{:else if !data}
 		<div class="loading">Unable to load data</div>
 	{:else}

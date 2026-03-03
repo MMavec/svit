@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import type { SocialPost } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipalityByText } from '$lib/utils/geo-attribution';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -139,8 +140,8 @@ function getSeedPosts(): SocialPost[] {
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-	const municipality = url.searchParams.get('municipality');
-	const limit = parseInt(url.searchParams.get('limit') || '30');
+	const municipality = parseMunicipality(url.searchParams.get('municipality'));
+	const limit = parseLimit(url.searchParams.get('limit'));
 
 	// Fetch from Bluesky for each search term
 	const promises = BLUESKY_SEARCH_TERMS.map((term) => fetchBlueskyPosts(term));
