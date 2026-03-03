@@ -3,6 +3,13 @@
 	import { supabase } from '$lib/supabase';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
+	interface ThreadMessage {
+		id: string;
+		content: string;
+		authorId: string;
+		createdAt: string;
+	}
+
 	interface Thread {
 		id: string;
 		title: string;
@@ -12,6 +19,7 @@
 		last_message: string;
 		last_message_at: string;
 		created_at: string;
+		messages?: ThreadMessage[];
 	}
 
 	let threads = $state<Thread[]>([]);
@@ -19,6 +27,11 @@
 	let showNew = $state(false);
 	let newTitle = $state('');
 	let newMessage = $state('');
+	let selectedThread = $state<string | null>(null);
+	let replyContent = $state('');
+	let sending = $state(false);
+
+	const activeThread = $derived(threads.find((t) => t.id === selectedThread));
 
 	async function loadThreads() {
 		if (!supabase || !authStore.isAuthenticated) return;
@@ -34,14 +47,24 @@
 
 	async function createThread() {
 		if (!supabase || !authStore.isAuthenticated || !newTitle.trim()) return;
+		const messages: ThreadMessage[] = [];
+		if (newMessage.trim()) {
+			messages.push({
+				id: crypto.randomUUID(),
+				content: newMessage.trim(),
+				authorId: authStore.user!.id,
+				createdAt: new Date(Date.now()).toISOString()
+			});
+		}
 		const { error } = await supabase.from('threads').insert({
 			user_id: authStore.user!.id,
 			title: newTitle.trim(),
 			item_type: 'note',
 			item_id: crypto.randomUUID(),
 			last_message: newMessage.trim() || newTitle.trim(),
-			last_message_at: new Date().toISOString(),
-			message_count: newMessage.trim() ? 1 : 0
+			last_message_at: new Date(Date.now()).toISOString(),
+			message_count: messages.length,
+			messages
 		});
 		if (!error) {
 			newTitle = '';
@@ -51,10 +74,44 @@
 		}
 	}
 
+	async function sendReply() {
+		if (!supabase || !activeThread || !replyContent.trim()) return;
+		sending = true;
+		const msg: ThreadMessage = {
+			id: crypto.randomUUID(),
+			content: replyContent.trim(),
+			authorId: authStore.user!.id,
+			createdAt: new Date(Date.now()).toISOString()
+		};
+		const existingMessages = activeThread.messages || [];
+		const updatedMessages = [...existingMessages, msg];
+		const { error } = await supabase
+			.from('threads')
+			.update({
+				messages: updatedMessages,
+				message_count: updatedMessages.length,
+				last_message: msg.content,
+				last_message_at: msg.createdAt
+			})
+			.eq('id', activeThread.id);
+		if (!error) {
+			const thread = threads.find((t) => t.id === activeThread.id);
+			if (thread) {
+				thread.messages = updatedMessages;
+				thread.message_count = updatedMessages.length;
+				thread.last_message = msg.content;
+				thread.last_message_at = msg.createdAt;
+			}
+			replyContent = '';
+		}
+		sending = false;
+	}
+
 	async function deleteThread(id: string) {
 		if (!supabase) return;
 		await supabase.from('threads').delete().eq('id', id);
 		threads = threads.filter((t) => t.id !== id);
+		if (selectedThread === id) selectedThread = null;
 	}
 
 	function typeLabel(type: string): string {
@@ -94,7 +151,46 @@
 		</div>
 	{:else if loading}
 		<PanelSkeleton variant="list" />
+	{:else if selectedThread && activeThread}
+		<!-- Detail view -->
+		<div class="thread-detail">
+			<div class="detail-header">
+				<button class="back-btn" onclick={() => (selectedThread = null)}>&larr; Back</button>
+				<span class="detail-type">{typeLabel(activeThread.item_type)}</span>
+			</div>
+			<div class="detail-title">{activeThread.title}</div>
+			<div class="message-list">
+				{#if activeThread.messages && activeThread.messages.length > 0}
+					{#each activeThread.messages as msg (msg.id)}
+						<div class="message-bubble">
+							<div class="message-content">{msg.content}</div>
+							<div class="message-time">{timeAgo(msg.createdAt)}</div>
+						</div>
+					{/each}
+				{:else}
+					<div class="no-messages">No messages yet</div>
+				{/if}
+			</div>
+			<div class="reply-bar">
+				<input
+					type="text"
+					bind:value={replyContent}
+					placeholder="Write a reply..."
+					class="reply-input"
+					onkeydown={(e) => {
+						if (e.key === 'Enter' && !e.shiftKey) {
+							e.preventDefault();
+							sendReply();
+						}
+					}}
+				/>
+				<button class="send-btn" onclick={sendReply} disabled={!replyContent.trim() || sending}>
+					{sending ? '...' : 'Send'}
+				</button>
+			</div>
+		</div>
 	{:else}
+		<!-- List view -->
 		<div class="threads-header">
 			<span class="thread-count">{threads.length} thread{threads.length !== 1 ? 's' : ''}</span>
 			<button class="add-btn" onclick={() => (showNew = !showNew)}>
@@ -124,7 +220,9 @@
 
 		<div class="thread-list">
 			{#each threads as thread (thread.id)}
-				<div class="thread-card">
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div class="thread-card" onclick={() => (selectedThread = thread.id)}>
 					<div class="thread-header">
 						<span class="thread-type">{typeLabel(thread.item_type)}</span>
 						<span class="thread-time">{timeAgo(thread.last_message_at || thread.created_at)}</span>
@@ -139,7 +237,13 @@
 								? 's'
 								: ''}</span
 						>
-						<button class="delete-btn" onclick={() => deleteThread(thread.id)}>Delete</button>
+						<button
+							class="delete-btn"
+							onclick={(e) => {
+								e.stopPropagation();
+								deleteThread(thread.id);
+							}}>Delete</button
+						>
 					</div>
 				</div>
 			{:else}
@@ -269,6 +373,11 @@
 		border-radius: 8px;
 		background: var(--bg-surface-hover);
 		transition: background 0.15s;
+		border: none;
+		text-align: left;
+		cursor: pointer;
+		width: 100%;
+		font-family: inherit;
 	}
 
 	.thread-card:hover {
@@ -334,6 +443,126 @@
 		background: transparent;
 		color: var(--accent-danger);
 		cursor: pointer;
+	}
+
+	.thread-detail {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		gap: 6px;
+	}
+
+	.detail-header {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding-bottom: 6px;
+		border-bottom: 1px solid var(--border-primary);
+	}
+
+	.back-btn {
+		font-size: 0.6875rem;
+		padding: 3px 8px;
+		border-radius: 6px;
+		border: 1px solid var(--border-primary);
+		background: transparent;
+		color: var(--text-secondary);
+		cursor: pointer;
+	}
+
+	.back-btn:hover {
+		color: var(--text-primary);
+		border-color: var(--border-hover);
+	}
+
+	.detail-type {
+		font-size: 0.5625rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--accent-primary);
+		letter-spacing: 0.05em;
+	}
+
+	.detail-title {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.message-list {
+		flex: 1;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 4px 0;
+	}
+
+	.message-bubble {
+		padding: 8px 10px;
+		border-radius: 8px;
+		background: var(--bg-surface-hover);
+	}
+
+	.message-content {
+		font-size: 0.75rem;
+		color: var(--text-primary);
+		line-height: 1.4;
+	}
+
+	.message-time {
+		font-size: 0.5625rem;
+		color: var(--text-tertiary);
+		margin-top: 4px;
+	}
+
+	.no-messages {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.75rem;
+		color: var(--text-tertiary);
+		font-style: italic;
+	}
+
+	.reply-bar {
+		display: flex;
+		gap: 6px;
+		padding-top: 6px;
+		border-top: 1px solid var(--border-primary);
+	}
+
+	.reply-input {
+		flex: 1;
+		padding: 8px 10px;
+		border-radius: 6px;
+		border: 1px solid var(--border-primary);
+		background: var(--bg-surface);
+		color: var(--text-primary);
+		font-size: 0.75rem;
+		font-family: inherit;
+		outline: none;
+	}
+
+	.reply-input:focus {
+		border-color: var(--accent-primary);
+	}
+
+	.send-btn {
+		padding: 8px 14px;
+		border-radius: 6px;
+		border: none;
+		background: var(--accent-primary);
+		color: var(--text-inverse);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.send-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
 	.empty {
