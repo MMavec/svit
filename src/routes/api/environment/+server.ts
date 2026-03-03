@@ -111,6 +111,64 @@ async function fetchUVIndex(): Promise<EnvironmentReading[]> {
 	}
 }
 
+/** Fetch ocean temperature data from Ocean Networks Canada (ONC) */
+async function fetchONCData(): Promise<EnvironmentReading[]> {
+	const token = env.ONC_API_TOKEN;
+	if (!token) return [];
+
+	try {
+		const dateFrom = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+		const params = new URLSearchParams({
+			method: 'getByLocation',
+			token,
+			locationCode: 'SEVIP',
+			deviceCategoryCode: 'CTD',
+			propertyCode: 'seawatertemperature',
+			dateFrom,
+			rowLimit: '1',
+			outputFormat: 'Object'
+		});
+
+		const response = await fetch(`https://data.oceannetworks.ca/api/scalardata?${params}`, {
+			signal: AbortSignal.timeout(10000)
+		});
+		if (!response.ok) return [];
+
+		const data = await response.json();
+		const sensorData = data?.sensorData?.[0];
+		if (!sensorData?.data?.values?.length) return [];
+
+		const latestValue = sensorData.data.values[sensorData.data.values.length - 1];
+		const latestTime =
+			sensorData.data.sampleTimes?.[sensorData.data.sampleTimes.length - 1] ||
+			new Date().toISOString();
+
+		return [
+			{
+				id: 'onc-ocean-temp',
+				type: 'ocean-temperature',
+				metric: 'Sea Temperature',
+				value: Math.round(Number(latestValue) * 10) / 10,
+				unit: '\u00B0C',
+				status: classifyOceanTemp(Number(latestValue)),
+				location: 'Victoria Harbour (VENUS)',
+				coordinates: [-123.39, 48.4283],
+				observedAt: latestTime,
+				municipality: 'victoria',
+				source: 'onc'
+			}
+		];
+	} catch {
+		return [];
+	}
+}
+
+function classifyOceanTemp(tempC: number): EnvironmentReading['status'] {
+	if (tempC >= 5 && tempC <= 15) return 'good';
+	if (tempC >= 3 && tempC <= 18) return 'moderate';
+	return 'unhealthy-sensitive';
+}
+
 function classifyAQI(value: number): EnvironmentReading['status'] {
 	if (value <= 50) return 'good';
 	if (value <= 100) return 'moderate';
@@ -219,6 +277,19 @@ function getSeedData(): EnvironmentReading[] {
 			observedAt: '2026-03-01T09:00:00-08:00',
 			municipality: 'saanich',
 			source: 'seed'
+		},
+		{
+			id: 'env-seed-9',
+			type: 'ocean-temperature',
+			metric: 'Sea Temperature',
+			value: 9.2,
+			unit: '\u00B0C',
+			status: 'good',
+			location: 'Victoria Harbour (VENUS)',
+			coordinates: [-123.39, 48.4283],
+			observedAt: '2026-03-02T06:00:00-08:00',
+			municipality: 'victoria',
+			source: 'seed'
 		}
 	];
 }
@@ -228,16 +299,19 @@ export const GET: RequestHandler = async ({ url }) => {
 	const type = url.searchParams.get('type');
 	const limit = parseInt(url.searchParams.get('limit') || '20');
 
-	const [aqiResult, uvResult] = await Promise.allSettled([fetchAirQuality(), fetchUVIndex()]);
+	const [aqiResult, uvResult, oncResult] = await Promise.allSettled([
+		fetchAirQuality(),
+		fetchUVIndex(),
+		fetchONCData()
+	]);
 
 	let readings: EnvironmentReading[] = [
 		...(aqiResult.status === 'fulfilled' ? aqiResult.value : []),
-		...(uvResult.status === 'fulfilled' ? uvResult.value : [])
+		...(uvResult.status === 'fulfilled' ? uvResult.value : []),
+		...(oncResult.status === 'fulfilled' ? oncResult.value : [])
 	];
 
-	if (readings.length === 0) {
-		readings = getSeedData();
-	}
+	if (readings.length === 0) readings = getSeedData();
 
 	if (municipality) {
 		readings = readings.filter((r) => !r.municipality || r.municipality === municipality);
@@ -257,7 +331,8 @@ export const GET: RequestHandler = async ({ url }) => {
 				municipality,
 				sources: {
 					airQuality: aqiResult.status === 'fulfilled' ? aqiResult.value.length : 0,
-					uv: uvResult.status === 'fulfilled' ? uvResult.value.length : 0
+					uv: uvResult.status === 'fulfilled' ? uvResult.value.length : 0,
+					ocean: oncResult.status === 'fulfilled' ? oncResult.value.length : 0
 				}
 			}
 		},

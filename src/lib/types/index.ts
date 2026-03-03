@@ -399,7 +399,7 @@ export interface TreeObservation {
 
 export interface EnvironmentReading {
 	id: string;
-	type: 'air-quality' | 'water-quality' | 'uv-index' | 'pollen';
+	type: 'air-quality' | 'water-quality' | 'uv-index' | 'pollen' | 'ocean-temperature';
 	metric: string;
 	value: number;
 	unit: string;
