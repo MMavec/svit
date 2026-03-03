@@ -3,6 +3,7 @@
 	import { fetchDevelopments } from '$lib/api/development';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { DevelopmentApplication } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let applications = $state<DevelopmentApplication[]>([]);
 	let loading = $state(true);
@@ -89,7 +90,7 @@
 	</div>
 
 	{#if loading}
-		<div class="loading">Loading developments...</div>
+		<PanelSkeleton variant="card" />
 	{:else}
 		<div class="dev-list">
 			{#each displayed as app (app.id)}
@@ -306,7 +307,6 @@
 		font-weight: 500;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

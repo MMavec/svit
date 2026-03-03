@@ -3,6 +3,7 @@
 	import { fetchMeetings } from '$lib/api/council';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { Meeting } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let meetings = $state<Meeting[]>([]);
 	let loading = $state(true);
@@ -78,7 +79,7 @@
 	</div>
 
 	{#if loading}
-		<div class="loading">Loading meetings...</div>
+		<PanelSkeleton variant="list" />
 	{:else if error}
 		<div class="error-msg">{error}</div>
 	{:else}

@@ -4,6 +4,7 @@
 	import { fetchNews } from '$lib/api/news';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { SocialPost, NewsItem } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	type VoiceItem = { type: 'social'; data: SocialPost } | { type: 'news'; data: NewsItem };
 
@@ -80,7 +81,7 @@
 	</div>
 
 	{#if loading}
-		<div class="loading">Loading voices...</div>
+		<PanelSkeleton variant="list" />
 	{:else}
 		<div class="voice-list">
 			{#each filteredItems.slice(0, 25) as item (item.type === 'social' ? item.data.id : item.data.id)}
@@ -275,7 +276,6 @@
 		color: var(--text-tertiary);
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

@@ -3,6 +3,7 @@
 	import { fetchWildlifeSightings } from '$lib/api/wildlife';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { WildlifeSighting } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let sightings = $state<WildlifeSighting[]>([]);
 	let loading = $state(true);
@@ -95,7 +96,7 @@
 
 <div class="wildlife">
 	{#if loading}
-		<div class="loading">Loading sightings...</div>
+		<PanelSkeleton variant="list" />
 	{:else if sightings.length === 0}
 		<div class="empty">No recent sightings</div>
 	{:else}
@@ -216,7 +217,6 @@
 		color: var(--accent-primary);
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

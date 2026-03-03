@@ -3,6 +3,7 @@
 	import { fetchHousingMetrics } from '$lib/api/housing';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { HousingMetric } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let metrics = $state<HousingMetric[]>([]);
 	let loading = $state(true);
@@ -54,7 +55,7 @@
 
 <div class="housing">
 	{#if loading}
-		<div class="loading">Loading housing data...</div>
+		<PanelSkeleton variant="card" />
 	{:else if metrics.length === 0}
 		<div class="empty">No housing data available</div>
 	{:else}
@@ -132,7 +133,6 @@
 		color: var(--text-tertiary);
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

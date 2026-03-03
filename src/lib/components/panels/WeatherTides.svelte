@@ -3,6 +3,7 @@
 	import { fetchWeatherTides } from '$lib/api/weather-tides';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { WeatherTidesData } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let data = $state<WeatherTidesData | null>(null);
 	let loading = $state(true);
@@ -97,7 +98,7 @@
 
 <div class="weather-tides">
 	{#if loading}
-		<div class="loading">Loading weather & tides...</div>
+		<PanelSkeleton variant="hero" />
 	{:else if !data}
 		<div class="loading">Unable to load data</div>
 	{:else}

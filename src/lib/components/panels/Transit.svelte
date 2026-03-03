@@ -3,6 +3,7 @@
 	import { fetchTransitAlerts } from '$lib/api/transit';
 	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import type { TransitAlert } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let alerts = $state<TransitAlert[]>([]);
 	let loading = $state(true);
@@ -78,7 +79,7 @@
 
 <div class="transit">
 	{#if loading}
-		<div class="loading">Loading transit alerts...</div>
+		<PanelSkeleton variant="list" />
 	{:else}
 		<div class="alert-list">
 			{#each alerts as alert (alert.id)}
@@ -220,7 +221,6 @@
 		font-family: 'Geist Mono', monospace;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

@@ -3,6 +3,7 @@
 	import { fetchConstruction } from '$lib/api/construction';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { ConstructionEvent } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let events = $state<ConstructionEvent[]>([]);
 	let loading = $state(true);
@@ -91,7 +92,7 @@
 	</div>
 
 	{#if loading}
-		<div class="loading">Loading road events...</div>
+		<PanelSkeleton variant="list" />
 	{:else}
 		<div class="event-list">
 			{#each filteredEvents as event (event.id)}
@@ -243,7 +244,6 @@
 		color: var(--text-tertiary);
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

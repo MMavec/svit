@@ -3,6 +3,7 @@
 	import { fetchTreeObservations } from '$lib/api/trees';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { TreeObservation } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let trees = $state<TreeObservation[]>([]);
 	let loading = $state(true);
@@ -40,7 +41,7 @@
 
 <div class="trees">
 	{#if loading}
-		<div class="loading">Loading tree data...</div>
+		<PanelSkeleton variant="list" />
 	{:else if trees.length === 0}
 		<div class="empty">No tree observations available</div>
 	{:else}
@@ -170,7 +171,6 @@
 		margin-top: 2px;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

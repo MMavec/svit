@@ -3,6 +3,7 @@
 	import { fetchBudgetItems } from '$lib/api/budget';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { BudgetItem } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let items = $state<BudgetItem[]>([]);
 	let loading = $state(true);
@@ -48,7 +49,7 @@
 
 <div class="budget">
 	{#if loading}
-		<div class="loading">Loading budget data...</div>
+		<PanelSkeleton variant="card" />
 	{:else if items.length === 0}
 		<div class="empty">No budget data available</div>
 	{:else}
@@ -196,7 +197,6 @@
 		font-family: 'Geist Mono', monospace;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

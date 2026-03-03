@@ -3,6 +3,7 @@
 	import { fetchEvents } from '$lib/api/events';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { CommunityEvent } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	let events = $state<CommunityEvent[]>([]);
 	let loading = $state(true);
@@ -83,7 +84,7 @@
 
 <div class="events">
 	{#if loading}
-		<div class="loading">Loading events...</div>
+		<PanelSkeleton variant="list" />
 	{:else if events.length === 0}
 		<div class="empty">No upcoming events</div>
 	{:else}
@@ -241,7 +242,6 @@
 		font-family: 'Geist Mono', monospace;
 	}
 
-	.loading,
 	.empty {
 		display: flex;
 		align-items: center;

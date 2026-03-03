@@ -9,6 +9,7 @@
 	import { fetchTransitAlerts } from '$lib/api/transit';
 	import { fetchSafetyAlerts } from '$lib/api/safety';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 
 	interface Metric {
 		id: string;
@@ -163,7 +164,7 @@
 
 <div class="pulse">
 	{#if loading}
-		<div class="loading">Measuring pulse...</div>
+		<PanelSkeleton variant="chart" />
 	{:else}
 		<div class="pulse-header">
 			<span class="total-count">{totalActivity}</span>
@@ -278,15 +279,5 @@
 		width: 32px;
 		text-align: right;
 		flex-shrink: 0;
-	}
-
-	.loading {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex: 1;
-		font-size: 0.8125rem;
-		color: var(--text-tertiary);
-		font-style: italic;
 	}
 </style>
