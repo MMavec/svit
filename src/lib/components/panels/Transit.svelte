@@ -5,6 +5,7 @@
 	import type { TransitAlert } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
+	import { transitSeverityColor } from '$lib/utils/color-maps';
 
 	let alerts = $state<TransitAlert[]>([]);
 	let loading = $state(true);
@@ -44,19 +45,6 @@
 		startRefreshTimer();
 	});
 
-	function severityColor(severity: TransitAlert['severity']): string {
-		switch (severity) {
-			case 'SEVERE':
-				return 'var(--accent-danger)';
-			case 'WARNING':
-				return 'var(--accent-warning)';
-			case 'INFO':
-				return 'var(--accent-primary)';
-			default:
-				return 'var(--text-tertiary)';
-		}
-	}
-
 	function effectLabel(effect: string): string {
 		return effect
 			.replace(/_/g, ' ')
@@ -94,7 +82,8 @@
 			{#each alerts as alert (alert.id)}
 				<div class="alert-card">
 					<div class="alert-header">
-						<span class="severity-dot" style="background: {severityColor(alert.severity)}"></span>
+						<span class="severity-dot" style="background: {transitSeverityColor(alert.severity)}"
+						></span>
 						<span class="effect-label">{effectLabel(alert.effect)}</span>
 						{#if alert.routeIds && alert.routeIds.length > 0}
 							<div class="route-badges">

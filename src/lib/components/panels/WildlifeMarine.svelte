@@ -4,6 +4,7 @@
 	import type { WildlifeSighting } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
+	import { wildlifeCategoryColor } from '$lib/utils/color-maps';
 
 	let sightings = $state<WildlifeSighting[]>([]);
 	let loading = $state(true);
@@ -44,25 +45,6 @@
 				return 'P';
 			default:
 				return 'O';
-		}
-	}
-
-	function categoryColor(cat: WildlifeSighting['category']): string {
-		switch (cat) {
-			case 'bird':
-				return 'var(--accent-warning)';
-			case 'marine-mammal':
-				return 'var(--palette-blue)';
-			case 'fish':
-				return 'var(--palette-cyan)';
-			case 'invertebrate':
-				return 'var(--palette-purple)';
-			case 'reptile':
-				return 'var(--palette-green)';
-			case 'plant':
-				return 'var(--accent-secondary)';
-			default:
-				return 'var(--palette-muted)';
 		}
 	}
 
@@ -108,10 +90,10 @@
 			{#each sightings as sighting (sighting.id)}
 				<div class="sighting-card">
 					<div class="sighting-header">
-						<span class="cat-badge" style="background: {categoryColor(sighting.category)}">
+						<span class="cat-badge" style="background: {wildlifeCategoryColor(sighting.category)}">
 							{categoryIcon(sighting.category)}
 						</span>
-						<span class="cat-label" style="color: {categoryColor(sighting.category)}">
+						<span class="cat-label" style="color: {wildlifeCategoryColor(sighting.category)}">
 							{categoryLabel(sighting.category)}
 						</span>
 						<span class="sighting-time">{timeAgo(sighting.observedAt)}</span>

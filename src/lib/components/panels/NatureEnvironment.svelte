@@ -4,6 +4,7 @@
 	import type { EnvironmentReading } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
+	import { envStatusColor } from '$lib/utils/color-maps';
 
 	let readings = $state<EnvironmentReading[]>([]);
 	let loading = $state(true);
@@ -27,21 +28,6 @@
 		const _slug = municipalityStore.slug;
 		loadData();
 	});
-
-	function statusColor(status: EnvironmentReading['status']): string {
-		switch (status) {
-			case 'good':
-				return 'var(--accent-secondary)';
-			case 'moderate':
-				return 'var(--accent-warning)';
-			case 'unhealthy-sensitive':
-				return 'var(--status-high)';
-			case 'unhealthy':
-				return 'var(--status-critical)';
-			case 'hazardous':
-				return 'var(--status-hazardous)';
-		}
-	}
 
 	function statusLabel(status: EnvironmentReading['status']): string {
 		switch (status) {
@@ -100,13 +86,13 @@
 		<div class="empty">No environmental readings available for this area yet</div>
 	{:else}
 		{#if aqiReading}
-			<div class="aqi-hero" style="border-color: {statusColor(aqiReading.status)}">
-				<div class="aqi-value" style="color: {statusColor(aqiReading.status)}">
+			<div class="aqi-hero" style="border-color: {envStatusColor(aqiReading.status)}">
+				<div class="aqi-value" style="color: {envStatusColor(aqiReading.status)}">
 					{aqiReading.value}
 				</div>
 				<div class="aqi-details">
 					<span class="aqi-label">Air Quality Index</span>
-					<span class="aqi-status" style="color: {statusColor(aqiReading.status)}">
+					<span class="aqi-status" style="color: {envStatusColor(aqiReading.status)}">
 						{statusLabel(aqiReading.status)}
 					</span>
 				</div>
@@ -117,7 +103,7 @@
 			{#each readings.filter((r) => r.metric !== 'Air Quality Index') as reading (reading.id)}
 				<div class="reading-card">
 					<div class="reading-header">
-						<span class="type-badge" style="background: {statusColor(reading.status)}">
+						<span class="type-badge" style="background: {envStatusColor(reading.status)}">
 							{typeIcon(reading.type)}
 						</span>
 						<span class="type-label">{typeLabel(reading.type)}</span>
@@ -128,7 +114,7 @@
 							{reading.value}
 							<span class="reading-unit">{reading.unit}</span>
 						</span>
-						<span class="reading-status" style="color: {statusColor(reading.status)}">
+						<span class="reading-status" style="color: {envStatusColor(reading.status)}">
 							{statusLabel(reading.status)}
 						</span>
 					</div>

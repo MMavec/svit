@@ -108,12 +108,50 @@
 		if (map.getSource('features')) {
 			(map.getSource('features') as maplibregl.GeoJSONSource).setData(geojson);
 		} else {
-			map.addSource('features', { type: 'geojson', data: geojson });
+			map.addSource('features', {
+				type: 'geojson',
+				data: geojson,
+				cluster: true,
+				clusterMaxZoom: 14,
+				clusterRadius: 50
+			});
 
+			// Cluster circles
+			map.addLayer({
+				id: 'feature-clusters',
+				type: 'circle',
+				source: 'features',
+				filter: ['has', 'point_count'],
+				paint: {
+					'circle-color': theme.value === 'dark' ? '#4a6fa5' : '#3182ce',
+					'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30],
+					'circle-stroke-width': 2,
+					'circle-stroke-color': theme.value === 'dark' ? '#1a202c' : '#ffffff'
+				}
+			});
+
+			// Cluster count labels
+			map.addLayer({
+				id: 'feature-cluster-count',
+				type: 'symbol',
+				source: 'features',
+				filter: ['has', 'point_count'],
+				layout: {
+					'text-field': '{point_count_abbreviated}',
+					'text-size': 11,
+					'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold']
+				},
+				paint: {
+					'text-color': '#ffffff'
+				}
+			});
+
+			// Individual feature circles (unclustered)
 			map.addLayer({
 				id: 'feature-circles',
 				type: 'circle',
 				source: 'features',
+				filter: ['!', ['has', 'point_count']],
 				paint: {
 					'circle-radius': 6,
 					'circle-color': ['get', 'color'],
@@ -177,6 +215,25 @@
 		map.on('mouseleave', 'feature-circles', () => {
 			if (map) map.getCanvas().style.cursor = '';
 		});
+
+		// Cluster click: zoom into cluster
+		map.on('click', 'feature-clusters', (e) => {
+			if (!map || !e.features || !e.features[0]) return;
+			const clusterId = e.features[0].properties?.cluster_id;
+			const source = map.getSource('features') as maplibregl.GeoJSONSource;
+			source.getClusterExpansionZoom(clusterId).then((zoom) => {
+				const geom = e.features![0].geometry as unknown as { coordinates: [number, number] };
+				map!.easeTo({ center: geom.coordinates, zoom });
+			});
+		});
+
+		map.on('mouseenter', 'feature-clusters', () => {
+			if (map) map.getCanvas().style.cursor = 'pointer';
+		});
+
+		map.on('mouseleave', 'feature-clusters', () => {
+			if (map) map.getCanvas().style.cursor = '';
+		});
 	});
 
 	onDestroy(() => {
@@ -211,7 +268,20 @@
 	});
 </script>
 
-<div class="map-wrapper" bind:this={mapContainer}></div>
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+<div
+	class="map-wrapper"
+	bind:this={mapContainer}
+	tabindex="0"
+	role="application"
+	aria-label="Interactive map of CRD municipalities"
+	onkeydown={(e) => {
+		if (e.key === 'Escape' && popup) {
+			popup.remove();
+		}
+	}}
+></div>
 
 <style>
 	.map-wrapper {
@@ -219,6 +289,12 @@
 		height: 100%;
 		border-radius: 4px;
 		overflow: hidden;
+		outline: none;
+	}
+
+	.map-wrapper:focus-visible {
+		outline: 2px solid var(--accent-primary);
+		outline-offset: -2px;
 	}
 
 	.map-wrapper :global(.maplibregl-ctrl-top-right) {

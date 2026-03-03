@@ -12,8 +12,6 @@
 	let { config, children }: Props = $props();
 
 	let collapsed = $state(false);
-	let hasError = $state(false);
-	let errorMessage = $state('');
 	let lastUpdated = $state<Date | null>(null);
 
 	// Expose a setter via context so child panels can report data freshness
@@ -42,7 +40,7 @@
 
 <div class="panel" class:collapsed data-panel-id={config.id} data-tier={config.tier}>
 	<div class="panel-header">
-		<span class="panel-icon">{config.icon}</span>
+		<span class="panel-icon" aria-hidden="true">{config.icon}</span>
 		<span class="panel-title">{config.title}</span>
 		<DataFreshness timestamp={lastUpdated} />
 		<span class="panel-tier">T{config.tier}</span>
@@ -73,19 +71,7 @@
 	</div>
 	{#if !collapsed}
 		<div class="panel-body">
-			{#if hasError}
-				<div class="panel-error">
-					<span class="error-icon">!</span>
-					<p>{errorMessage || 'Something went wrong'}</p>
-					<button
-						class="retry-btn"
-						onclick={() => {
-							hasError = false;
-							errorMessage = '';
-						}}>Retry</button
-					>
-				</div>
-			{:else if children}
+			{#if children}
 				{@render children()}
 			{:else}
 				<div class="panel-placeholder">Coming soon...</div>
@@ -135,51 +121,5 @@
 
 	.panel.collapsed .panel-header {
 		border-bottom: none;
-	}
-
-	.panel-error {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 8px;
-		padding: 16px 8px;
-		text-align: center;
-		color: var(--text-tertiary);
-		font-size: 0.8125rem;
-	}
-
-	.error-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 28px;
-		height: 28px;
-		border-radius: 50%;
-		background: rgba(252, 129, 129, 0.15);
-		color: var(--accent-danger);
-		font-weight: 700;
-		font-size: 0.875rem;
-	}
-
-	.panel-error p {
-		margin: 0;
-		line-height: 1.4;
-	}
-
-	.retry-btn {
-		padding: 4px 14px;
-		border-radius: 6px;
-		border: 1px solid var(--border-primary);
-		background: transparent;
-		color: var(--accent-primary);
-		font-size: 0.75rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.15s;
-	}
-
-	.retry-btn:hover {
-		background: var(--bg-surface-hover);
-		border-color: var(--accent-primary);
 	}
 </style>

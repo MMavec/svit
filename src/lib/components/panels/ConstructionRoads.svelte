@@ -4,6 +4,7 @@
 	import type { ConstructionEvent } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
+	import { constructionSeverityColor } from '$lib/utils/color-maps';
 
 	let events = $state<ConstructionEvent[]>([]);
 	let loading = $state(true);
@@ -32,19 +33,6 @@
 	const filteredEvents = $derived(
 		activeFilter === 'all' ? events : events.filter((e) => e.eventType === activeFilter)
 	);
-
-	function severityColor(severity: ConstructionEvent['severity']): string {
-		switch (severity) {
-			case 'MAJOR':
-				return 'var(--accent-danger)';
-			case 'MODERATE':
-				return 'var(--accent-warning)';
-			case 'MINOR':
-				return 'var(--accent-secondary)';
-			default:
-				return 'var(--text-tertiary)';
-		}
-	}
 
 	function formatDate(iso: string): string {
 		try {
@@ -102,7 +90,10 @@
 			{#each filteredEvents as event (event.id)}
 				<div class="event-card">
 					<div class="event-header">
-						<span class="severity-badge" style="background: {severityColor(event.severity)}">
+						<span
+							class="severity-badge"
+							style="background: {constructionSeverityColor(event.severity)}"
+						>
 							{event.severity}
 						</span>
 						<span class="event-type">

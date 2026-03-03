@@ -8,6 +8,7 @@
 	import { searchStore } from '$lib/stores/search.svelte';
 
 	let showBookmarks = $state(false);
+	let mobileMenuOpen = $state(false);
 	let bookmarkCount = $derived(bookmarkStore.items.length);
 
 	function closeBookmarks(e: MouseEvent) {
@@ -15,9 +16,20 @@
 			showBookmarks = false;
 		}
 	}
+
+	function closeMobileMenu(e: MouseEvent) {
+		if (!(e.target as HTMLElement).closest('.mobile-menu-flyout, .mobile-menu-btn')) {
+			mobileMenuOpen = false;
+		}
+	}
 </script>
 
-<svelte:window onclick={closeBookmarks} />
+<svelte:window
+	onclick={(e) => {
+		closeBookmarks(e);
+		closeMobileMenu(e);
+	}}
+/>
 
 <header class="app-header">
 	<div class="header-left">
@@ -33,49 +45,7 @@
 	</div>
 
 	<div class="header-right">
-		<button
-			class="header-btn"
-			class:active={refreshStore.enabled}
-			onclick={() => refreshStore.toggle()}
-			aria-label={refreshStore.enabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
-			title={refreshStore.enabled ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
-		>
-			<svg
-				width="16"
-				height="16"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<polyline points="23 4 23 10 17 10" />
-				<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-			</svg>
-		</button>
-		<button
-			class="header-btn"
-			onclick={() => layoutStore.reset()}
-			aria-label="Reset layout"
-			title="Reset panel layout"
-		>
-			<svg
-				width="16"
-				height="16"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<rect x="3" y="3" width="7" height="7" />
-				<rect x="14" y="3" width="7" height="7" />
-				<rect x="14" y="14" width="7" height="7" />
-				<rect x="3" y="14" width="7" height="7" />
-			</svg>
-		</button>
+		<!-- Primary: always visible -->
 		<button
 			class="header-btn"
 			onclick={() => searchStore.open()}
@@ -157,9 +127,54 @@
 			{/if}
 		</div>
 		<ThemeToggle />
+
+		<!-- Secondary: visible on desktop, hidden on mobile (in hamburger) -->
+		<button
+			class="header-btn secondary-btn"
+			class:active={refreshStore.enabled}
+			onclick={() => refreshStore.toggle()}
+			aria-label={refreshStore.enabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
+			title={refreshStore.enabled ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
+		>
+			<svg
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<polyline points="23 4 23 10 17 10" />
+				<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+			</svg>
+		</button>
+		<button
+			class="header-btn secondary-btn"
+			onclick={() => layoutStore.reset()}
+			aria-label="Reset layout"
+			title="Reset panel layout"
+		>
+			<svg
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<rect x="3" y="3" width="7" height="7" />
+				<rect x="14" y="3" width="7" height="7" />
+				<rect x="14" y="14" width="7" height="7" />
+				<rect x="3" y="14" width="7" height="7" />
+			</svg>
+		</button>
 		{#if authStore.isAuthenticated}
 			<button
-				class="header-btn user-btn"
+				class="header-btn secondary-btn user-btn"
 				onclick={() => authStore.signOut()}
 				title="Sign out"
 				aria-label="Sign out"
@@ -180,7 +195,7 @@
 			</button>
 		{:else}
 			<button
-				class="header-btn sign-in-btn"
+				class="header-btn secondary-btn sign-in-btn"
 				onclick={() => (authStore.showAuthModal = true)}
 				title="Sign in for campaign tools"
 				aria-label="Sign in"
@@ -201,6 +216,131 @@
 				</svg>
 			</button>
 		{/if}
+
+		<!-- Mobile hamburger menu -->
+		<div class="mobile-menu-wrapper">
+			<button
+				class="header-btn mobile-menu-btn"
+				class:active={mobileMenuOpen}
+				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+				aria-label="More actions"
+				title="More actions"
+			>
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<line x1="3" y1="6" x2="21" y2="6" />
+					<line x1="3" y1="12" x2="21" y2="12" />
+					<line x1="3" y1="18" x2="21" y2="18" />
+				</svg>
+			</button>
+			{#if mobileMenuOpen}
+				<div class="mobile-menu-flyout">
+					<button
+						class="mobile-menu-item"
+						class:active={refreshStore.enabled}
+						onclick={() => {
+							refreshStore.toggle();
+							mobileMenuOpen = false;
+						}}
+					>
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<polyline points="23 4 23 10 17 10" />
+							<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+						</svg>
+						{refreshStore.enabled ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
+					</button>
+					<button
+						class="mobile-menu-item"
+						onclick={() => {
+							layoutStore.reset();
+							mobileMenuOpen = false;
+						}}
+					>
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+							<rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+						</svg>
+						Reset layout
+					</button>
+					{#if authStore.isAuthenticated}
+						<button
+							class="mobile-menu-item"
+							onclick={() => {
+								authStore.signOut();
+								mobileMenuOpen = false;
+							}}
+						>
+							<svg
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle
+									cx="12"
+									cy="7"
+									r="4"
+								/>
+							</svg>
+							Sign out
+						</button>
+					{:else}
+						<button
+							class="mobile-menu-item"
+							onclick={() => {
+								authStore.showAuthModal = true;
+								mobileMenuOpen = false;
+							}}
+						>
+							<svg
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+								<polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
+							</svg>
+							Sign in
+						</button>
+					{/if}
+				</div>
+			{/if}
+		</div>
 	</div>
 </header>
 
@@ -422,6 +562,54 @@
 		background: var(--bg-surface-hover);
 	}
 
+	/* Mobile menu (hidden on desktop) */
+	.mobile-menu-wrapper {
+		display: none;
+		position: relative;
+	}
+
+	.mobile-menu-flyout {
+		position: absolute;
+		top: calc(100% + 8px);
+		right: 0;
+		width: 200px;
+		background: var(--bg-surface);
+		border: 1px solid var(--border-primary);
+		border-radius: 10px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+		z-index: 100;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.mobile-menu-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 12px;
+		border: none;
+		background: transparent;
+		color: var(--text-primary);
+		font-size: 0.75rem;
+		font-weight: 500;
+		cursor: pointer;
+		text-align: left;
+		transition: background 0.15s;
+	}
+
+	.mobile-menu-item:hover {
+		background: var(--bg-surface-hover);
+	}
+
+	.mobile-menu-item.active {
+		color: var(--accent-secondary);
+	}
+
+	.mobile-menu-item + .mobile-menu-item {
+		border-top: 1px solid var(--border-primary);
+	}
+
 	@media (min-width: 768px) {
 		.logo-sub {
 			display: inline;
@@ -440,6 +628,16 @@
 		.header-btn {
 			width: 32px;
 			height: 32px;
+		}
+
+		/* Hide secondary buttons on mobile */
+		.secondary-btn {
+			display: none;
+		}
+
+		/* Show hamburger on mobile */
+		.mobile-menu-wrapper {
+			display: block;
 		}
 	}
 </style>

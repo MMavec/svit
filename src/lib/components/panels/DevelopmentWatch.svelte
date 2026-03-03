@@ -5,6 +5,7 @@
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
+	import { devStatusColor } from '$lib/utils/color-maps';
 
 	let applications = $state<DevelopmentApplication[]>([]);
 	let loading = $state(true);
@@ -36,27 +37,6 @@
 	const displayed = $derived(
 		showFlaggedOnly ? applications.filter((a) => a.flagged) : applications
 	);
-
-	function statusColor(status: DevelopmentApplication['status']): string {
-		switch (status) {
-			case 'proposed':
-				return 'var(--accent-info)';
-			case 'under-review':
-				return 'var(--accent-warning)';
-			case 'approved':
-				return 'var(--accent-secondary)';
-			case 'under-construction':
-				return 'var(--status-high)';
-			case 'complete':
-				return 'var(--palette-green)';
-			case 'denied':
-				return 'var(--accent-danger)';
-			case 'withdrawn':
-				return 'var(--text-tertiary)';
-			default:
-				return 'var(--text-tertiary)';
-		}
-	}
 
 	function typeIcon(type: DevelopmentApplication['type']): string {
 		switch (type) {
@@ -130,7 +110,9 @@
 						{/if}
 						<span
 							class="status-pill"
-							style="color: {statusColor(app.status)}; border-color: {statusColor(app.status)}"
+							style="color: {devStatusColor(app.status)}; border-color: {devStatusColor(
+								app.status
+							)}"
 						>
 							{app.status.replace('-', ' ')}
 						</span>

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import Panel from './Panel.svelte';
+	import LazyPanel from './LazyPanel.svelte';
 	import { panels } from '$lib/config/panels';
 	import { layoutStore } from '$lib/stores/layout.svelte';
 
-	// Tier 1 panel components
+	// Tier 1 panel components (eagerly loaded — above the fold)
 	import CouncilWatch from '$lib/components/panels/CouncilWatch.svelte';
 	import BylawTracker from '$lib/components/panels/BylawTracker.svelte';
 	import Voices from '$lib/components/panels/Voices.svelte';
@@ -11,7 +12,7 @@
 	import DevelopmentWatch from '$lib/components/panels/DevelopmentWatch.svelte';
 	import CouncillorProfiles from '$lib/components/panels/CouncillorProfiles.svelte';
 
-	// Tier 2 panel components
+	// Tier 2 panel components (eagerly loaded — critical data)
 	import LocalWire from '$lib/components/panels/LocalWire.svelte';
 	import CRDMapPanel from '$lib/components/panels/CRDMapPanel.svelte';
 	import Pulse from '$lib/components/panels/Pulse.svelte';
@@ -19,24 +20,11 @@
 	import Transit from '$lib/components/panels/Transit.svelte';
 	import SafetyEmergency from '$lib/components/panels/SafetyEmergency.svelte';
 
-	// Tier 3 panel components
-	import WeatherTides from '$lib/components/panels/WeatherTides.svelte';
-	import Housing from '$lib/components/panels/Housing.svelte';
-	import Events from '$lib/components/panels/Events.svelte';
-	import BudgetFinance from '$lib/components/panels/BudgetFinance.svelte';
-	import WildlifeMarine from '$lib/components/panels/WildlifeMarine.svelte';
-	import TreesUrbanForest from '$lib/components/panels/TreesUrbanForest.svelte';
-	import NatureEnvironment from '$lib/components/panels/NatureEnvironment.svelte';
-
-	// Tier 4 panel components (campaign tools)
-	import MyMonitors from '$lib/components/panels/MyMonitors.svelte';
-	import Connections from '$lib/components/panels/Connections.svelte';
-	import Threads from '$lib/components/panels/Threads.svelte';
-	import Demographics from '$lib/components/panels/Demographics.svelte';
-
+	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import type { Component } from 'svelte';
 	import { onMount } from 'svelte';
 
+	// Tier 1 + 2: eagerly loaded
 	const panelComponents: Record<string, Component> = {
 		'council-watch': CouncilWatch,
 		'bylaw-tracker': BylawTracker,
@@ -49,18 +37,22 @@
 		pulse: Pulse,
 		'construction-roads': ConstructionRoads,
 		transit: Transit,
-		'safety-emergency': SafetyEmergency,
-		'weather-tides': WeatherTides,
-		housing: Housing,
-		events: Events,
-		'budget-finance': BudgetFinance,
-		'wildlife-marine': WildlifeMarine,
-		'trees-urban-forest': TreesUrbanForest,
-		'nature-environment': NatureEnvironment,
-		'my-monitors': MyMonitors,
-		connections: Connections,
-		threads: Threads,
-		demographics: Demographics
+		'safety-emergency': SafetyEmergency
+	};
+
+	// Tier 3 + 4: lazily loaded (below the fold)
+	const lazyPanels: Record<string, () => Promise<{ default: Component }>> = {
+		'weather-tides': () => import('$lib/components/panels/WeatherTides.svelte'),
+		housing: () => import('$lib/components/panels/Housing.svelte'),
+		events: () => import('$lib/components/panels/Events.svelte'),
+		'budget-finance': () => import('$lib/components/panels/BudgetFinance.svelte'),
+		'wildlife-marine': () => import('$lib/components/panels/WildlifeMarine.svelte'),
+		'trees-urban-forest': () => import('$lib/components/panels/TreesUrbanForest.svelte'),
+		'nature-environment': () => import('$lib/components/panels/NatureEnvironment.svelte'),
+		'my-monitors': () => import('$lib/components/panels/MyMonitors.svelte'),
+		connections: () => import('$lib/components/panels/Connections.svelte'),
+		threads: () => import('$lib/components/panels/Threads.svelte'),
+		demographics: () => import('$lib/components/panels/Demographics.svelte')
 	};
 
 	const COLS = 12;
@@ -153,6 +145,7 @@
 >
 	{#each sortedPanels as panel (panel.id)}
 		{@const PanelComponent = panelComponents[panel.id]}
+		{@const lazyLoader = lazyPanels[panel.id]}
 		<div
 			class="grid-cell"
 			class:dragging={dragging === panel.id}
@@ -164,11 +157,18 @@
 			aria-label={panel.title}
 		>
 			<Panel config={panel}>
-				{#if PanelComponent}
-					<PanelComponent />
-				{:else}
-					<div class="panel-placeholder">Coming soon...</div>
-				{/if}
+				<svelte:boundary onerror={(err) => console.error(`Panel ${panel.id} error:`, err)}>
+					{#if PanelComponent}
+						<PanelComponent />
+					{:else if lazyLoader}
+						<LazyPanel loader={lazyLoader} />
+					{:else}
+						<div class="panel-placeholder">Coming soon...</div>
+					{/if}
+					{#snippet failed(error, reset)}
+						<PanelError message="This panel encountered an error" onRetry={reset} />
+					{/snippet}
+				</svelte:boundary>
 			</Panel>
 		</div>
 	{/each}
@@ -213,12 +213,12 @@
 		position: static;
 		padding: 0;
 		transition: none;
-		min-height: 300px;
+		min-height: 200px;
 	}
 
 	.dashboard-grid.mobile .grid-cell > :global(.panel) {
 		height: auto;
-		min-height: 280px;
+		min-height: 180px;
 	}
 
 	/* Tablet: 2-column grid */

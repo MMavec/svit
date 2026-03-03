@@ -38,7 +38,12 @@
 </script>
 
 {#if label}
-	<span class="data-freshness" title={timestamp?.toLocaleTimeString()}>
+	<span
+		class="data-freshness"
+		role="status"
+		aria-label="Data updated {label}"
+		title={timestamp?.toLocaleTimeString()}
+	>
 		{label}
 	</span>
 {/if}

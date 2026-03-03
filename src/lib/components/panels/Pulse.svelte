@@ -155,6 +155,15 @@
 		return l(data) || '';
 	}
 
+	/** Pre-computed sparkline SVG paths keyed by metric ID */
+	const sparklinePaths = $derived(
+		Object.fromEntries(
+			metrics
+				.filter((m) => m.sparkline.length >= 2)
+				.map((m) => [m.id, sparklinePath(m.sparkline, 64, 20)])
+		)
+	);
+
 	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	function startRefreshTimer() {
@@ -192,10 +201,17 @@
 					<span class="metric-icon">{metric.icon}</span>
 					<span class="metric-label">{metric.label}</span>
 					<div class="sparkline-container">
-						{#if metric.sparkline.length >= 2}
-							<svg width="64" height="20" viewBox="0 0 64 20" class="sparkline">
+						{#if sparklinePaths[metric.id]}
+							<svg
+								width="64"
+								height="20"
+								viewBox="0 0 64 20"
+								class="sparkline"
+								role="img"
+								aria-label="{metric.label} trend over 7 days"
+							>
 								<path
-									d={sparklinePath(metric.sparkline, 64, 20)}
+									d={sparklinePaths[metric.id]}
 									fill="none"
 									stroke={metric.color}
 									stroke-width="1.5"
