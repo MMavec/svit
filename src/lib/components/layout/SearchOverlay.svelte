@@ -64,7 +64,12 @@
 	<div class="overlay-backdrop" onclick={() => searchStore.close()} role="presentation">
 		<!-- svelte-ignore a11y_interactive_supports_focus -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<div class="overlay-container" onclick={(e) => e.stopPropagation()} role="dialog" aria-label="Search">
+		<div
+			class="overlay-container"
+			onclick={(e) => e.stopPropagation()}
+			role="dialog"
+			aria-label="Search"
+		>
 			<div class="search-input-row">
 				<svg
 					class="search-icon"
