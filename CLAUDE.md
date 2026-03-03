@@ -67,7 +67,7 @@ Single-page dashboard with a 12-column draggable grid (60px rows, 12px gap). Pan
 - **Tier 3** (implemented): Weather & Tides, Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment
 - **Tier 4** (implemented, requires account): My Monitors, Connections, Threads, Demographics
 
-Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components via a `panelComponents: Record<string, Component>` lookup (static imports, dynamic rendering). New panels must be imported and added to the map.
+Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components. Tier 1+2 are eagerly loaded via `panelComponents: Record<string, Component>`. Tier 3+4 are lazily loaded via `lazyPanels: Record<string, () => Promise<...>>` using dynamic `import()` and `LazyPanel.svelte` wrapper — new panels in Tier 3/4 only need a `lazyPanels` entry. All panels are wrapped in `<svelte:boundary>` for error isolation — a crashing panel shows a retry button instead of breaking the dashboard.
 
 ### Panel Component Pattern
 
@@ -128,6 +128,10 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 - On `setStyle()` (theme toggle), all sources/layers are destroyed — the `style.load` event callback must re-add them
 - Municipality boundaries are static GeoJSON at `static/data/crd-municipalities.geojson` (real CRD polygons from BC WFS, Douglas-Peucker simplified)
 - Feature pins come from development applications + construction events with coordinates
+- **Clustering**: Features source has `cluster: true, clusterMaxZoom: 14, clusterRadius: 50`. Three layers: `feature-clusters` (circles), `feature-cluster-count` (labels), `feature-circles` (unclustered). Click on cluster zooms in via `getClusterExpansionZoom()`.
+- **Keyboard nav**: Map container has `tabindex="0"`, `role="application"`. Escape closes popup. MapLibre's built-in arrow keys/+/- work once focused.
+- **Filter UI**: `CRDMapPanel.svelte` has checkboxes for development/construction/flagged-only, passing `filteredFeatures` to `CRDMap`
+- **WebGL limitation**: MapLibre paint properties cannot use CSS custom properties — use hex color values for cluster/circle paint
 
 ### Multi-Source API Pattern
 
@@ -165,9 +169,11 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 1. Define the interface in `src/lib/types/index.ts`
 2. Create API route at `src/routes/api/<name>/+server.ts` (with seed fallback, use `parseLimit`/`parseMunicipality` from `$lib/utils/api-validation`)
 3. Create API client at `src/lib/api/<name>.ts` wrapping `apiFetch<T>()`
-4. Create panel component at `src/lib/components/panels/<Name>.svelte` following the panel pattern (PanelSkeleton for loading, PanelError for errors)
+4. Create panel component at `src/lib/components/panels/<Name>.svelte` following the panel pattern (PanelSkeleton for loading, PanelError for errors). Use color functions from `$lib/utils/color-maps` — never define inline.
 5. Add entry to `src/lib/config/panels.ts` (id, title, icon, tier, defaultPosition, minW, minH)
-6. Import and wire into `DashboardGrid.svelte` (add import + entry in `panelComponents` map)
+6. Wire into `DashboardGrid.svelte`:
+   - **Tier 1/2**: Static import + add to `panelComponents` map
+   - **Tier 3/4**: Add dynamic `import()` entry to `lazyPanels` map (no static import needed)
 
 ### Shared Utilities (`src/lib/utils/`)
 
@@ -175,6 +181,7 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 - **`geo-attribution.ts`** — `attributeMunicipality(lng, lat)` (coordinate-based) and `attributeMunicipalityByText(text)` (keyword-based) for tagging data items with municipality slugs
 - **`api-validation.ts`** — `parseLimit(raw, default, max)` and `parseMunicipality(raw)` for API route input validation
 - **`monitor-matcher.ts`** — `matchMonitors(monitors, items, source)` for keyword matching in MyMonitors panel
+- **`color-maps.ts`** — `colorMap<T>(map, fallback)` factory + 8 typed exports (`safetyAlertColor`, `constructionSeverityColor`, `transitSeverityColor`, `devStatusColor`, `envStatusColor`, `wildlifeCategoryColor`, `eventCategoryColor`, `searchCategoryColor`). All panel color functions live here — never define inline color maps in panel components.
 
 ### CRD Geographic Constants
 
@@ -196,7 +203,7 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 - **Municipality attribution** — every data item tagged with its municipality slug for filtering. Attribution uses coordinate-in-bbox matching first, then text matching against municipality names.
 - **Seed data** — every API route has hardcoded fallback arrays for when live APIs fail. Routes never throw.
 - **Prettier**: tabs, single quotes, no trailing commas, 100-char width, svelte plugin
-- **Testing**: Vitest with jsdom environment (`npm run test`). `globals: true` in vite config — `describe`, `it`, `expect` available without imports. Test setup (`src/test-setup.ts`) mocks localStorage + matchMedia. Tests colocated at `src/lib/*/__tests__/*.test.ts`.
+- **Testing**: Vitest with jsdom environment (`npm run test`). `globals: true` in vite config — `describe`, `it`, `expect` available without imports. Test setup (`src/test-setup.ts`) mocks localStorage + matchMedia. Tests colocated at `src/lib/*/__tests__/*.test.ts`. Playwright E2E smoke tests in `tests/*.e2e.ts` (`npm run test:e2e`).
 - **ESLint**: `@typescript-eslint/no-unused-vars` allows `_` prefix for unused vars/args. In `.svelte.ts` files, `svelte/prefer-svelte-reactivity` flags `new Date()` — extract to helper functions.
 - **Loading states**: `PanelSkeleton.svelte` component provides shimmer skeletons (variants: `list`, `card`, `chart`, `hero`). All panels use it during loading. Skeleton unmount auto-triggers data freshness timestamp via Svelte context.
 - **Error states**: `PanelError.svelte` component with message and optional retry callback (`role="alert"`). All panels display it when API calls fail.
@@ -237,7 +244,7 @@ Additional future tables:
 
 ## Implementation Status
 
-Phases 0–9 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
+Phases 0–10 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured. 85 unit tests, 7 E2E smoke tests.
 
 ### Phase 5 Additions
 
@@ -247,7 +254,7 @@ Phases 0–9 complete. All 23 panels are live across all 4 tiers. Tier 4 panels 
 - **Item bookmarks**: Star-based bookmarking with header flyout
 - **Monitor matching engine**: Real-time keyword scanning across 5 data sources
 - **Threads conversations**: Two-view thread detail with message list and reply input
-- **Vitest unit tests**: 61 tests across 6 files (monitor-matcher, bookmarks, fetcher, hash, geo-attribution, api-validation)
+- **Vitest unit tests**: 85 tests across 7 files (monitor-matcher, bookmarks, fetcher, hash, geo-attribution, api-validation, color-maps)
 
 ### Phase 6: Production Hardening
 
@@ -275,6 +282,22 @@ Phases 0–9 complete. All 23 panels are live across all 4 tiers. Tier 4 panels 
 - **CSS color palette**: Added `--status-critical`, `--status-high`, `--status-hazardous` severity scale and `--palette-*` data visualization colors to both dark/light themes in `app.css`
 - **Hardcoded color elimination**: Replaced all ~50 hardcoded hex colors across 13 panel components with CSS custom properties. Status/category/severity color functions now use `var()` for full theme awareness.
 - **Consistent fallback removal**: Removed unnecessary `var(--x, #fallback)` patterns in Transit, ConstructionRoads, SafetyEmergency — `app.css` always provides values
+
+### Phase 10: Comprehensive Product Improvement
+
+- **Color map extraction**: 7+ duplicate `severityColor`/`statusColor`/`categoryColor` functions replaced by shared `colorMap<T>()` factory in `src/lib/utils/color-maps.ts` with 24 tests
+- **Dead code removal**: Removed unused `hasError`/`errorMessage` state and error UI from `Panel.svelte` (panels handle their own errors via `PanelError`)
+- **Error boundaries**: `<svelte:boundary>` wraps all panel renders in DashboardGrid — single-panel crashes no longer break the dashboard
+- **ARIA improvements**: `role="img"` + aria-labels on Pulse sparkline SVGs, `role="status"` on DataFreshness, visually-hidden live region for search result count
+- **Mobile hamburger menu**: Secondary header buttons (auto-refresh, reset layout, sign-in/out) collapse into hamburger dropdown at <600px. Primary (search, bookmarks, theme) stay visible.
+- **Mobile panel sizing**: Reduced min-height from 300px→200px / 280px→180px
+- **Map keyboard navigation**: `tabindex="0"`, `role="application"`, Escape closes popup, built-in MapLibre arrow keys activate
+- **Map feature clustering**: `cluster: true` on features source with click-to-zoom expansion
+- **Map filter UI**: Checkboxes for development/construction/flagged-only in CRDMapPanel
+- **Sparkline memoization**: Pre-computed `$derived` sparkline paths in Pulse (avoid re-running D3 on every render)
+- **Lazy loading**: Tier 3/4 panels (11 of 23) loaded via dynamic `import()` through `LazyPanel.svelte` — reduces initial bundle
+- **SEO**: Open Graph, Twitter Card meta tags, JSON-LD `WebApplication` structured data in `app.html`
+- **E2E tests**: Playwright config + 7 smoke tests (page load, panels render, theme toggle, search overlay, no console errors)
 
 ### Earlier Improvements
 
