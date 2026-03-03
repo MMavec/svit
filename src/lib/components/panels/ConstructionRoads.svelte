@@ -129,7 +129,7 @@
 					{/if}
 				</div>
 			{:else}
-				<div class="empty">No road events found</div>
+				<div class="empty">No active construction or road closures reported</div>
 			{/each}
 		</div>
 	{/if}

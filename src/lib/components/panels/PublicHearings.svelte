@@ -158,7 +158,7 @@
 	{/if}
 
 	{#if filteredHearings.length === 0}
-		<div class="empty">No public hearings found</div>
+		<div class="empty">No upcoming public hearings — check back before the next council cycle</div>
 	{/if}
 </div>
 

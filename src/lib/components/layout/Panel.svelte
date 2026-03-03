@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { PanelConfig } from '$lib/types/index';
 	import type { Snippet } from 'svelte';
+	import { setContext } from 'svelte';
+	import DataFreshness from '$lib/components/ui/DataFreshness.svelte';
 
 	interface Props {
 		config: PanelConfig;
@@ -12,6 +14,12 @@
 	let collapsed = $state(false);
 	let hasError = $state(false);
 	let errorMessage = $state('');
+	let lastUpdated = $state<Date | null>(null);
+
+	// Expose a setter via context so child panels can report data freshness
+	setContext('panel:markUpdated', () => {
+		lastUpdated = new Date();
+	});
 
 	$effect.pre(() => {
 		if (typeof window !== 'undefined') {
@@ -36,6 +44,7 @@
 	<div class="panel-header">
 		<span class="panel-icon">{config.icon}</span>
 		<span class="panel-title">{config.title}</span>
+		<DataFreshness timestamp={lastUpdated} />
 		<span class="panel-tier">T{config.tier}</span>
 		<button
 			class="collapse-btn"

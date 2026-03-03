@@ -34,7 +34,34 @@
 	import Threads from '$lib/components/panels/Threads.svelte';
 	import Demographics from '$lib/components/panels/Demographics.svelte';
 
+	import type { Component } from 'svelte';
 	import { onMount } from 'svelte';
+
+	const panelComponents: Record<string, Component> = {
+		'council-watch': CouncilWatch,
+		'bylaw-tracker': BylawTracker,
+		voices: Voices,
+		'public-hearings': PublicHearings,
+		'development-watch': DevelopmentWatch,
+		'councillor-profiles': CouncillorProfiles,
+		'local-wire': LocalWire,
+		'crd-map': CRDMapPanel,
+		pulse: Pulse,
+		'construction-roads': ConstructionRoads,
+		transit: Transit,
+		'safety-emergency': SafetyEmergency,
+		'weather-tides': WeatherTides,
+		housing: Housing,
+		events: Events,
+		'budget-finance': BudgetFinance,
+		'wildlife-marine': WildlifeMarine,
+		'trees-urban-forest': TreesUrbanForest,
+		'nature-environment': NatureEnvironment,
+		'my-monitors': MyMonitors,
+		connections: Connections,
+		threads: Threads,
+		demographics: Demographics
+	};
 
 	const COLS = 12;
 	const ROW_HEIGHT = 60;
@@ -125,6 +152,7 @@
 	aria-label="Dashboard panels"
 >
 	{#each sortedPanels as panel (panel.id)}
+		{@const PanelComponent = panelComponents[panel.id]}
 		<div
 			class="grid-cell"
 			class:dragging={dragging === panel.id}
@@ -136,52 +164,8 @@
 			aria-label={panel.title}
 		>
 			<Panel config={panel}>
-				{#if panel.id === 'council-watch'}
-					<CouncilWatch />
-				{:else if panel.id === 'bylaw-tracker'}
-					<BylawTracker />
-				{:else if panel.id === 'voices'}
-					<Voices />
-				{:else if panel.id === 'public-hearings'}
-					<PublicHearings />
-				{:else if panel.id === 'development-watch'}
-					<DevelopmentWatch />
-				{:else if panel.id === 'councillor-profiles'}
-					<CouncillorProfiles />
-				{:else if panel.id === 'local-wire'}
-					<LocalWire />
-				{:else if panel.id === 'crd-map'}
-					<CRDMapPanel />
-				{:else if panel.id === 'pulse'}
-					<Pulse />
-				{:else if panel.id === 'construction-roads'}
-					<ConstructionRoads />
-				{:else if panel.id === 'transit'}
-					<Transit />
-				{:else if panel.id === 'safety-emergency'}
-					<SafetyEmergency />
-				{:else if panel.id === 'weather-tides'}
-					<WeatherTides />
-				{:else if panel.id === 'housing'}
-					<Housing />
-				{:else if panel.id === 'events'}
-					<Events />
-				{:else if panel.id === 'budget-finance'}
-					<BudgetFinance />
-				{:else if panel.id === 'wildlife-marine'}
-					<WildlifeMarine />
-				{:else if panel.id === 'trees-urban-forest'}
-					<TreesUrbanForest />
-				{:else if panel.id === 'nature-environment'}
-					<NatureEnvironment />
-				{:else if panel.id === 'my-monitors'}
-					<MyMonitors />
-				{:else if panel.id === 'connections'}
-					<Connections />
-				{:else if panel.id === 'threads'}
-					<Threads />
-				{:else if panel.id === 'demographics'}
-					<Demographics />
+				{#if PanelComponent}
+					<PanelComponent />
 				{:else}
 					<div class="panel-placeholder">Coming soon...</div>
 				{/if}

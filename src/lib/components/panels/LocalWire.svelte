@@ -132,7 +132,7 @@
 					/>
 				</a>
 			{:else}
-				<div class="empty">No news articles found</div>
+				<div class="empty">No recent local news — check back soon</div>
 			{/each}
 		</div>
 	{/if}

@@ -55,7 +55,7 @@
 	{:else if error}
 		<PanelError message={error} onRetry={loadData} />
 	{:else if items.length === 0}
-		<div class="empty">No budget data available</div>
+		<div class="empty">No budget documents published for this municipality yet</div>
 	{:else}
 		<div class="toggle-row">
 			<button
