@@ -132,6 +132,74 @@ async function fetchWildfireAlerts(): Promise<SafetyAlert[]> {
 	}
 }
 
+/** Fetch USGS earthquakes in the CRD region */
+async function fetchEarthquakes(): Promise<SafetyAlert[]> {
+	try {
+		const now = new Date();
+		const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+		const params = new URLSearchParams({
+			format: 'geojson',
+			minlatitude: String(CRD_SOUTH - 0.5),
+			maxlatitude: String(CRD_NORTH + 0.5),
+			minlongitude: String(CRD_WEST - 0.5),
+			maxlongitude: String(CRD_EAST + 0.5),
+			starttime: thirtyDaysAgo.toISOString().split('T')[0],
+			orderby: 'time',
+			limit: '20'
+		});
+
+		const response = await fetch(
+			`https://earthquake.usgs.gov/fdsnws/event/1/query?${params}`,
+			{ signal: AbortSignal.timeout(10000) }
+		);
+
+		if (!response.ok) return [];
+
+		const data = await response.json();
+		if (!data.features || !Array.isArray(data.features)) return [];
+
+		return data.features.map(
+			(f: {
+				id: string;
+				properties: Record<string, unknown>;
+				geometry: { coordinates: number[] };
+			}) => {
+				const p = f.properties;
+				const [lng, lat, depth] = f.geometry.coordinates;
+				const mag = Number(p.mag || 0);
+				const place = String(p.place || 'Unknown location');
+				const time = p.time ? new Date(Number(p.time)).toISOString() : now.toISOString();
+
+				return {
+					id: `usgs-${f.id}`,
+					title: `M${mag.toFixed(1)} Earthquake — ${place}`,
+					description: `Magnitude ${mag.toFixed(1)} at ${depth.toFixed(1)} km depth. ${place}.`,
+					type: 'earthquake' as const,
+					severity: classifyEarthquakeSeverity(mag),
+					status: 'active' as const,
+					location: place,
+					coordinates: [lng, lat] as [number, number],
+					issued: time,
+					url: p.url ? String(p.url) : undefined,
+					sourceAgency: 'USGS',
+					municipality: attributeMunicipality(lng, lat),
+					source: 'usgs'
+				};
+			}
+		);
+	} catch {
+		return [];
+	}
+}
+
+function classifyEarthquakeSeverity(magnitude: number): SafetyAlert['severity'] {
+	if (magnitude >= 5.0) return 'emergency';
+	if (magnitude >= 3.0) return 'warning';
+	if (magnitude >= 2.0) return 'watch';
+	return 'advisory';
+}
+
 /** Fetch road incidents from DriveBC Open511 (reuse construction API pattern) */
 async function fetchRoadIncidents(): Promise<SafetyAlert[]> {
 	try {
@@ -301,16 +369,18 @@ export const GET: RequestHandler = async ({ url }) => {
 	const limit = parseInt(url.searchParams.get('limit') || '50');
 
 	// Fetch all sources in parallel — one failing source doesn't break others
-	const [weatherResult, fireResult, incidentResult] = await Promise.allSettled([
+	const [weatherResult, fireResult, incidentResult, quakeResult] = await Promise.allSettled([
 		fetchWeatherAlerts(),
 		fetchWildfireAlerts(),
-		fetchRoadIncidents()
+		fetchRoadIncidents(),
+		fetchEarthquakes()
 	]);
 
 	let alerts: SafetyAlert[] = [
 		...(weatherResult.status === 'fulfilled' ? weatherResult.value : []),
 		...(fireResult.status === 'fulfilled' ? fireResult.value : []),
-		...(incidentResult.status === 'fulfilled' ? incidentResult.value : [])
+		...(incidentResult.status === 'fulfilled' ? incidentResult.value : []),
+		...(quakeResult.status === 'fulfilled' ? quakeResult.value : [])
 	];
 
 	// If all sources returned nothing, use seed data
@@ -341,7 +411,8 @@ export const GET: RequestHandler = async ({ url }) => {
 				sources: {
 					weather: weatherResult.status === 'fulfilled' ? weatherResult.value.length : 0,
 					wildfire: fireResult.status === 'fulfilled' ? fireResult.value.length : 0,
-					incidents: incidentResult.status === 'fulfilled' ? incidentResult.value.length : 0
+					incidents: incidentResult.status === 'fulfilled' ? incidentResult.value.length : 0,
+					earthquakes: quakeResult.status === 'fulfilled' ? quakeResult.value.length : 0
 				}
 			}
 		},

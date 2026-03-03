@@ -141,8 +141,16 @@
 		return l(data) || '';
 	}
 
+	let refreshTimer: ReturnType<typeof setInterval> | undefined;
+
+	function startRefreshTimer() {
+		if (refreshTimer) clearInterval(refreshTimer);
+		refreshTimer = setInterval(loadMetrics, 5 * 60 * 1000);
+	}
+
 	onMount(() => {
 		loadMetrics();
+		startRefreshTimer();
 	});
 
 	$effect(() => {

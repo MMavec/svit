@@ -1,6 +1,8 @@
 <script lang="ts">
 	import MunicipalitySelector from './MunicipalitySelector.svelte';
 	import ThemeToggle from '$lib/components/theme/ThemeToggle.svelte';
+	import { refreshStore } from '$lib/stores/refresh.svelte';
+	import { layoutStore } from '$lib/stores/layout.svelte';
 </script>
 
 <header class="app-header">
@@ -17,6 +19,31 @@
 	</div>
 
 	<div class="header-right">
+		<button
+			class="header-btn"
+			class:active={refreshStore.enabled}
+			onclick={() => refreshStore.toggle()}
+			aria-label={refreshStore.enabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
+			title={refreshStore.enabled ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
+		>
+			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="23 4 23 10 17 10"/>
+				<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+			</svg>
+		</button>
+		<button
+			class="header-btn"
+			onclick={() => layoutStore.reset()}
+			aria-label="Reset layout"
+			title="Reset panel layout"
+		>
+			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<rect x="3" y="3" width="7" height="7"/>
+				<rect x="14" y="3" width="7" height="7"/>
+				<rect x="14" y="14" width="7" height="7"/>
+				<rect x="3" y="14" width="7" height="7"/>
+			</svg>
+		</button>
 		<ThemeToggle />
 	</div>
 </header>
@@ -40,7 +67,7 @@
 	.header-right {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 8px;
 	}
 
 	.header-center {
@@ -74,9 +101,50 @@
 		display: none;
 	}
 
+	.header-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 8px;
+		border: 1px solid var(--border-primary);
+		background: var(--bg-surface);
+		color: var(--text-secondary);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		backdrop-filter: blur(10px);
+	}
+
+	.header-btn:hover {
+		border-color: var(--border-hover);
+		color: var(--accent-primary);
+		background: var(--bg-surface-hover);
+	}
+
+	.header-btn.active {
+		color: var(--accent-secondary);
+		border-color: var(--accent-secondary);
+	}
+
 	@media (min-width: 768px) {
 		.logo-sub {
 			display: inline;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.app-header {
+			padding: 8px 12px;
+		}
+
+		.header-right {
+			gap: 4px;
+		}
+
+		.header-btn {
+			width: 32px;
+			height: 32px;
 		}
 	}
 </style>

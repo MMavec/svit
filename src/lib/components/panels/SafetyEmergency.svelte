@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { fetchSafetyAlerts } from '$lib/api/safety';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
+	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import type { SafetyAlert } from '$lib/types/index';
 
 	let alerts = $state<SafetyAlert[]>([]);
 	let loading = $state(true);
+	let lastUpdated = $state<Date | null>(null);
+	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	async function loadAlerts() {
 		loading = true;
@@ -14,15 +17,37 @@
 		});
 		alerts = result.data || [];
 		loading = false;
+		lastUpdated = new Date();
+	}
+
+	function startRefreshTimer() {
+		stopRefreshTimer();
+		if (refreshStore.enabled) {
+			refreshTimer = setInterval(loadAlerts, REFRESH_INTERVALS['safety-emergency']);
+		}
+	}
+
+	function stopRefreshTimer() {
+		if (refreshTimer) clearInterval(refreshTimer);
 	}
 
 	onMount(() => {
 		loadAlerts();
+		startRefreshTimer();
+	});
+
+	onDestroy(() => {
+		stopRefreshTimer();
 	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;
 		loadAlerts();
+	});
+
+	$effect(() => {
+		const _enabled = refreshStore.enabled;
+		startRefreshTimer();
 	});
 
 	function severityColor(severity: SafetyAlert['severity']): string {
@@ -37,6 +62,16 @@
 				return '#63b3ed';
 		}
 	}
+
+	let filterType = $state<string | null>(null);
+
+	const filteredAlerts = $derived(
+		filterType ? alerts.filter((a) => a.type === filterType) : alerts
+	);
+
+	const alertTypes = $derived(
+		[...new Set(alerts.map((a) => a.type))]
+	);
 
 	function typeIcon(type: SafetyAlert['type']): string {
 		switch (type) {
@@ -93,8 +128,18 @@
 			<div class="clear-sub">All clear in the CRD</div>
 		</div>
 	{:else}
+		{#if alertTypes.length > 1}
+			<div class="filter-chips">
+				<button class="chip" class:active={filterType === null} onclick={() => (filterType = null)}>All ({alerts.length})</button>
+				{#each alertTypes as type}
+					<button class="chip" class:active={filterType === type} onclick={() => (filterType = filterType === type ? null : type)}>
+						{typeLabel(type)} ({alerts.filter((a) => a.type === type).length})
+					</button>
+				{/each}
+			</div>
+		{/if}
 		<div class="alert-list">
-			{#each alerts as alert (alert.id)}
+			{#each filteredAlerts as alert (alert.id)}
 				<div class="alert-card" style="border-left: 3px solid {severityColor(alert.severity)}">
 					<div class="alert-header">
 						<span
@@ -158,6 +203,31 @@
 	.clear-sub {
 		font-size: 0.6875rem;
 		color: var(--text-tertiary);
+	}
+
+	.filter-chips {
+		display: flex;
+		gap: 4px;
+		padding-bottom: 6px;
+		flex-wrap: wrap;
+	}
+
+	.chip {
+		padding: 2px 8px;
+		font-size: 0.625rem;
+		font-weight: 500;
+		border: 1px solid var(--border-primary);
+		border-radius: 12px;
+		background: transparent;
+		color: var(--text-tertiary);
+		cursor: pointer;
+		transition: all 0.15s;
+	}
+
+	.chip.active {
+		background: var(--accent-primary);
+		color: var(--text-inverse);
+		border-color: var(--accent-primary);
 	}
 
 	.alert-list {
