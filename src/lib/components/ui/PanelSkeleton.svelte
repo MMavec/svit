@@ -1,9 +1,17 @@
 <script lang="ts">
+	import { getContext, onDestroy } from 'svelte';
+
 	interface Props {
 		variant?: 'list' | 'card' | 'chart' | 'hero';
 	}
 
 	let { variant = 'list' }: Props = $props();
+
+	// When skeleton is destroyed (loading finished), notify the parent Panel
+	const markUpdated = getContext<(() => void) | undefined>('panel:markUpdated');
+	onDestroy(() => {
+		markUpdated?.();
+	});
 </script>
 
 <div class="skeleton skeleton-{variant}" role="status" aria-label="Loading">

@@ -127,7 +127,7 @@
 					</a>
 				{/if}
 			{:else}
-				<div class="empty">No voices found</div>
+				<div class="empty">No community voices in this category yet</div>
 			{/each}
 		</div>
 	{/if}

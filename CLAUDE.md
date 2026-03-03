@@ -67,7 +67,7 @@ Single-page dashboard with a 12-column draggable grid (60px rows, 12px gap). Pan
 - **Tier 3** (implemented): Weather & Tides, Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment
 - **Tier 4** (implemented, requires account): My Monitors, Connections, Threads, Demographics
 
-Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components via `{#if panel.id === 'xxx'}` chain (static imports, not dynamic). New panels must be imported and added there.
+Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components via a `panelComponents: Record<string, Component>` lookup (static imports, dynamic rendering). New panels must be imported and added to the map.
 
 ### Panel Component Pattern
 
@@ -120,6 +120,8 @@ Cache tiers: 5min (news, social, transit, safety), 15min (council, development, 
 
 All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`. Development accepts `?flagged=true`. Construction accepts `?event_type=CONSTRUCTION|INCIDENT`. Events accepts `?category=`. Budget accepts `?type=revenue|expenditure`. Wildlife accepts `?category=`. Trees accepts `?heritage=true`.
 
+**Panels without API routes**: Bylaw Tracker, Public Hearings, and Demographics use local seed data only (no external API). Voices combines social + news API data.
+
 ### MapLibre Gotchas
 
 - `CRDMap.svelte` in `src/lib/components/map/` is the reusable map component; `CRDMapPanel.svelte` is the panel wrapper that feeds it `MapFeature[]` data
@@ -161,11 +163,18 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 ### Adding a New Panel
 
 1. Define the interface in `src/lib/types/index.ts`
-2. Create API route at `src/routes/api/<name>/+server.ts` (with seed fallback)
+2. Create API route at `src/routes/api/<name>/+server.ts` (with seed fallback, use `parseLimit`/`parseMunicipality` from `$lib/utils/api-validation`)
 3. Create API client at `src/lib/api/<name>.ts` wrapping `apiFetch<T>()`
-4. Create panel component at `src/lib/components/panels/<Name>.svelte` following the panel pattern
+4. Create panel component at `src/lib/components/panels/<Name>.svelte` following the panel pattern (PanelSkeleton for loading, PanelError for errors)
 5. Add entry to `src/lib/config/panels.ts` (id, title, icon, tier, defaultPosition, minW, minH)
-6. Import and wire into `DashboardGrid.svelte` (add import + `{:else if panel.id === '<id>'}` branch)
+6. Import and wire into `DashboardGrid.svelte` (add import + entry in `panelComponents` map)
+
+### Shared Utilities (`src/lib/utils/`)
+
+- **`hash.ts`** — `hashCode(str)` for deterministic ID generation from strings (used in 7+ API routes)
+- **`geo-attribution.ts`** — `attributeMunicipality(lng, lat)` (coordinate-based) and `attributeMunicipalityByText(text)` (keyword-based) for tagging data items with municipality slugs
+- **`api-validation.ts`** — `parseLimit(raw, default, max)` and `parseMunicipality(raw)` for API route input validation
+- **`monitor-matcher.ts`** — `matchMonitors(monitors, items, source)` for keyword matching in MyMonitors panel
 
 ### CRD Geographic Constants
 
@@ -189,8 +198,9 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 - **Prettier**: tabs, single quotes, no trailing commas, 100-char width, svelte plugin
 - **Testing**: Vitest with jsdom environment (`npm run test`). `globals: true` in vite config — `describe`, `it`, `expect` available without imports. Test setup (`src/test-setup.ts`) mocks localStorage + matchMedia. Tests colocated at `src/lib/*/__tests__/*.test.ts`.
 - **ESLint**: `@typescript-eslint/no-unused-vars` allows `_` prefix for unused vars/args. In `.svelte.ts` files, `svelte/prefer-svelte-reactivity` flags `new Date()` — extract to helper functions.
-- **Loading states**: `PanelSkeleton.svelte` component provides shimmer skeletons (variants: `list`, `card`, `chart`, `hero`). All panels use it during loading.
+- **Loading states**: `PanelSkeleton.svelte` component provides shimmer skeletons (variants: `list`, `card`, `chart`, `hero`). All panels use it during loading. Skeleton unmount auto-triggers data freshness timestamp via Svelte context.
 - **Error states**: `PanelError.svelte` component with message and optional retry callback (`role="alert"`). All panels display it when API calls fail.
+- **Data freshness**: `DataFreshness.svelte` shows relative timestamp ("Just now", "3m ago") in panel headers. Auto-updates via `Panel.svelte` context — no per-panel wiring needed.
 - **API validation**: `parseLimit()` and `parseMunicipality()` from `$lib/utils/api-validation` — used in all API routes to clamp limits and validate municipality slugs.
 
 ## Environment Variables
@@ -227,7 +237,7 @@ Additional future tables:
 
 ## Implementation Status
 
-Phases 0–7 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
+Phases 0–8 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured.
 
 ### Phase 5 Additions
 
@@ -253,6 +263,12 @@ Phases 0–7 complete. All 23 panels are live across all 4 tiers. Tier 4 panels 
 - **Test expansion**: 24→61 tests — added hash, geo-attribution, api-validation test suites; geo-attribution ordering bug found and fixed
 - **Accessibility**: `role="alert"` on errors, `role="status"` on loading, `aria-live` on search results, `focus-visible` outline, aria-labels on buttons
 - **Fetcher**: Added optional `AbortSignal` parameter for request cancellation
+
+### Phase 8: UX Polish
+
+- **Panel wiring refactor**: Replaced 47-line `{#if}`/`{:else if}` chain in DashboardGrid with `panelComponents: Record<string, Component>` map + dynamic `<PanelComponent />` rendering
+- **Empty states**: All 12 generic empty messages replaced with contextual, domain-specific messages (e.g., "No active transit alerts — service is running normally")
+- **Data freshness indicators**: `DataFreshness.svelte` component shows relative timestamps in panel headers. Uses Svelte context pattern — `Panel.svelte` provides setter, `PanelSkeleton` triggers on unmount. Zero individual panel changes required.
 
 ### Earlier Improvements
 

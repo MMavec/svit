@@ -47,7 +47,7 @@
 	{:else if error}
 		<PanelError message={error} onRetry={loadData} />
 	{:else if trees.length === 0}
-		<div class="empty">No tree observations available</div>
+		<div class="empty">No recent tree canopy observations in this area</div>
 	{:else}
 		{#if heritageCount > 0}
 			<div class="heritage-banner">
