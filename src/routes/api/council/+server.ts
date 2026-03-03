@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { Meeting } from '$lib/types/index';
+import { municipalities } from '$lib/config/municipalities';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -93,6 +94,49 @@ async function fetchEscribeMeetingList(
 			});
 		}
 
+		return meetings;
+	} catch {
+		return [];
+	}
+}
+
+/** Fetch meetings from CivicWeb portal (Saanich, Oak Bay, Colwood, etc.) */
+async function fetchCivicWebMeetings(
+	portalUrl: string,
+	municipalitySlug: string
+): Promise<Meeting[]> {
+	try {
+		const response = await fetch(`${portalUrl}/MeetingInformation.aspx`, {
+			headers: { 'User-Agent': 'SVIT/1.0 (civic-dashboard)' },
+			signal: AbortSignal.timeout(10000)
+		});
+		if (!response.ok) return [];
+		const html = await response.text();
+
+		const meetings: Meeting[] = [];
+		const rowRegex =
+			/<tr[^>]*>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td>[\s\S]*?<\/tr>/gi;
+		let match;
+		while ((match = rowRegex.exec(html)) !== null) {
+			const dateStr = stripHtml(match[1]).trim();
+			const title = stripHtml(match[2]).trim();
+			if (!title || !dateStr || title === 'Meeting') continue;
+			const agendaLink = match[3].match(/href="([^"]*)"[^>]*>.*?Agenda/i)?.[1];
+			meetings.push({
+				id: `${municipalitySlug}-cw-${hashCode(dateStr + title)}`,
+				title,
+				body: title,
+				date: normalizeDate(dateStr),
+				status: determineMeetingStatus(dateStr),
+				municipality: municipalitySlug,
+				agendaUrl: agendaLink
+					? agendaLink.startsWith('http')
+						? agendaLink
+						: `${portalUrl}/${agendaLink}`
+					: undefined,
+				source: 'civicweb' as const
+			});
+		}
 		return meetings;
 	} catch {
 		return [];
@@ -202,20 +246,25 @@ export const GET: RequestHandler = async ({ url }) => {
 	const municipality = url.searchParams.get('municipality');
 	const limit = parseInt(url.searchParams.get('limit') || '30');
 
-	const escribeSources: { url: string; slug: string }[] = [
+	const escribeSources = [
 		{ url: 'https://pub-victoria.escribemeetings.com', slug: 'victoria' },
 		{ url: 'https://pub-langford.escribemeetings.com', slug: 'langford' }
 	];
+	const civicwebSources = municipalities
+		.filter((m) => m.councilSource === 'civicweb' && m.councilUrl)
+		.map((m) => ({ url: m.councilUrl!, slug: m.slug }));
 
-	// Fetch from all sources in parallel
-	const promises = escribeSources.map((s) => fetchEscribeMeetings(s.url, s.slug));
-	const results = await Promise.all(promises);
-	let meetings = results.flat();
+	// Fetch from all sources in parallel — one failure doesn't break others
+	const allPromises = [
+		...escribeSources.map((s) => fetchEscribeMeetings(s.url, s.slug)),
+		...civicwebSources.map((s) => fetchCivicWebMeetings(s.url, s.slug))
+	];
+	const results = await Promise.allSettled(allPromises);
+	let meetings = results
+		.filter((r): r is PromiseFulfilledResult<Meeting[]> => r.status === 'fulfilled')
+		.flatMap((r) => r.value);
 
-	// If no live data, use seed data
-	if (meetings.length === 0) {
-		meetings = getSeedMeetings();
-	}
+	if (meetings.length === 0) meetings = getSeedMeetings();
 
 	// Filter by municipality
 	if (municipality) {
