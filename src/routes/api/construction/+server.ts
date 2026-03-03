@@ -2,6 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { ConstructionEvent } from '$lib/types/index';
 import { CRD_BBOX, municipalities } from '$lib/config/municipalities';
+import { hashCode } from '$lib/utils/hash';
+import { attributeMunicipality } from '$lib/utils/geo-attribution';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -62,7 +64,7 @@ async function fetchDriveBCEvents(eventType?: string): Promise<ConstructionEvent
 				coordinates: coords ? [coords[0], coords[1]] : undefined,
 				created: evt.created || new Date().toISOString(),
 				updated: evt.updated || new Date().toISOString(),
-				municipality: attributeMunicipality(coords, evt.description, evt.roads),
+				municipality: attributeMunicipalityFromEvent(coords, evt.description, evt.roads),
 				schedule: evt.schedule?.recurring_schedules?.[0]
 					? {
 							startDate: evt.schedule.recurring_schedules[0].start_date,
@@ -80,7 +82,7 @@ async function fetchDriveBCEvents(eventType?: string): Promise<ConstructionEvent
 }
 
 /** Attribute a municipality based on coordinates or text matching */
-function attributeMunicipality(
+function attributeMunicipalityFromEvent(
 	coords?: [number, number],
 	description?: string,
 	roads?: { name?: string }[]
@@ -88,12 +90,8 @@ function attributeMunicipality(
 	// Try coordinate-based attribution first
 	if (coords) {
 		const [lng, lat] = coords;
-		for (const m of municipalities) {
-			const [w, s, e, n] = m.bbox;
-			if (lng >= w && lng <= e && lat >= s && lat <= n) {
-				return m.slug;
-			}
-		}
+		const result = attributeMunicipality(lng, lat);
+		if (result) return result;
 	}
 
 	// Fall back to text matching
@@ -207,14 +205,6 @@ function getSeedEvents(): ConstructionEvent[] {
 			source: 'seed'
 		}
 	];
-}
-
-function hashCode(str: string): string {
-	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
-		hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-	}
-	return Math.abs(hash).toString(36);
 }
 
 export const GET: RequestHandler = async ({ url }) => {

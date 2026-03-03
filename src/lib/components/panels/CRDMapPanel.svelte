@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import CRDMap from '$lib/components/map/CRDMap.svelte';
 	import { fetchDevelopments } from '$lib/api/development';
 	import { fetchConstruction } from '$lib/api/construction';
@@ -56,10 +55,6 @@
 
 		features = [...devFeatures, ...conFeatures];
 	}
-
-	onMount(() => {
-		loadFeatures();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

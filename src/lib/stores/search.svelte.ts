@@ -171,6 +171,7 @@ export const searchStore = {
 		results = [];
 	},
 	close() {
+		if (debounceTimer) clearTimeout(debounceTimer);
 		isOpen = false;
 		query = '';
 		results = [];

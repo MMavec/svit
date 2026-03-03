@@ -2,6 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { newsSources } from '$lib/config/news-sources';
 import type { NewsItem } from '$lib/types/index';
+import { hashCode } from '$lib/utils/hash';
+import { attributeMunicipalityByText } from '$lib/utils/geo-attribution';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -90,15 +92,6 @@ function stripHtml(str: string): string {
 		.trim();
 }
 
-function hashCode(str: string): string {
-	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
-		const char = str.charCodeAt(i);
-		hash = ((hash << 5) - hash + char) | 0;
-	}
-	return Math.abs(hash).toString(36);
-}
-
 export const GET: RequestHandler = async ({ url }) => {
 	const municipality = url.searchParams.get('municipality');
 	const limit = parseInt(url.searchParams.get('limit') || '50');
@@ -127,7 +120,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				municipality:
 					item.municipality ||
 					source.municipality ||
-					attributeMunicipality(item.title + ' ' + item.description)
+					attributeMunicipalityByText(item.title + ' ' + item.description)
 			}));
 		} catch {
 			return [];
@@ -155,30 +148,3 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 	);
 };
-
-/** Simple municipality attribution from text content */
-function attributeMunicipality(text: string): string | undefined {
-	const lower = text.toLowerCase();
-	const patterns: [string, string[]][] = [
-		['victoria', ['victoria', 'downtown victoria', 'james bay', 'fernwood', 'fairfield']],
-		['saanich', ['saanich', 'gordon head', 'cordova bay', 'royal oak']],
-		['esquimalt', ['esquimalt']],
-		['oak-bay', ['oak bay']],
-		['langford', ['langford', 'westhills', 'bear mountain']],
-		['colwood', ['colwood']],
-		['sooke', ['sooke']],
-		['sidney', ['sidney']],
-		['north-saanich', ['north saanich']],
-		['central-saanich', ['central saanich', 'brentwood bay']],
-		['view-royal', ['view royal']],
-		['highlands', ['highlands']],
-		['metchosin', ['metchosin']]
-	];
-
-	for (const [slug, keywords] of patterns) {
-		if (keywords.some((kw) => lower.includes(kw))) {
-			return slug;
-		}
-	}
-	return undefined;
-}

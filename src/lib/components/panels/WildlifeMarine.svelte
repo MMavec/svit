@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchWildlifeSightings } from '$lib/api/wildlife';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { WildlifeSighting } from '$lib/types/index';
@@ -16,10 +15,6 @@
 		sightings = result.data || [];
 		loading = false;
 	}
-
-	onMount(() => {
-		loadData();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

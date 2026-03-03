@@ -32,7 +32,6 @@
 	}
 
 	onMount(() => {
-		loadNews();
 		startRefreshTimer();
 	});
 

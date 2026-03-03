@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchSocialPosts } from '$lib/api/social';
 	import { fetchNews } from '$lib/api/news';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
@@ -38,10 +37,6 @@
 		});
 		loading = false;
 	}
-
-	onMount(() => {
-		loadVoices();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

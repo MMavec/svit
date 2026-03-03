@@ -11,7 +11,7 @@
 	let searchQuery = $state('');
 	let selectedCouncillor = $state<Councillor | null>(null);
 
-	const filteredCouncillors = $derived(() => {
+	const filteredCouncillors = $derived.by(() => {
 		let list: Councillor[];
 		if (searchQuery.trim()) {
 			list = searchCouncillors(searchQuery);
@@ -108,7 +108,7 @@
 	{:else}
 		<!-- Councillor list view -->
 		<div class="councillor-list">
-			{#each filteredCouncillors() as councillor (councillor.id)}
+			{#each filteredCouncillors as councillor (councillor.id)}
 				<button class="councillor-item" onclick={() => selectCouncillor(councillor)}>
 					<div
 						class="councillor-avatar"

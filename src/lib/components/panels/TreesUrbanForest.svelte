@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchTreeObservations } from '$lib/api/trees';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { TreeObservation } from '$lib/types/index';
@@ -16,10 +15,6 @@
 		trees = result.data || [];
 		loading = false;
 	}
-
-	onMount(() => {
-		loadData();
-	});
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;

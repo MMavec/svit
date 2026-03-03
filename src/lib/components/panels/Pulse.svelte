@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { line, curveBasis, scaleLinear } from 'd3';
 	import { fetchMeetings } from '$lib/api/council';
 	import { fetchDevelopments } from '$lib/api/development';
@@ -151,8 +151,11 @@
 		refreshTimer = setInterval(loadMetrics, 5 * 60 * 1000);
 	}
 
+	onDestroy(() => {
+		if (refreshTimer) clearInterval(refreshTimer);
+	});
+
 	onMount(() => {
-		loadMetrics();
 		startRefreshTimer();
 	});
 

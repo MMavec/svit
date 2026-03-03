@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fetchMeetings } from '$lib/api/council';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { Meeting } from '$lib/types/index';
@@ -25,11 +24,7 @@
 		loading = false;
 	}
 
-	onMount(() => {
-		loadMeetings();
-	});
-
-	// Reload when municipality changes
+	// Reload when municipality changes (also handles initial load)
 	$effect(() => {
 		// Access the slug to establish dependency
 		const _slug = municipalityStore.slug;
