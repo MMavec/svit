@@ -14,9 +14,15 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') open = false;
 	}
+
+	function handleWindowClick(e: MouseEvent) {
+		if (open && !(e.target as HTMLElement).closest('.municipality-selector')) {
+			open = false;
+		}
+	}
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} onclick={handleWindowClick} />
 
 <div class="municipality-selector">
 	<button
@@ -45,7 +51,6 @@
 	</button>
 
 	{#if open}
-		<div class="backdrop" role="presentation" onclick={() => (open = false)}></div>
 		<div class="dropdown" role="listbox" aria-label="Select municipality">
 			<button
 				class="option"
@@ -117,12 +122,6 @@
 
 	.chevron.open {
 		transform: rotate(180deg);
-	}
-
-	.backdrop {
-		position: fixed;
-		inset: 0;
-		z-index: 99;
 	}
 
 	.dropdown {
