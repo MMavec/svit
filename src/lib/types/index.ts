@@ -281,7 +281,16 @@ export interface PulseMetric {
 
 export interface MapFeature {
 	id: string;
-	type: 'development' | 'construction' | 'fire' | 'transit-alert' | 'safety';
+	type:
+		| 'development'
+		| 'construction'
+		| 'fire'
+		| 'transit-alert'
+		| 'safety'
+		| 'event'
+		| 'wildlife'
+		| 'trees'
+		| 'environment';
 	coordinates: [number, number]; // [lng, lat]
 	title: string;
 	description: string;

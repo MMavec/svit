@@ -1,10 +1,15 @@
 <script lang="ts">
 	import type { PanelConfig } from '$lib/types/index';
 	import type { Snippet } from 'svelte';
-	import { setContext } from 'svelte';
+	import { setContext, getContext } from 'svelte';
 	import DataFreshness from '$lib/components/ui/DataFreshness.svelte';
 	import ShareButton from '$lib/components/ui/ShareButton.svelte';
 	import { urlState } from '$lib/stores/url-state.svelte';
+
+	// Propagate collapsed state to DashboardGrid for height calculations
+	const setCollapsedInGrid = getContext<((id: string, collapsed: boolean) => void) | undefined>(
+		'grid:setCollapsed'
+	);
 
 	interface Props {
 		config: PanelConfig;
@@ -33,11 +38,13 @@
 	$effect.pre(() => {
 		if (typeof window !== 'undefined') {
 			collapsed = localStorage.getItem(`svit-collapsed-${config.id}`) === '1';
+			setCollapsedInGrid?.(config.id, collapsed);
 		}
 	});
 
 	function toggleCollapse() {
 		collapsed = !collapsed;
+		setCollapsedInGrid?.(config.id, collapsed);
 		if (typeof window !== 'undefined') {
 			const key = `svit-collapsed-${config.id}`;
 			if (collapsed) {
@@ -47,6 +54,8 @@
 			}
 		}
 	}
+
+	const isFocused = $derived(urlState.focusedPanel === config.id);
 </script>
 
 <div class="panel" class:collapsed data-panel-id={config.id} data-tier={config.tier}>
@@ -54,15 +63,15 @@
 		<span class="panel-icon" aria-hidden="true">{config.icon}</span>
 		<span class="panel-title">{config.title}</span>
 		<DataFreshness timestamp={lastUpdated} cached={isCached} {cachedAt} />
-		<span class="panel-tier">T{config.tier}</span>
 		<button
 			class="panel-action-btn"
+			class:is-focused={isFocused}
 			onclick={(e) => {
 				e.stopPropagation();
-				urlState.focusPanel(urlState.focusedPanel === config.id ? null : config.id);
+				urlState.focusPanel(isFocused ? null : config.id);
 			}}
-			aria-label={urlState.focusedPanel === config.id ? 'Unfocus panel' : 'Focus panel'}
-			title={urlState.focusedPanel === config.id ? 'Unfocus' : 'Focus'}
+			aria-label={isFocused ? 'Minimize panel' : 'Expand panel'}
+			title={isFocused ? 'Minimize' : 'Expand'}
 		>
 			<svg
 				width="12"
@@ -125,16 +134,6 @@
 		flex: 1;
 	}
 
-	.panel-tier {
-		font-size: 0.625rem;
-		font-weight: 500;
-		padding: 2px 6px;
-		border-radius: 4px;
-		background: var(--border-primary);
-		color: var(--text-tertiary);
-		letter-spacing: 0.5px;
-	}
-
 	.panel-action-btn {
 		display: flex;
 		align-items: center;
@@ -153,6 +152,15 @@
 	.panel-action-btn:hover {
 		background: var(--border-primary);
 		color: var(--text-primary);
+	}
+
+	.panel-action-btn.is-focused {
+		background: var(--accent-primary);
+		color: var(--text-inverse);
+	}
+
+	.panel-action-btn.is-focused:hover {
+		opacity: 0.85;
 	}
 
 	.collapse-btn {

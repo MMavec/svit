@@ -22,8 +22,14 @@
 
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import type { Component } from 'svelte';
-	import { onMount } from 'svelte';
+	import { onMount, setContext } from 'svelte';
 	import { urlState } from '$lib/stores/url-state.svelte';
+
+	// Collapsed state shared from Panel children via context
+	let collapsedMap = $state<Record<string, boolean>>({});
+	setContext('grid:setCollapsed', (id: string, collapsed: boolean) => {
+		collapsedMap = { ...collapsedMap, [id]: collapsed };
+	});
 
 	// Tier 1 + 2: eagerly loaded
 	const panelComponents: Record<string, Component> = {
@@ -60,6 +66,8 @@
 	const ROW_HEIGHT = 60;
 	const GAP = 12;
 	const MOBILE_BREAKPOINT = 768;
+	const EXPANDED_ROWS = 10;
+	const COLLAPSED_HEIGHT = 48;
 
 	// Responsive state
 	let isMobile = $state(false);
@@ -80,15 +88,27 @@
 	let gridEl: HTMLDivElement;
 
 	function getPanelStyle(panelId: string): string {
+		// Focused panel expands to full width
+		if (urlState.focusedPanel === panelId) {
+			const expandedHeight = EXPANDED_ROWS * ROW_HEIGHT + (EXPANDED_ROWS - 1) * GAP;
+			return `left:0%;width:100%;top:0px;height:${expandedHeight}px;`;
+		}
 		const pos = layoutStore.getPosition(panelId);
 		const left = (pos.x / COLS) * 100;
 		const width = (pos.w / COLS) * 100;
 		const top = pos.y * (ROW_HEIGHT + GAP);
-		const height = pos.h * ROW_HEIGHT + (pos.h - 1) * GAP;
+		// Collapsed panels shrink to header height
+		const height = collapsedMap[panelId]
+			? COLLAPSED_HEIGHT
+			: pos.h * ROW_HEIGHT + (pos.h - 1) * GAP;
 		return `left:${left}%;width:${width}%;top:${top}px;height:${height}px;`;
 	}
 
 	function getGridHeight(): number {
+		// When a panel is focused, only show the expanded panel
+		if (urlState.focusedPanel) {
+			return EXPANDED_ROWS * ROW_HEIGHT + (EXPANDED_ROWS - 1) * GAP + GAP;
+		}
 		let maxBottom = 0;
 		for (const panel of panels) {
 			const pos = layoutStore.getPosition(panel.id);
@@ -190,7 +210,9 @@
 		padding: 6px;
 		transition:
 			top 0.3s ease,
-			left 0.3s ease;
+			left 0.3s ease,
+			width 0.3s ease,
+			height 0.3s ease;
 		z-index: 1;
 	}
 
@@ -236,16 +258,10 @@
 
 	.grid-cell.focused {
 		z-index: 10;
-		box-shadow: 0 0 0 2px var(--accent-primary);
-		border-radius: 12px;
 	}
 
 	.grid-cell.dimmed {
-		opacity: 0.35;
-		transition:
-			top 0.3s ease,
-			left 0.3s ease,
-			opacity 0.3s ease;
+		display: none;
 	}
 
 	/* Tablet: 2-column grid */

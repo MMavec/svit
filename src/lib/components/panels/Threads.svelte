@@ -145,10 +145,46 @@
 
 <div class="threads-panel">
 	{#if !authStore.isAuthenticated}
-		<div class="auth-prompt">
-			<div class="auth-icon">&#128172;</div>
-			<p class="auth-text">Sign in to create discussion threads</p>
-			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
+		<div class="locked-preview">
+			<div class="preview-content" aria-hidden="true">
+				<div class="preview-card">
+					<div class="preview-header">
+						<span class="preview-type">Council</span>
+						<span class="preview-time">2h ago</span>
+					</div>
+					<div class="preview-title">Johnson St Bridge maintenance schedule</div>
+					<div class="preview-snippet">Has anyone heard when the next closure is planned?</div>
+				</div>
+				<div class="preview-card">
+					<div class="preview-header">
+						<span class="preview-type">Development</span>
+						<span class="preview-time">1d ago</span>
+					</div>
+					<div class="preview-title">New condo proposal on Pandora Ave</div>
+					<div class="preview-snippet">
+						The 12-storey plan seems out of character for that block...
+					</div>
+				</div>
+				<div class="preview-card">
+					<div class="preview-header">
+						<span class="preview-type">Bylaw</span>
+						<span class="preview-time">3d ago</span>
+					</div>
+					<div class="preview-title">Short-term rental regulation changes</div>
+					<div class="preview-snippet">Good to see enforcement getting teeth finally</div>
+				</div>
+			</div>
+			<div class="locked-overlay">
+				<div class="lock-icon">&#128172;</div>
+				<div class="lock-title">Discussion Threads</div>
+				<p class="lock-desc">
+					Start conversations about council decisions, bylaws, and development proposals. Annotate
+					civic items with your own notes and thoughts.
+				</p>
+				<button class="lock-btn" onclick={() => (authStore.showAuthModal = true)}
+					>Sign In to Discuss</button
+				>
+			</div>
 		</div>
 	{:else if loading}
 		<PanelSkeleton variant="list" />
@@ -266,35 +302,106 @@
 		height: 100%;
 	}
 
-	.auth-prompt {
+	.locked-preview {
+		position: relative;
+		flex: 1;
+		overflow: hidden;
+	}
+
+	.preview-content {
+		filter: blur(3px);
+		opacity: 0.45;
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.preview-card {
+		padding: 8px;
+		border-radius: 8px;
+		background: var(--bg-surface-hover);
+	}
+
+	.preview-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2px;
+	}
+
+	.preview-type {
+		font-size: 0.6875rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: var(--accent-primary);
+		letter-spacing: 0.05em;
+	}
+
+	.preview-time {
+		font-size: 0.75rem;
+		color: var(--text-tertiary);
+	}
+
+	.preview-title {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.preview-snippet {
+		font-size: 0.8125rem;
+		color: var(--text-secondary);
+		margin-top: 2px;
+		line-height: 1.3;
+	}
+
+	.locked-overlay {
+		position: absolute;
+		inset: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 8px;
-		flex: 1;
+		gap: 6px;
 		text-align: center;
+		padding: 16px;
 	}
 
-	.auth-icon {
-		font-size: 2rem;
-		opacity: 0.5;
+	.lock-icon {
+		font-size: 1.5rem;
+		opacity: 0.7;
 	}
 
-	.auth-text {
+	.lock-title {
+		font-size: 0.9375rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+
+	.lock-desc {
 		font-size: 0.8125rem;
 		color: var(--text-secondary);
+		line-height: 1.4;
+		max-width: 240px;
+		margin: 0;
 	}
 
-	.auth-btn {
-		padding: 6px 20px;
+	.lock-btn {
+		margin-top: 4px;
+		padding: 8px 20px;
 		border-radius: 8px;
-		border: 1px solid var(--accent-primary);
+		border: none;
 		background: var(--accent-primary);
 		color: var(--text-inverse);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 		cursor: pointer;
+		transition: opacity 0.15s;
+	}
+
+	.lock-btn:hover {
+		opacity: 0.85;
 	}
 
 	.threads-header {

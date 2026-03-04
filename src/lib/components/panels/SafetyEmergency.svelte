@@ -49,6 +49,7 @@
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;
+		clearMessage = ALL_CLEAR_MESSAGES[Math.floor(Math.random() * ALL_CLEAR_MESSAGES.length)];
 		loadAlerts();
 	});
 
@@ -56,6 +57,23 @@
 		const _enabled = refreshStore.enabled;
 		startRefreshTimer();
 	});
+
+	const ALL_CLEAR_MESSAGES = [
+		'Perfect day for a walk along the Galloping Goose trail!',
+		'Ideal conditions for some birdwatching at Elk Lake!',
+		'Great day for a stroll through Beacon Hill Park!',
+		'All quiet — perfect weather for the Inner Harbour walkway!',
+		'No alerts — a wonderful day to explore the CRD!',
+		'Clear skies ahead — enjoy the Salish Sea views!',
+		'Nothing to report — go enjoy a hike up Mount Doug!',
+		'All clear — treat yourself to fish and chips at the wharf!',
+		'Peaceful day on the island — maybe visit the Saturday market!',
+		'No incidents — perfect for a paddle at Thetis Lake!'
+	];
+
+	let clearMessage = $state(
+		ALL_CLEAR_MESSAGES[Math.floor(Math.random() * ALL_CLEAR_MESSAGES.length)]
+	);
 
 	let filterType = $state<string | null>(null);
 
@@ -119,7 +137,7 @@
 		<div class="all-clear" role="status">
 			<div class="check-icon">&#10003;</div>
 			<div class="clear-text">No active alerts</div>
-			<div class="clear-sub">All clear in the CRD</div>
+			<div class="clear-sub">{clearMessage}</div>
 		</div>
 	{:else}
 		{#if alertTypes.length > 1}
@@ -198,8 +216,10 @@
 	}
 
 	.clear-sub {
-		font-size: 0.6875rem;
+		font-size: 0.8125rem;
 		color: var(--text-tertiary);
+		text-align: center;
+		max-width: 220px;
 	}
 
 	.filter-chips {
@@ -211,7 +231,7 @@
 
 	.chip {
 		padding: 2px 8px;
-		font-size: 0.625rem;
+		font-size: 0.75rem;
 		font-weight: 500;
 		border: 1px solid var(--border-primary);
 		border-radius: 12px;
@@ -255,20 +275,20 @@
 	}
 
 	.type-badge {
-		width: 18px;
-		height: 18px;
+		width: 20px;
+		height: 20px;
 		border-radius: 4px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 0.5625rem;
+		font-size: 0.6875rem;
 		font-weight: 700;
 		color: #fff;
 		flex-shrink: 0;
 	}
 
 	.severity-label {
-		font-size: 0.5625rem;
+		font-size: 0.6875rem;
 		font-weight: 700;
 		letter-spacing: 0.05em;
 	}
@@ -279,7 +299,7 @@
 	}
 
 	.alert-time {
-		font-size: 0.625rem;
+		font-size: 0.75rem;
 		color: var(--text-tertiary);
 		margin-left: auto;
 	}
@@ -297,7 +317,7 @@
 	}
 
 	.alert-desc {
-		font-size: 0.6875rem;
+		font-size: 0.8125rem;
 		color: var(--text-secondary);
 		line-height: 1.4;
 		margin-top: 2px;
@@ -313,7 +333,7 @@
 		justify-content: space-between;
 		align-items: center;
 		margin-top: 4px;
-		font-size: 0.625rem;
+		font-size: 0.75rem;
 	}
 
 	.source-agency {
