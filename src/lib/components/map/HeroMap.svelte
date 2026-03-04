@@ -37,6 +37,7 @@
 	let mapReady = $state(false);
 	let features = $state<MapFeature[]>([]);
 	let loading = $state(true);
+	let abortController: AbortController | undefined;
 	let activeCategories = new SvelteSet<Category>([
 		'development',
 		'construction',
@@ -60,19 +61,27 @@
 	}
 
 	async function loadFeatures() {
+		// Cancel any in-flight requests
+		abortController?.abort();
+		abortController = new AbortController();
+		const { signal } = abortController;
+
 		loading = true;
 		const municipality = municipalityStore.slug;
 		const allFeatures: MapFeature[] = [];
 
 		const [devRes, conRes, safeRes, eventRes, wildRes, treeRes, envRes] = await Promise.allSettled([
-			fetchDevelopments({ municipality, limit: 100 }),
-			fetchConstruction({ municipality, limit: 100 }),
-			fetchSafetyAlerts({ municipality, limit: 50 }),
-			fetchEvents({ municipality, limit: 50 }),
-			fetchWildlifeSightings({ municipality, limit: 100 }),
-			fetchTreeObservations({ municipality, limit: 100 }),
-			fetchEnvironmentReadings({ municipality, limit: 30 })
+			fetchDevelopments({ municipality, limit: 50 }),
+			fetchConstruction({ municipality, limit: 50 }),
+			fetchSafetyAlerts({ municipality, limit: 30 }),
+			fetchEvents({ municipality, limit: 30 }),
+			fetchWildlifeSightings({ municipality, limit: 50 }),
+			fetchTreeObservations({ municipality, limit: 50 }),
+			fetchEnvironmentReadings({ municipality, limit: 20 })
 		]);
+
+		// Bail if this request was superseded by a newer one
+		if (signal.aborted) return;
 
 		if (devRes.status === 'fulfilled' && devRes.value.data) {
 			for (const d of devRes.value.data) {
@@ -421,11 +430,10 @@
 		map.on('mouseleave', 'feature-clusters', () => {
 			if (map) map.getCanvas().style.cursor = '';
 		});
-
-		loadFeatures();
 	});
 
 	onDestroy(() => {
+		abortController?.abort();
 		popup?.remove();
 		map?.remove();
 	});
@@ -439,13 +447,12 @@
 
 	$effect(() => {
 		const bbox = municipalityStore.bbox;
-		if (map && mapReady) {
-			const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-			map.fitBounds(bbox as maplibregl.LngLatBoundsLike, {
-				padding: 40,
-				duration: prefersReducedMotion ? 0 : 1000
-			});
-		}
+		if (!map || !mapReady) return;
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		map.fitBounds(bbox as maplibregl.LngLatBoundsLike, {
+			padding: 40,
+			duration: prefersReducedMotion ? 0 : 1000
+		});
 		loadFeatures();
 	});
 
