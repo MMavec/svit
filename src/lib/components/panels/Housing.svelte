@@ -61,7 +61,7 @@
 	{:else if error}
 		<PanelError message={error} onRetry={loadData} />
 	{:else if metrics.length === 0}
-		<div class="empty">No housing metrics available for this municipality yet</div>
+		<div class="empty" role="status">No housing metrics available for this municipality yet</div>
 	{:else}
 		<div class="metric-grid">
 			{#each metrics as metric (metric.id)}

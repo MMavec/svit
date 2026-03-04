@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import type { SocialPost } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipalityByText } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -30,6 +30,7 @@ async function fetchBlueskyPosts(searchTerm: string): Promise<SocialPost[]> {
 		);
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!data.posts || !Array.isArray(data.posts)) return [];
@@ -57,7 +58,8 @@ async function fetchBlueskyPosts(searchTerm: string): Promise<SocialPost[]> {
 				municipality: attributeMunicipalityByText(post.record.text)
 			})
 		);
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch Bluesky posts:', err);
 		return [];
 	}
 }

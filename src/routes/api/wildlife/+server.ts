@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 import type { WildlifeSighting } from '$lib/types/index';
 import { CRD_CENTER } from '$lib/config/municipalities';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -28,6 +28,7 @@ async function fetchINaturalist(): Promise<WildlifeSighting[]> {
 		});
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!data.results || !Array.isArray(data.results)) return [];
@@ -65,7 +66,8 @@ async function fetchINaturalist(): Promise<WildlifeSighting[]> {
 					source: 'inaturalist'
 				};
 			});
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch iNaturalist observations:', err);
 		return [];
 	}
 }
@@ -89,6 +91,7 @@ async function fetchEBird(): Promise<WildlifeSighting[]> {
 			signal: AbortSignal.timeout(10000)
 		});
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 		const data = await response.json();
 		return data.map((obs: Record<string, unknown>) => ({
 			id: `ebird-${obs.subId}-${obs.speciesCode}`,
@@ -102,7 +105,8 @@ async function fetchEBird(): Promise<WildlifeSighting[]> {
 			municipality: attributeMunicipality(Number(obs.lng), Number(obs.lat)),
 			source: 'ebird'
 		}));
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch eBird observations:', err);
 		return [];
 	}
 }

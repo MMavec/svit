@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { searchStore } from '$lib/stores/search.svelte';
 	import { searchCategoryColor } from '$lib/utils/color-maps';
+	import { isValidHttpUrl } from '$lib/utils/sanitize';
 
 	let inputEl = $state<HTMLInputElement | null>(null);
+	let activeIndex = $state(-1);
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
@@ -16,7 +18,38 @@
 				searchStore.open();
 			}
 		}
+		if (searchStore.isOpen && searchStore.results.length > 0) {
+			if (e.key === 'ArrowDown') {
+				e.preventDefault();
+				activeIndex = Math.min(activeIndex + 1, searchStore.results.length - 1);
+				scrollActiveIntoView();
+			} else if (e.key === 'ArrowUp') {
+				e.preventDefault();
+				activeIndex = Math.max(activeIndex - 1, -1);
+				if (activeIndex === -1) inputEl?.focus();
+				else scrollActiveIntoView();
+			} else if (e.key === 'Enter' && activeIndex >= 0) {
+				const result = searchStore.results[activeIndex];
+				if (result?.url && isValidHttpUrl(result.url)) {
+					window.open(result.url, '_blank', 'noopener,noreferrer');
+					searchStore.close();
+				}
+			}
+		}
 	}
+
+	function scrollActiveIntoView() {
+		requestAnimationFrame(() => {
+			const items = document.querySelectorAll('.result-item');
+			items[activeIndex]?.scrollIntoView({ block: 'nearest' });
+		});
+	}
+
+	// Reset active index when results change
+	$effect(() => {
+		const _results = searchStore.results;
+		activeIndex = -1;
+	});
 
 	$effect(() => {
 		if (searchStore.isOpen && inputEl) {
@@ -81,7 +114,7 @@
 				<kbd class="esc-hint">ESC</kbd>
 			</div>
 
-			<div class="search-results">
+			<div class="search-results" role="listbox" aria-label="Search results">
 				<div class="visually-hidden" role="status" aria-live="polite">
 					{#if searchStore.searching}
 						Searching...
@@ -96,18 +129,35 @@
 				{:else if searchStore.query.length > 0 && searchStore.results.length === 0}
 					<div class="search-status">No results for "{searchStore.query}"</div>
 				{:else if searchStore.results.length > 0}
-					{#each searchStore.results as result (result.id)}
-						<div class="result-item">
-							<span class="result-badge" style="background: {searchCategoryColor(result.category)}">
+					{#each searchStore.results as result, i (result.id)}
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<div
+							class="result-item"
+							class:active={activeIndex === i}
+							role="option"
+							aria-selected={activeIndex === i}
+							onclick={() => {
+								if (result.url && isValidHttpUrl(result.url)) {
+									window.open(result.url, '_blank', 'noopener,noreferrer');
+									searchStore.close();
+								}
+							}}
+						>
+							<span
+								class="result-badge"
+								style="background: {searchCategoryColor(result.category)}"
+								role="img"
+								aria-label={result.category}
+							>
 								{categoryIcon(result.category)}
 							</span>
 							<div class="result-info">
 								<div class="result-title">
-									{#if result.url}
+									{#if isValidHttpUrl(result.url)}
 										<a
 											href={result.url}
 											target="_blank"
-											rel="noopener"
+											rel="noopener noreferrer"
 											onclick={() => searchStore.close()}
 										>
 											{result.title}
@@ -221,8 +271,14 @@
 		border-bottom: none;
 	}
 
-	.result-item:hover {
+	.result-item:hover,
+	.result-item.active {
 		background: var(--bg-surface-hover);
+	}
+
+	.result-item.active {
+		outline: 2px solid var(--accent-primary);
+		outline-offset: -2px;
 	}
 
 	.result-badge {

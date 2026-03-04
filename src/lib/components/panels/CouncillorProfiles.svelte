@@ -125,7 +125,7 @@
 					</div>
 				</button>
 			{:else}
-				<div class="empty">No councillors match your search</div>
+				<div class="empty" role="status">No councillors match your search</div>
 			{/each}
 		</div>
 	{/if}

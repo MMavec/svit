@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import type { Meeting } from '$lib/types/index';
 import { municipalities } from '$lib/config/municipalities';
 import { hashCode } from '$lib/utils/hash';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -36,7 +36,7 @@ async function fetchEscribeMeetings(baseUrl: string, municipalitySlug: string): 
 			signal: AbortSignal.timeout(10000)
 		});
 
-		if (!response.ok) {
+		if (!response.ok || !isJsonResponse(response)) {
 			// Fallback: try to scrape the meeting list page
 			return await fetchEscribeMeetingList(baseUrl, municipalitySlug);
 		}
@@ -97,7 +97,8 @@ async function fetchEscribeMeetingList(
 		}
 
 		return meetings;
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch eSCRIBE meeting list:', err);
 		return [];
 	}
 }
@@ -140,7 +141,8 @@ async function fetchCivicWebMeetings(
 			});
 		}
 		return meetings;
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch CivicWeb meetings:', err);
 		return [];
 	}
 }

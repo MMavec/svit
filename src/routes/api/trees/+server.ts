@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import type { TreeObservation } from '$lib/types/index';
 import { CRD_CENTER } from '$lib/config/municipalities';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -29,6 +29,7 @@ async function fetchTreeObservations(): Promise<TreeObservation[]> {
 		});
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!data.results || !Array.isArray(data.results)) return [];
@@ -63,7 +64,8 @@ async function fetchTreeObservations(): Promise<TreeObservation[]> {
 					source: 'inaturalist'
 				};
 			});
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch tree observations:', err);
 		return [];
 	}
 }

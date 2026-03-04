@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { EnvironmentReading } from '$lib/types/index';
 import { env } from '$env/dynamic/private';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -17,6 +17,7 @@ async function fetchAirQuality(): Promise<EnvironmentReading[]> {
 		});
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (data.status !== 'ok' || !data.data) return [];
@@ -87,7 +88,8 @@ async function fetchAirQuality(): Promise<EnvironmentReading[]> {
 		}
 
 		return readings;
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch AQICN air quality:', err);
 		return [];
 	}
 }
@@ -107,7 +109,8 @@ async function fetchUVIndex(): Promise<EnvironmentReading[]> {
 
 		// UV data is harder to parse from EC — return empty for now, seed will cover it
 		return [];
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch UV index:', err);
 		return [];
 	}
 }
@@ -134,6 +137,7 @@ async function fetchONCData(): Promise<EnvironmentReading[]> {
 			signal: AbortSignal.timeout(10000)
 		});
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		const sensorData = data?.sensorData?.[0];
@@ -159,7 +163,8 @@ async function fetchONCData(): Promise<EnvironmentReading[]> {
 				source: 'onc'
 			}
 		];
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch ONC ocean data:', err);
 		return [];
 	}
 }

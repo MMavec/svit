@@ -440,8 +440,47 @@ export interface ApiResponse<T> {
 		perPage?: number;
 		municipality?: string;
 		cachedAt?: string;
+		_cached?: boolean;
+		_cachedAt?: string;
 	};
 	error?: string;
+}
+
+// --- Lead Capture Types ---
+
+export interface Lead {
+	id: string;
+	email: string;
+	phone?: string;
+	display_name?: string;
+	municipality_interest?: string;
+	interests: string[];
+	consent_marketing: boolean;
+	consent_privacy: boolean;
+	source: string;
+	created_at: string;
+	updated_at: string;
+}
+
+export interface LeadSocialAccount {
+	id: string;
+	lead_id: string;
+	platform: 'bluesky' | 'twitter' | 'facebook' | 'instagram' | 'linkedin';
+	handle: string;
+	verified: boolean;
+	created_at: string;
+}
+
+export interface LeadSubmission {
+	email: string;
+	phone?: string;
+	name?: string;
+	municipality?: string;
+	interests?: string[];
+	consent_marketing: boolean;
+	consent_privacy: boolean;
+	source?: string;
+	social_accounts?: { platform: string; handle: string }[];
 }
 
 export interface ThreadMessage {

@@ -250,7 +250,7 @@
 					</div>
 				</div>
 			{:else}
-				<div class="empty">
+				<div class="empty" role="status">
 					No threads yet — start a discussion about council items, bylaws, or anything civic
 				</div>
 			{/each}

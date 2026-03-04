@@ -3,6 +3,8 @@
 	import type { Snippet } from 'svelte';
 	import { setContext } from 'svelte';
 	import DataFreshness from '$lib/components/ui/DataFreshness.svelte';
+	import ShareButton from '$lib/components/ui/ShareButton.svelte';
+	import { urlState } from '$lib/stores/url-state.svelte';
 
 	interface Props {
 		config: PanelConfig;
@@ -13,10 +15,19 @@
 
 	let collapsed = $state(false);
 	let lastUpdated = $state<Date | null>(null);
+	let isCached = $state(false);
+	let cachedAt = $state<string | null>(null);
 
-	// Expose a setter via context so child panels can report data freshness
+	// Expose setters via context so child panels can report data freshness
 	setContext('panel:markUpdated', () => {
 		lastUpdated = new Date();
+		isCached = false;
+		cachedAt = null;
+	});
+
+	setContext('panel:markCached', (timestamp?: string) => {
+		isCached = true;
+		cachedAt = timestamp ?? null;
 	});
 
 	$effect.pre(() => {
@@ -42,8 +53,37 @@
 	<div class="panel-header">
 		<span class="panel-icon" aria-hidden="true">{config.icon}</span>
 		<span class="panel-title">{config.title}</span>
-		<DataFreshness timestamp={lastUpdated} />
+		<DataFreshness timestamp={lastUpdated} cached={isCached} {cachedAt} />
 		<span class="panel-tier">T{config.tier}</span>
+		<button
+			class="panel-action-btn"
+			onclick={(e) => {
+				e.stopPropagation();
+				urlState.focusPanel(urlState.focusedPanel === config.id ? null : config.id);
+			}}
+			aria-label={urlState.focusedPanel === config.id ? 'Unfocus panel' : 'Focus panel'}
+			title={urlState.focusedPanel === config.id ? 'Unfocus' : 'Focus'}
+		>
+			<svg
+				width="12"
+				height="12"
+				viewBox="0 0 12 12"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.5"
+			>
+				{#if urlState.focusedPanel === config.id}
+					<polyline points="4,1 1,1 1,4" />
+					<polyline points="8,11 11,11 11,8" />
+					<polyline points="8,1 11,1 11,4" />
+					<polyline points="4,11 1,11 1,8" />
+				{:else}
+					<polyline points="8,1 11,1 11,4" />
+					<polyline points="4,11 1,11 1,8" />
+				{/if}
+			</svg>
+		</button>
+		<ShareButton panelId={config.id} panelTitle={config.title} />
 		<button
 			class="collapse-btn"
 			onclick={(e) => {
@@ -93,6 +133,26 @@
 		background: var(--border-primary);
 		color: var(--text-tertiary);
 		letter-spacing: 0.5px;
+	}
+
+	.panel-action-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 4px;
+		border: none;
+		background: transparent;
+		color: var(--text-tertiary);
+		cursor: pointer;
+		transition: all 0.15s;
+		flex-shrink: 0;
+	}
+
+	.panel-action-btn:hover {
+		background: var(--border-primary);
+		color: var(--text-primary);
 	}
 
 	.collapse-btn {

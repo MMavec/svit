@@ -5,16 +5,19 @@ import type { NewsItem } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipalityByText } from '$lib/utils/geo-attribution';
 import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { isValidHttpUrl } from '$lib/utils/sanitize';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
 /** Parse RSS XML into NewsItem objects */
 function parseRss(xml: string, sourceSlug: string, sourceName: string): NewsItem[] {
+	// Cap input length to prevent ReDoS on malformed feeds
+	const safeXml = xml.length > 500_000 ? xml.slice(0, 500_000) : xml;
 	const items: NewsItem[] = [];
 	const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
 	let match;
 
-	while ((match = itemRegex.exec(xml)) !== null) {
+	while ((match = itemRegex.exec(safeXml)) !== null) {
 		const itemXml = match[1];
 
 		const title = extractTag(itemXml, 'title');
@@ -30,17 +33,18 @@ function parseRss(xml: string, sourceSlug: string, sourceName: string): NewsItem
 			extractAttr(itemXml, 'enclosure', 'url') ||
 			extractImageFromHtml(description);
 
-		if (title && link) {
+		const cleanLink = link.trim();
+		if (title && cleanLink && isValidHttpUrl(cleanLink)) {
 			items.push({
-				id: `${sourceSlug}-${hashCode(link)}`,
+				id: `${sourceSlug}-${hashCode(cleanLink)}`,
 				title: stripCdata(title),
 				description: stripHtml(stripCdata(description || '')).slice(0, 300),
-				url: link.trim(),
+				url: cleanLink,
 				source: sourceName,
 				sourceSlug,
 				published: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
 				author: author ? stripCdata(author) : undefined,
-				imageUrl: imageUrl || undefined,
+				imageUrl: isValidHttpUrl(imageUrl) ? imageUrl : undefined,
 				categories: categories.map((c) => stripCdata(c))
 			});
 		}
@@ -50,13 +54,13 @@ function parseRss(xml: string, sourceSlug: string, sourceName: string): NewsItem
 }
 
 function extractTag(xml: string, tag: string): string {
-	const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i');
+	const regex = new RegExp(`<${tag}[^>]{0,200}>([\\s\\S]{0,10000}?)</${tag}>`, 'i');
 	const match = regex.exec(xml);
 	return match ? match[1].trim() : '';
 }
 
 function extractAllTags(xml: string, tag: string): string[] {
-	const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'gi');
+	const regex = new RegExp(`<${tag}[^>]{0,200}>([\\s\\S]{0,10000}?)</${tag}>`, 'gi');
 	const results: string[] = [];
 	let match;
 	while ((match = regex.exec(xml)) !== null) {
@@ -123,7 +127,8 @@ export const GET: RequestHandler = async ({ url }) => {
 					source.municipality ||
 					attributeMunicipalityByText(item.title + ' ' + item.description)
 			}));
-		} catch {
+		} catch (err) {
+			console.error('Failed to fetch RSS feed:', err);
 			return [];
 		}
 	});

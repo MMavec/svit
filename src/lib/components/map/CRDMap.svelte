@@ -6,6 +6,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { CRD_BBOX } from '$lib/config/municipalities';
 	import type { MapFeature } from '$lib/types/index';
+	import { escapeHtml } from '$lib/utils/sanitize';
 
 	interface Props {
 		features?: MapFeature[];
@@ -196,8 +197,8 @@
 				?.setLngLat(coords)
 				.setHTML(
 					`<div style="font-size:0.8125rem">
-						<strong>${props?.title || ''}</strong>
-						<div style="font-size:0.6875rem;margin-top:4px;opacity:0.8">${props?.description || ''}</div>
+						<strong>${escapeHtml(String(props?.title || ''))}</strong>
+						<div style="font-size:0.6875rem;margin-top:4px;opacity:0.8">${escapeHtml(String(props?.description || ''))}</div>
 					</div>`
 				)
 				.addTo(map!);
@@ -223,7 +224,12 @@
 			const source = map.getSource('features') as maplibregl.GeoJSONSource;
 			source.getClusterExpansionZoom(clusterId).then((zoom) => {
 				const geom = e.features![0].geometry as unknown as { coordinates: [number, number] };
-				map!.easeTo({ center: geom.coordinates, zoom });
+				const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+				if (prefersReducedMotion) {
+					map!.jumpTo({ center: geom.coordinates, zoom });
+				} else {
+					map!.easeTo({ center: geom.coordinates, zoom });
+				}
 			});
 		});
 
@@ -254,9 +260,10 @@
 	$effect(() => {
 		const bbox = municipalityStore.bbox;
 		if (map && mapReady) {
+			const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 			map.fitBounds(bbox as maplibregl.LngLatBoundsLike, {
 				padding: 40,
-				duration: 1000
+				duration: prefersReducedMotion ? 0 : 1000
 			});
 		}
 	});
@@ -278,6 +285,12 @@
 	aria-label="Interactive map of CRD municipalities"
 	onkeydown={(e) => {
 		if (e.key === 'Escape' && popup) {
+			popup.remove();
+		}
+	}}
+	onfocusout={(e) => {
+		const related = (e as FocusEvent).relatedTarget as HTMLElement | null;
+		if (related && !mapContainer?.contains(related) && popup) {
 			popup.remove();
 		}
 	}}

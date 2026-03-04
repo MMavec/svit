@@ -114,10 +114,18 @@ async function fetchBCTransitAlerts(): Promise<TransitAlert[]> {
 }
 
 /** Extract text from GTFS-RT TranslatedString */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getTranslation(translatedString: any): string | null {
+interface GtfsTranslation {
+	text?: string | null;
+	language?: string | null;
+}
+
+interface GtfsTranslatedString {
+	translation?: GtfsTranslation[] | null;
+}
+
+function getTranslation(translatedString: GtfsTranslatedString | null | undefined): string | null {
 	if (!translatedString?.translation?.length) return null;
-	const translations = translatedString.translation as { text?: string; language?: string }[];
+	const translations = translatedString.translation;
 	// Prefer English, fall back to first available
 	const en = translations.find((t) => t.language === 'en');
 	return en?.text || translations[0]?.text || null;

@@ -3,6 +3,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { Meeting } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import { isValidHttpUrl } from '$lib/utils/sanitize';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 
@@ -112,7 +113,7 @@
 						url={meeting.agendaUrl}
 					/>
 					<div class="meeting-actions">
-						{#if meeting.agendaUrl}
+						{#if isValidHttpUrl(meeting.agendaUrl)}
 							<a
 								href={meeting.agendaUrl}
 								target="_blank"
@@ -121,7 +122,7 @@
 								title="View agenda">Agenda</a
 							>
 						{/if}
-						{#if meeting.minutesUrl}
+						{#if isValidHttpUrl(meeting.minutesUrl)}
 							<a
 								href={meeting.minutesUrl}
 								target="_blank"
@@ -133,7 +134,9 @@
 					</div>
 				</div>
 			{:else}
-				<div class="empty">No {viewMode === 'upcoming' ? 'upcoming' : 'recent'} meetings</div>
+				<div class="empty" role="status">
+					No {viewMode === 'upcoming' ? 'upcoming' : 'recent'} meetings
+				</div>
 			{/each}
 		</div>
 	{/if}

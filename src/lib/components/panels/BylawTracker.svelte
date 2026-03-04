@@ -174,7 +174,7 @@
 				</div>
 			</div>
 		{:else}
-			<div class="empty">No active bylaws</div>
+			<div class="empty" role="status">No active bylaws</div>
 		{/each}
 	</div>
 

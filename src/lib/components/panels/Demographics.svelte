@@ -239,7 +239,7 @@
 
 	{#if viewMode === 'stats'}
 		{#if stats.length === 0}
-			<div class="empty">No census or demographic data available for this area</div>
+			<div class="empty" role="status">No census or demographic data available for this area</div>
 		{:else}
 			<div class="stats-grid">
 				{#each stats as stat (stat.label)}

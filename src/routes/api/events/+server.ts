@@ -3,7 +3,22 @@ import type { RequestHandler } from './$types';
 import type { CommunityEvent } from '$lib/types/index';
 import { municipalities } from '$lib/config/municipalities';
 import { hashCode } from '$lib/utils/hash';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import {
+	parseLimit,
+	parseMunicipality,
+	parseEnum,
+	isJsonResponse
+} from '$lib/utils/api-validation';
+
+const validCategories = new Set([
+	'arts',
+	'sports',
+	'market',
+	'festival',
+	'education',
+	'government',
+	'community'
+] as const);
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -17,6 +32,7 @@ async function fetchLiveEvents(): Promise<CommunityEvent[]> {
 		});
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!Array.isArray(data)) return [];
@@ -40,7 +56,8 @@ async function fetchLiveEvents(): Promise<CommunityEvent[]> {
 				.includes('free'),
 			source: 'tourismvictoria'
 		}));
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch events:', err);
 		return [];
 	}
 }
@@ -202,7 +219,7 @@ function getSeedData(): CommunityEvent[] {
 
 export const GET: RequestHandler = async ({ url }) => {
 	const municipality = parseMunicipality(url.searchParams.get('municipality'));
-	const category = url.searchParams.get('category');
+	const category = parseEnum(url.searchParams.get('category'), validCategories);
 	const limit = parseLimit(url.searchParams.get('limit'), 20);
 
 	let events = await fetchLiveEvents();

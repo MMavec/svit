@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { HousingMetric } from '$lib/types/index';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -18,6 +18,7 @@ async function fetchCMHCStarts(): Promise<HousingMetric[]> {
 		);
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!data || !Array.isArray(data)) return [];
@@ -37,7 +38,8 @@ async function fetchCMHCStarts(): Promise<HousingMetric[]> {
 		}
 
 		return metrics;
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch CMHC data:', err);
 		return [];
 	}
 }

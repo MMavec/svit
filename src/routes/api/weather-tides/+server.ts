@@ -7,6 +7,7 @@ import type {
 	TideObservation,
 	WeatherTidesData
 } from '$lib/types/index';
+import { isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -18,33 +19,39 @@ const EC_WEATHER_FALLBACK = 'https://dd.weather.gc.ca/citypage_weather/xml/BC/s0
 const IWLS_BASE = 'https://api-iwls.dfo-mpo.gc.ca/api/v1';
 const VICTORIA_HARBOUR_CODE = '07120';
 
-// Cache the resolved station UUID across requests (module scope)
-let cachedStationId: string | null = null;
+// Promise-based cache to prevent concurrent resolution race
+let stationIdPromise: Promise<string | null> | null = null;
 
-/** Resolve CHS station code to IWLS UUID */
+/** Resolve CHS station code to IWLS UUID (deduped across concurrent requests) */
 async function resolveStationId(): Promise<string | null> {
-	if (cachedStationId) return cachedStationId;
+	if (stationIdPromise) return stationIdPromise;
 
-	try {
-		const response = await fetch(
-			`${IWLS_BASE}/stations?chs-station-code=${VICTORIA_HARBOUR_CODE}`,
-			{
-				headers: { Accept: 'application/json' },
-				signal: AbortSignal.timeout(8000)
+	stationIdPromise = (async () => {
+		try {
+			const response = await fetch(
+				`${IWLS_BASE}/stations?chs-station-code=${VICTORIA_HARBOUR_CODE}`,
+				{
+					headers: { Accept: 'application/json' },
+					signal: AbortSignal.timeout(8000)
+				}
+			);
+
+			if (!response.ok) return null;
+			if (!isJsonResponse(response)) return null;
+
+			const stations = await response.json();
+			if (Array.isArray(stations) && stations.length > 0) {
+				return stations[0].id as string;
 			}
-		);
-
-		if (!response.ok) return null;
-
-		const stations = await response.json();
-		if (Array.isArray(stations) && stations.length > 0) {
-			cachedStationId = stations[0].id;
-			return cachedStationId;
+			return null;
+		} catch {
+			// Reset on failure so next request retries
+			stationIdPromise = null;
+			return null;
 		}
-		return null;
-	} catch {
-		return null;
-	}
+	})();
+
+	return stationIdPromise;
 }
 
 /** Fetch Environment Canada weather conditions + forecast */
@@ -70,7 +77,8 @@ async function fetchWeatherData(): Promise<{
 			const forecast = parseForecast(xml);
 
 			return { current, forecast };
-		} catch {
+		} catch (err) {
+			console.error('Failed to fetch weather data:', err);
 			continue;
 		}
 	}
@@ -233,7 +241,8 @@ async function fetchTideData(): Promise<{
 		}
 
 		return { current, predictions, station: 'Victoria Harbour' };
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch tide data:', err);
 		return empty;
 	}
 }

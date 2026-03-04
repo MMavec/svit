@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { municipalities } from '$lib/config/municipalities';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
+	import { urlState } from '$lib/stores/url-state.svelte';
 
 	let open = $state(false);
 
 	function select(slug: string | null) {
 		municipalityStore.select(slug);
+		urlState.setMunicipality(slug);
 		open = false;
 	}
 
@@ -158,6 +160,11 @@
 
 	.option:hover {
 		background: var(--bg-surface-hover);
+	}
+
+	.option:focus-visible {
+		outline: 2px solid var(--accent-primary);
+		outline-offset: -2px;
 	}
 
 	.option.selected {

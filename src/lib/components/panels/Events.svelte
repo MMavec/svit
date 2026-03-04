@@ -3,6 +3,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { CommunityEvent } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
+	import { isValidHttpUrl } from '$lib/utils/sanitize';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
 	import { eventCategoryColor } from '$lib/utils/color-maps';
@@ -71,7 +72,7 @@
 	{:else if error}
 		<PanelError message={error} onRetry={loadData} />
 	{:else if events.length === 0}
-		<div class="empty">No upcoming events</div>
+		<div class="empty" role="status">No upcoming events</div>
 	{:else}
 		<div class="event-list">
 			{#each events as event (event.id)}
@@ -95,8 +96,8 @@
 						/>
 					</div>
 					<div class="event-title">
-						{#if event.url}
-							<a href={event.url} target="_blank" rel="noopener">{event.title}</a>
+						{#if isValidHttpUrl(event.url)}
+							<a href={event.url} target="_blank" rel="noopener noreferrer">{event.title}</a>
 						{:else}
 							{event.title}
 						{/if}
