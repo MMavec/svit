@@ -1,5 +1,7 @@
 <script lang="ts">
 	import '../app.css';
+	import { inject } from '@vercel/analytics';
+	import { dev } from '$app/environment';
 	import { theme } from '$lib/stores/theme.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { urlState } from '$lib/stores/url-state.svelte';
@@ -13,6 +15,8 @@
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
+
+	inject({ mode: dev ? 'development' : 'production' });
 
 	onMount(() => {
 		theme.init();

@@ -25,7 +25,7 @@ export const load: PageServerLoad = ({ url }) => {
 	return {
 		title,
 		description,
-		ogImage: `${url.origin}/og-image.svg`,
+		ogImage: `${url.origin}/og-image.png`,
 		redirectUrl: redirectUrl.toString(),
 		municipality: m,
 		panel
