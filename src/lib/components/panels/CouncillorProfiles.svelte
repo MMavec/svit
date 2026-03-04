@@ -6,10 +6,23 @@
 		searchCouncillors
 	} from '$lib/config/councillors';
 	import { getMunicipality } from '$lib/config/municipalities';
+	import { fetchNews } from '$lib/api/news';
+	import { fetchSocialPosts } from '$lib/api/social';
+	import { fetchMeetings } from '$lib/api/council';
 	import type { Councillor } from '$lib/types/index';
+
+	interface ActivityItem {
+		type: 'news' | 'social' | 'council';
+		title: string;
+		url?: string;
+		source: string;
+		date: string;
+	}
 
 	let searchQuery = $state('');
 	let selectedCouncillor = $state<Councillor | null>(null);
+	let activityItems = $state<ActivityItem[]>([]);
+	let activityLoading = $state(false);
 
 	const filteredCouncillors = $derived.by(() => {
 		let list: Councillor[];
@@ -39,6 +52,99 @@
 
 	function selectCouncillor(c: Councillor) {
 		selectedCouncillor = selectedCouncillor?.id === c.id ? null : c;
+	}
+
+	async function loadActivity(councillor: Councillor) {
+		activityLoading = true;
+		activityItems = [];
+		const lastName = councillor.lastName.toLowerCase();
+		const fullName = councillor.name.toLowerCase();
+		const items: ActivityItem[] = [];
+
+		const [newsRes, socialRes, meetingsRes] = await Promise.allSettled([
+			fetchNews({ municipality: councillor.municipality, limit: 50 }),
+			fetchSocialPosts({ municipality: councillor.municipality, limit: 50 }),
+			fetchMeetings({ municipality: councillor.municipality, limit: 30 })
+		]);
+
+		if (newsRes.status === 'fulfilled' && newsRes.value.data) {
+			for (const article of newsRes.value.data) {
+				const text = `${article.title} ${article.description || ''}`.toLowerCase();
+				if (text.includes(lastName) || text.includes(fullName)) {
+					items.push({
+						type: 'news',
+						title: article.title,
+						url: article.url,
+						source: article.source || 'News',
+						date: article.published
+					});
+				}
+			}
+		}
+
+		if (socialRes.status === 'fulfilled' && socialRes.value.data) {
+			for (const post of socialRes.value.data) {
+				const text = `${post.content} ${post.author || ''}`.toLowerCase();
+				if (text.includes(lastName) || text.includes(fullName)) {
+					items.push({
+						type: 'social',
+						title: post.content.slice(0, 120) + (post.content.length > 120 ? '...' : ''),
+						url: post.url,
+						source: post.platform,
+						date: post.published
+					});
+				}
+			}
+		}
+
+		if (meetingsRes.status === 'fulfilled' && meetingsRes.value.data) {
+			for (const meeting of meetingsRes.value.data) {
+				items.push({
+					type: 'council',
+					title: meeting.title,
+					url: meeting.agendaUrl || meeting.minutesUrl,
+					source: meeting.body || 'Council',
+					date: meeting.date
+				});
+			}
+		}
+
+		items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+		activityItems = items.slice(0, 10);
+		activityLoading = false;
+	}
+
+	$effect(() => {
+		if (selectedCouncillor) {
+			loadActivity(selectedCouncillor);
+		}
+	});
+
+	function activityTypeLabel(type: ActivityItem['type']): string {
+		switch (type) {
+			case 'news':
+				return 'News';
+			case 'social':
+				return 'Social';
+			case 'council':
+				return 'Council';
+		}
+	}
+
+	function activityTypeColor(type: ActivityItem['type']): string {
+		switch (type) {
+			case 'news':
+				return 'var(--accent-primary)';
+			case 'social':
+				return '#a78bfa';
+			case 'council':
+				return 'var(--accent-secondary)';
+		}
+	}
+
+	function formatDate(iso: string): string {
+		const d = new Date(iso);
+		return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
 	}
 </script>
 
@@ -99,10 +205,37 @@
 
 			<div class="activity-section">
 				<div class="section-label">Activity Timeline</div>
-				<div class="activity-placeholder">
-					Activity data will populate from council meeting minutes, social media feeds, and news
-					mentions.
-				</div>
+				{#if activityLoading}
+					<div class="activity-loading">Scanning news, social, and council data...</div>
+				{:else if activityItems.length === 0}
+					<div class="activity-empty">No recent activity found for this councillor</div>
+				{:else}
+					<div class="activity-timeline">
+						{#each activityItems as item, i (i)}
+							<div class="timeline-item">
+								<span class="timeline-badge" style="background: {activityTypeColor(item.type)}"
+									>{activityTypeLabel(item.type)}</span
+								>
+								<div class="timeline-body">
+									{#if item.url}
+										<a
+											href={item.url}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="timeline-title">{item.title}</a
+										>
+									{:else}
+										<span class="timeline-title-plain">{item.title}</span>
+									{/if}
+									<div class="timeline-meta">
+										<span class="timeline-source">{item.source}</span>
+										<span class="timeline-date">{formatDate(item.date)}</span>
+									</div>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		</div>
 	{:else}
@@ -330,6 +463,10 @@
 
 	.activity-section {
 		margin-top: 4px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
 	}
 
 	.section-label {
@@ -341,14 +478,93 @@
 		margin-bottom: 6px;
 	}
 
-	.activity-placeholder {
-		font-size: 0.75rem;
+	.activity-loading,
+	.activity-empty {
+		font-size: 0.8125rem;
 		color: var(--text-tertiary);
 		font-style: italic;
 		padding: 12px;
 		text-align: center;
-		border: 1px dashed var(--border-primary);
-		border-radius: 8px;
+	}
+
+	.activity-timeline {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		overflow-y: auto;
+		flex: 1;
+	}
+
+	.timeline-item {
+		display: flex;
+		gap: 8px;
+		align-items: flex-start;
+		padding: 6px 8px;
+		border-radius: 6px;
+		background: var(--bg-surface-hover);
+	}
+
+	.timeline-badge {
+		font-size: 0.625rem;
+		font-weight: 700;
+		padding: 2px 6px;
+		border-radius: 4px;
+		color: #fff;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		white-space: nowrap;
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+
+	.timeline-body {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.timeline-title {
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--accent-primary);
+		text-decoration: none;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		line-height: 1.3;
+	}
+
+	.timeline-title:hover {
+		text-decoration: underline;
+	}
+
+	.timeline-title-plain {
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--text-primary);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		line-height: 1.3;
+	}
+
+	.timeline-meta {
+		display: flex;
+		gap: 8px;
+		margin-top: 2px;
+		font-size: 0.75rem;
+	}
+
+	.timeline-source {
+		color: var(--text-secondary);
+	}
+
+	.timeline-date {
+		color: var(--text-tertiary);
+		margin-left: auto;
 	}
 
 	.empty {

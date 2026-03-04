@@ -183,6 +183,10 @@ pre,
 
 .panel:hover {
 	border-color: var(--border-hover);
+	box-shadow:
+		var(--panel-shadow),
+		0 0 0 1px var(--border-hover);
+	transform: translateY(-1px);
 }
 
 .panel-header {
@@ -209,9 +213,9 @@ pre,
 
 .panel-body {
 	flex: 1;
-	padding: 12px 16px;
+	padding: 14px 16px;
 	overflow-y: auto;
-	font-size: 0.8125rem;
+	font-size: 0.875rem;
 	color: var(--text-secondary);
 }
 

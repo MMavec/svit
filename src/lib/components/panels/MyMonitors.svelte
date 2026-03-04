@@ -132,10 +132,35 @@
 
 <div class="my-monitors">
 	{#if !authStore.isAuthenticated}
-		<div class="auth-prompt">
-			<div class="auth-icon">&#128274;</div>
-			<p class="auth-text">Sign in to create custom keyword monitors</p>
-			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
+		<div class="locked-preview">
+			<div class="preview-content" aria-hidden="true">
+				<div class="preview-card has-matches">
+					<div class="preview-keyword">housing policy</div>
+					<div class="preview-meta">council, news, development</div>
+					<div class="preview-footer"><span class="preview-matches">3 matches</span></div>
+				</div>
+				<div class="preview-card">
+					<div class="preview-keyword">bike lanes</div>
+					<div class="preview-meta">council, development</div>
+					<div class="preview-footer"><span class="preview-matches">1 match</span></div>
+				</div>
+				<div class="preview-card has-matches">
+					<div class="preview-keyword">short-term rentals</div>
+					<div class="preview-meta">news, council</div>
+					<div class="preview-footer"><span class="preview-matches">5 matches</span></div>
+				</div>
+			</div>
+			<div class="locked-overlay">
+				<div class="lock-icon">&#128274;</div>
+				<div class="lock-title">Keyword Monitors</div>
+				<p class="lock-desc">
+					Track topics across council meetings, news, and development applications. Get notified
+					when your keywords are mentioned.
+				</p>
+				<button class="lock-btn" onclick={() => (authStore.showAuthModal = true)}
+					>Sign In to Monitor</button
+				>
+			</div>
 		</div>
 	{:else if loading}
 		<PanelSkeleton variant="list" />
@@ -243,35 +268,99 @@
 		height: 100%;
 	}
 
-	.auth-prompt {
+	.locked-preview {
+		position: relative;
+		flex: 1;
+		overflow: hidden;
+	}
+
+	.preview-content {
+		filter: blur(3px);
+		opacity: 0.45;
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.preview-card {
+		padding: 8px;
+		border-radius: 8px;
+		background: var(--bg-surface-hover);
+	}
+
+	.preview-card.has-matches {
+		border-left: 3px solid var(--accent-primary);
+	}
+
+	.preview-keyword {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.preview-meta {
+		font-size: 0.75rem;
+		color: var(--text-tertiary);
+		margin-top: 2px;
+	}
+
+	.preview-footer {
+		margin-top: 4px;
+	}
+
+	.preview-matches {
+		font-size: 0.75rem;
+		color: var(--accent-primary);
+		font-family: 'Geist Mono', monospace;
+	}
+
+	.locked-overlay {
+		position: absolute;
+		inset: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 8px;
-		flex: 1;
+		gap: 6px;
 		text-align: center;
+		padding: 16px;
 	}
 
-	.auth-icon {
-		font-size: 2rem;
-		opacity: 0.5;
+	.lock-icon {
+		font-size: 1.5rem;
+		opacity: 0.7;
 	}
 
-	.auth-text {
+	.lock-title {
+		font-size: 0.9375rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+
+	.lock-desc {
 		font-size: 0.8125rem;
 		color: var(--text-secondary);
+		line-height: 1.4;
+		max-width: 240px;
+		margin: 0;
 	}
 
-	.auth-btn {
-		padding: 6px 20px;
+	.lock-btn {
+		margin-top: 4px;
+		padding: 8px 20px;
 		border-radius: 8px;
-		border: 1px solid var(--accent-primary);
+		border: none;
 		background: var(--accent-primary);
 		color: var(--text-inverse);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 		cursor: pointer;
+		transition: opacity 0.15s;
+	}
+
+	.lock-btn:hover {
+		opacity: 0.85;
 	}
 
 	.monitors-header {

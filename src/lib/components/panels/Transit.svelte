@@ -13,15 +13,21 @@
 	let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
 	async function loadAlerts() {
-		loading = true;
-		error = null;
-		const result = await fetchTransitAlerts();
-		if (result.error) {
-			error = result.error;
-		} else {
-			alerts = result.data || [];
+		try {
+			loading = true;
+			error = null;
+			const result = await fetchTransitAlerts();
+			if (result.error) {
+				error = result.error;
+			} else {
+				alerts = Array.isArray(result.data) ? result.data : [];
+			}
+		} catch (err) {
+			console.error('Transit panel error:', err);
+			error = 'Failed to load transit alerts';
+		} finally {
+			loading = false;
 		}
-		loading = false;
 	}
 
 	function startRefreshTimer() {
@@ -86,9 +92,10 @@
 						></span>
 						<span class="effect-label">{effectLabel(alert.effect)}</span>
 						{#if alert.routeIds && alert.routeIds.length > 0}
+							{@const uniqueRoutes = [...new Set(alert.routeIds)].slice(0, 4)}
 							<div class="route-badges">
-								{#each alert.routeIds.slice(0, 4) as route (route)}
-									<span class="route-badge">{route}</span>
+								{#each uniqueRoutes as route, i (i)}
+									<span class="route-badge">{route.replace(/-VIC$/i, '')}</span>
 								{/each}
 							</div>
 						{/if}
@@ -159,7 +166,7 @@
 	}
 
 	.effect-label {
-		font-size: 0.6875rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text-secondary);
 	}
@@ -171,7 +178,7 @@
 	}
 
 	.route-badge {
-		font-size: 0.625rem;
+		font-size: 0.75rem;
 		font-weight: 700;
 		padding: 1px 5px;
 		border-radius: 3px;
@@ -193,7 +200,7 @@
 	}
 
 	.alert-desc {
-		font-size: 0.6875rem;
+		font-size: 0.8125rem;
 		color: var(--text-secondary);
 		line-height: 1.4;
 		margin-top: 2px;
@@ -209,7 +216,7 @@
 		justify-content: space-between;
 		align-items: center;
 		margin-top: 4px;
-		font-size: 0.625rem;
+		font-size: 0.75rem;
 		color: var(--text-tertiary);
 	}
 

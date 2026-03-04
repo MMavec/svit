@@ -160,7 +160,7 @@
 		Object.fromEntries(
 			metrics
 				.filter((m) => m.sparkline.length >= 2)
-				.map((m) => [m.id, sparklinePath(m.sparkline, 64, 20)])
+				.map((m) => [m.id, sparklinePath(m.sparkline, 100, 28)])
 		)
 	);
 
@@ -203,9 +203,9 @@
 					<div class="sparkline-container">
 						{#if sparklinePaths[metric.id]}
 							<svg
-								width="64"
-								height="20"
-								viewBox="0 0 64 20"
+								width="100"
+								height="28"
+								viewBox="0 0 100 28"
 								class="sparkline"
 								role="img"
 								aria-label="{metric.label} trend over 7 days"
@@ -240,13 +240,13 @@
 	.pulse-header {
 		display: flex;
 		align-items: baseline;
-		gap: 6px;
-		padding-bottom: 8px;
+		gap: 8px;
+		padding-bottom: 12px;
 		border-bottom: 1px solid var(--border-primary);
 	}
 
 	.total-count {
-		font-size: 1.5rem;
+		font-size: 2.5rem;
 		font-weight: 700;
 		font-family: 'Geist Mono', monospace;
 		color: var(--text-primary);
@@ -254,14 +254,14 @@
 	}
 
 	.total-label {
-		font-size: 0.6875rem;
+		font-size: 0.875rem;
 		color: var(--text-tertiary);
 	}
 
 	.metric-list {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: 4px;
 		flex: 1;
 		overflow-y: auto;
 	}
@@ -269,8 +269,8 @@
 	.metric-row {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		padding: 5px 6px;
+		gap: 10px;
+		padding: 8px 8px;
 		border-radius: 6px;
 		transition: background 0.15s;
 	}
@@ -280,16 +280,16 @@
 	}
 
 	.metric-icon {
-		font-size: 0.875rem;
-		width: 20px;
+		font-size: 1.25rem;
+		width: 28px;
 		text-align: center;
 		flex-shrink: 0;
 	}
 
 	.metric-label {
-		font-size: 0.75rem;
+		font-size: 0.875rem;
 		color: var(--text-secondary);
-		width: 80px;
+		width: 90px;
 		flex-shrink: 0;
 	}
 
@@ -305,10 +305,10 @@
 	}
 
 	.metric-count {
-		font-size: 0.875rem;
+		font-size: 1.125rem;
 		font-weight: 700;
 		font-family: 'Geist Mono', monospace;
-		width: 32px;
+		width: 40px;
 		text-align: right;
 		flex-shrink: 0;
 	}

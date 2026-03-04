@@ -95,10 +95,41 @@
 
 <div class="connections">
 	{#if !authStore.isAuthenticated}
-		<div class="auth-prompt">
-			<div class="auth-icon">&#128279;</div>
-			<p class="auth-text">Sign in to track your civic connections</p>
-			<button class="auth-btn" onclick={() => (authStore.showAuthModal = true)}> Sign In </button>
+		<div class="locked-preview">
+			<div class="preview-content" aria-hidden="true">
+				<div class="preview-card">
+					<div class="preview-name">Marianne Alto</div>
+					<div class="preview-meta">
+						<span style="color: var(--accent-primary)">Victoria</span>
+						<span>Following</span>
+					</div>
+				</div>
+				<div class="preview-card">
+					<div class="preview-name">Ben Isitt</div>
+					<div class="preview-meta">
+						<span style="color: var(--accent-primary)">Victoria</span>
+						<span>Constituent</span>
+					</div>
+				</div>
+				<div class="preview-card">
+					<div class="preview-name">Ryan Windsor</div>
+					<div class="preview-meta">
+						<span style="color: #e8a87c">Saanich</span>
+						<span>Met</span>
+					</div>
+				</div>
+			</div>
+			<div class="locked-overlay">
+				<div class="lock-icon">&#128279;</div>
+				<div class="lock-title">Civic Connections</div>
+				<p class="lock-desc">
+					Track your relationships with local councillors and civic officials. Note meetings, follow
+					their activity, and stay connected.
+				</p>
+				<button class="lock-btn" onclick={() => (authStore.showAuthModal = true)}
+					>Sign In to Connect</button
+				>
+			</div>
 		</div>
 	{:else if loading}
 		<PanelSkeleton variant="list" />
@@ -185,35 +216,87 @@
 		height: 100%;
 	}
 
-	.auth-prompt {
+	.locked-preview {
+		position: relative;
+		flex: 1;
+		overflow: hidden;
+	}
+
+	.preview-content {
+		filter: blur(3px);
+		opacity: 0.45;
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.preview-card {
+		padding: 8px;
+		border-radius: 8px;
+		background: var(--bg-surface-hover);
+	}
+
+	.preview-name {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.preview-meta {
+		display: flex;
+		gap: 8px;
+		margin-top: 2px;
+		font-size: 0.75rem;
+		color: var(--text-tertiary);
+	}
+
+	.locked-overlay {
+		position: absolute;
+		inset: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 8px;
-		flex: 1;
+		gap: 6px;
 		text-align: center;
+		padding: 16px;
 	}
 
-	.auth-icon {
-		font-size: 2rem;
-		opacity: 0.5;
+	.lock-icon {
+		font-size: 1.5rem;
+		opacity: 0.7;
 	}
 
-	.auth-text {
+	.lock-title {
+		font-size: 0.9375rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+
+	.lock-desc {
 		font-size: 0.8125rem;
 		color: var(--text-secondary);
+		line-height: 1.4;
+		max-width: 240px;
+		margin: 0;
 	}
 
-	.auth-btn {
-		padding: 6px 20px;
+	.lock-btn {
+		margin-top: 4px;
+		padding: 8px 20px;
 		border-radius: 8px;
-		border: 1px solid var(--accent-primary);
+		border: none;
 		background: var(--accent-primary);
 		color: var(--text-inverse);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 		cursor: pointer;
+		transition: opacity 0.15s;
+	}
+
+	.lock-btn:hover {
+		opacity: 0.85;
 	}
 
 	.conn-header {
