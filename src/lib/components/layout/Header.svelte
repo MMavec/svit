@@ -6,9 +6,11 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { bookmarkStore } from '$lib/stores/bookmarks.svelte';
 	import { searchStore } from '$lib/stores/search.svelte';
+	import ShareDrawer from '$lib/components/ui/ShareDrawer.svelte';
 
 	let showBookmarks = $state(false);
 	let mobileMenuOpen = $state(false);
+	let showShareDrawer = $state(false);
 	let bookmarkCount = $derived(bookmarkStore.items.length);
 
 	function closeBookmarks(e: MouseEvent) {
@@ -93,7 +95,7 @@
 				{/if}
 			</button>
 			{#if showBookmarks}
-				<div class="bookmarks-flyout">
+				<div class="bookmarks-flyout" role="region" aria-label="Bookmarks">
 					<div class="flyout-header">
 						<span class="flyout-title">Bookmarks</span>
 						<span class="flyout-count">{bookmarkCount}</span>
@@ -126,6 +128,32 @@
 				</div>
 			{/if}
 		</div>
+		<button
+			class="header-btn"
+			onclick={() => (showShareDrawer = !showShareDrawer)}
+			aria-label="Share dashboard"
+			title="Share"
+		>
+			<svg
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<circle cx="18" cy="5" r="3" />
+				<circle cx="6" cy="12" r="3" />
+				<circle cx="18" cy="19" r="3" />
+				<line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+				<line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+			</svg>
+		</button>
+		{#if showShareDrawer}
+			<ShareDrawer onclose={() => (showShareDrawer = false)} />
+		{/if}
 		<ThemeToggle />
 
 		<!-- Secondary: visible on desktop, hidden on mobile (in hamburger) -->
@@ -626,8 +654,8 @@
 		}
 
 		.header-btn {
-			width: 32px;
-			height: 32px;
+			width: 40px;
+			height: 40px;
 		}
 
 		/* Hide secondary buttons on mobile */
@@ -638,6 +666,15 @@
 		/* Show hamburger on mobile */
 		.mobile-menu-wrapper {
 			display: block;
+		}
+
+		.bookmarks-flyout {
+			max-width: calc(100vw - 16px);
+			right: -8px;
+		}
+
+		.mobile-menu-flyout {
+			max-width: calc(100vw - 16px);
 		}
 	}
 </style>

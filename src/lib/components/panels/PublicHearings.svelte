@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { PublicHearing } from '$lib/types/index';
+	import { isValidHttpUrl } from '$lib/utils/sanitize';
 
 	// Seed data — public hearings will come from council agenda scraping
 	const seedHearings: PublicHearing[] = [
@@ -128,7 +129,7 @@
 							</div>
 						{/if}
 						<div class="hearing-actions">
-							{#if hearing.submissionUrl}
+							{#if isValidHttpUrl(hearing.submissionUrl)}
 								<a href={hearing.submissionUrl} target="_blank" rel="noopener" class="action-link"
 									>Submit Comment</a
 								>
@@ -158,7 +159,9 @@
 	{/if}
 
 	{#if filteredHearings.length === 0}
-		<div class="empty">No upcoming public hearings — check back before the next council cycle</div>
+		<div class="empty" role="status">
+			No upcoming public hearings — check back before the next council cycle
+		</div>
 	{/if}
 </div>
 

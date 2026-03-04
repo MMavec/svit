@@ -3,6 +3,7 @@
 	import { fetchNews } from '$lib/api/news';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { SocialPost, NewsItem } from '$lib/types/index';
+	import { isValidHttpUrl } from '$lib/utils/sanitize';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 
@@ -91,7 +92,12 @@
 			{#each filteredItems.slice(0, 25) as item (item.type === 'social' ? item.data.id : item.data.id)}
 				{#if item.type === 'social'}
 					{@const post = item.data}
-					<a href={post.url} target="_blank" rel="noopener" class="voice-item social-item">
+					<a
+						href={isValidHttpUrl(post.url) ? post.url : undefined}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="voice-item social-item"
+					>
 						<div class="voice-header">
 							{#if post.authorAvatar}
 								<img src={post.authorAvatar} alt="" class="avatar" />
@@ -115,7 +121,12 @@
 					</a>
 				{:else}
 					{@const article = item.data}
-					<a href={article.url} target="_blank" rel="noopener" class="voice-item news-item">
+					<a
+						href={isValidHttpUrl(article.url) ? article.url : undefined}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="voice-item news-item"
+					>
 						<div class="voice-header">
 							<span class="source-badge">{article.source}</span>
 							<span class="voice-time">{timeAgo(article.published)}</span>
@@ -127,7 +138,7 @@
 					</a>
 				{/if}
 			{:else}
-				<div class="empty">No community voices in this category yet</div>
+				<div class="empty" role="status">No community voices in this category yet</div>
 			{/each}
 		</div>
 	{/if}

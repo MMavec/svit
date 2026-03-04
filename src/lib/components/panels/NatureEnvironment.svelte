@@ -83,7 +83,7 @@
 	{:else if error}
 		<PanelError message={error} onRetry={loadData} />
 	{:else if readings.length === 0}
-		<div class="empty">No environmental readings available for this area yet</div>
+		<div class="empty" role="status">No environmental readings available for this area yet</div>
 	{:else}
 		{#if aqiReading}
 			<div class="aqi-hero" style="border-color: {envStatusColor(aqiReading.status)}">

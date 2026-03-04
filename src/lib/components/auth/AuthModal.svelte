@@ -242,12 +242,16 @@
 		font-size: 0.75rem;
 		color: var(--accent-danger);
 		margin-bottom: 8px;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
 	}
 
 	.success-msg {
 		font-size: 0.75rem;
 		color: var(--accent-secondary);
 		margin-bottom: 8px;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
 	}
 
 	.mode-switch {

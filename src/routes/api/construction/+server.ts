@@ -4,7 +4,19 @@ import type { ConstructionEvent } from '$lib/types/index';
 import { CRD_BBOX, municipalities } from '$lib/config/municipalities';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import {
+	parseLimit,
+	parseMunicipality,
+	parseEnum,
+	isJsonResponse
+} from '$lib/utils/api-validation';
+
+const validEventTypes = new Set([
+	'CONSTRUCTION',
+	'INCIDENT',
+	'SPECIAL_EVENT',
+	'WEATHER_CONDITION'
+] as const);
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -30,6 +42,7 @@ async function fetchDriveBCEvents(eventType?: string): Promise<ConstructionEvent
 		});
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!data.events || !Array.isArray(data.events)) return [];
@@ -77,7 +90,8 @@ async function fetchDriveBCEvents(eventType?: string): Promise<ConstructionEvent
 		}
 
 		return events;
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch DriveBC events:', err);
 		return [];
 	}
 }
@@ -210,7 +224,7 @@ function getSeedEvents(): ConstructionEvent[] {
 
 export const GET: RequestHandler = async ({ url }) => {
 	const municipality = parseMunicipality(url.searchParams.get('municipality'));
-	const eventType = url.searchParams.get('event_type');
+	const eventType = parseEnum(url.searchParams.get('event_type'), validEventTypes);
 	const limit = parseLimit(url.searchParams.get('limit'), 50);
 
 	let events = await fetchDriveBCEvents(eventType || undefined);

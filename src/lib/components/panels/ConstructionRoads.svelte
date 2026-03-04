@@ -120,7 +120,7 @@
 					{/if}
 				</div>
 			{:else}
-				<div class="empty">No active construction or road closures reported</div>
+				<div class="empty" role="status">No active construction or road closures reported</div>
 			{/each}
 		</div>
 	{/if}

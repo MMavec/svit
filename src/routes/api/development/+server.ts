@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { DevelopmentApplication } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -26,7 +26,7 @@ async function fetchVictoriaDevPermits(): Promise<DevelopmentApplication[]> {
 			}
 		);
 
-		if (!response.ok) {
+		if (!response.ok || !isJsonResponse(response)) {
 			// Try the ArcGIS Feature Server directly
 			return await fetchVictoriaArcGIS();
 		}
@@ -71,6 +71,7 @@ async function fetchVictoriaArcGIS(): Promise<DevelopmentApplication[]> {
 		);
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 		const data = await response.json();
 		if (!data.features) return [];
 
@@ -86,7 +87,8 @@ async function fetchVictoriaArcGIS(): Promise<DevelopmentApplication[]> {
 				);
 			}
 		);
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch development permits:', err);
 		return [];
 	}
 }

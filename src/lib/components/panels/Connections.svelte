@@ -171,7 +171,7 @@
 					</div>
 				</div>
 			{:else}
-				<div class="empty">No connections yet</div>
+				<div class="empty" role="status">No connections yet</div>
 			{/each}
 		</div>
 	{/if}

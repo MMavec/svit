@@ -61,6 +61,7 @@
 		<button
 			class="flag-toggle"
 			class:active={showFlaggedOnly}
+			aria-pressed={showFlaggedOnly}
 			onclick={() => {
 				showFlaggedOnly = !showFlaggedOnly;
 			}}
@@ -127,7 +128,7 @@
 					{/if}
 				</div>
 			{:else}
-				<div class="empty">No active development applications in this area</div>
+				<div class="empty" role="status">No active development applications in this area</div>
 			{/each}
 		</div>
 	{/if}

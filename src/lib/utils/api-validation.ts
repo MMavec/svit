@@ -14,3 +14,15 @@ export function parseMunicipality(raw: string | null): string | null {
 	if (!raw) return null;
 	return validSlugs.has(raw) ? raw : null;
 }
+
+/** Validate a parameter against an allowed set of values. Returns the value if valid, null otherwise. */
+export function parseEnum<T extends string>(raw: string | null, allowed: Set<T>): T | null {
+	if (!raw) return null;
+	return allowed.has(raw as T) ? (raw as T) : null;
+}
+
+/** Check that a fetch response has a JSON-compatible content-type */
+export function isJsonResponse(response: Response): boolean {
+	const ct = response.headers.get('content-type') || '';
+	return ct.includes('application/json') || ct.includes('text/json');
+}

@@ -110,7 +110,9 @@
 					</div>
 				</div>
 			{:else}
-				<div class="empty">No active transit alerts — service is running normally</div>
+				<div class="empty" role="status">
+					No active transit alerts — service is running normally
+				</div>
 			{/each}
 		</div>
 	{/if}

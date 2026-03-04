@@ -3,6 +3,7 @@
 	import { fetchNews } from '$lib/api/news';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
+	import { isValidHttpUrl } from '$lib/utils/sanitize';
 	import { newsSources } from '$lib/config/news-sources';
 	import type { NewsItem } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
@@ -104,8 +105,13 @@
 	{:else}
 		<div class="article-list">
 			{#each articles as article (article.id)}
-				<a href={article.url} target="_blank" rel="noopener" class="article-card">
-					{#if article.imageUrl}
+				<a
+					href={isValidHttpUrl(article.url) ? article.url : undefined}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="article-card"
+				>
+					{#if isValidHttpUrl(article.imageUrl)}
 						<div class="article-image">
 							<img src={article.imageUrl} alt="" loading="lazy" />
 						</div>
@@ -132,7 +138,7 @@
 					/>
 				</a>
 			{:else}
-				<div class="empty">No recent local news — check back soon</div>
+				<div class="empty" role="status">No recent local news — check back soon</div>
 			{/each}
 		</div>
 	{/if}

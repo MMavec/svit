@@ -4,7 +4,7 @@ import type { SafetyAlert } from '$lib/types/index';
 import { CRD_BBOX } from '$lib/config/municipalities';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -57,7 +57,8 @@ async function fetchWeatherAlerts(): Promise<SafetyAlert[]> {
 		}
 
 		return alerts;
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch weather alerts:', err);
 		return [];
 	}
 }
@@ -86,6 +87,7 @@ async function fetchWildfireAlerts(): Promise<SafetyAlert[]> {
 		);
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!data.features || !Array.isArray(data.features)) return [];
@@ -123,7 +125,8 @@ async function fetchWildfireAlerts(): Promise<SafetyAlert[]> {
 				source: 'bcws'
 			};
 		});
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch wildfire alerts:', err);
 		return [];
 	}
 }
@@ -150,6 +153,7 @@ async function fetchEarthquakes(): Promise<SafetyAlert[]> {
 		});
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!data.features || !Array.isArray(data.features)) return [];
@@ -183,7 +187,8 @@ async function fetchEarthquakes(): Promise<SafetyAlert[]> {
 				};
 			}
 		);
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch earthquake data:', err);
 		return [];
 	}
 }
@@ -212,6 +217,7 @@ async function fetchRoadIncidents(): Promise<SafetyAlert[]> {
 		});
 
 		if (!response.ok) return [];
+		if (!isJsonResponse(response)) return [];
 
 		const data = await response.json();
 		if (!data.events) return [];
@@ -246,7 +252,8 @@ async function fetchRoadIncidents(): Promise<SafetyAlert[]> {
 		}
 
 		return alerts;
-	} catch {
+	} catch (err) {
+		console.error('Failed to fetch road incidents:', err);
 		return [];
 	}
 }

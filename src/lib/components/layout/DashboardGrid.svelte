@@ -23,6 +23,7 @@
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import type { Component } from 'svelte';
 	import { onMount } from 'svelte';
+	import { urlState } from '$lib/stores/url-state.svelte';
 
 	// Tier 1 + 2: eagerly loaded
 	const panelComponents: Record<string, Component> = {
@@ -98,9 +99,10 @@
 	}
 
 	function onPointerDown(e: PointerEvent, panelId: string) {
-		// Only start drag from the header
+		// Only start drag from the header, excluding interactive elements
 		const target = e.target as HTMLElement;
 		if (!target.closest('.panel-header')) return;
+		if (target.closest('button, a, input, select, textarea')) return;
 
 		dragging = panelId;
 		const pos = layoutStore.getPosition(panelId);
@@ -149,6 +151,8 @@
 		<div
 			class="grid-cell"
 			class:dragging={dragging === panel.id}
+			class:focused={urlState.focusedPanel === panel.id}
+			class:dimmed={urlState.focusedPanel !== null && urlState.focusedPanel !== panel.id}
 			style={isMobile ? '' : getPanelStyle(panel.id)}
 			onpointerdown={isMobile ? undefined : (e) => onPointerDown(e, panel.id)}
 			onpointermove={isMobile ? undefined : onPointerMove}
@@ -165,7 +169,7 @@
 					{:else}
 						<div class="panel-placeholder">Coming soon...</div>
 					{/if}
-					{#snippet failed(error, reset)}
+					{#snippet failed(_error, reset)}
 						<PanelError message="This panel encountered an error" onRetry={reset} />
 					{/snippet}
 				</svelte:boundary>
@@ -194,6 +198,15 @@
 		transition: none;
 		z-index: 100;
 		opacity: 0.9;
+		cursor: grabbing;
+	}
+
+	.grid-cell :global(.panel-header) {
+		cursor: grab;
+	}
+
+	.grid-cell.dragging :global(.panel-header) {
+		cursor: grabbing;
 	}
 
 	.grid-cell > :global(.panel) {
@@ -219,6 +232,20 @@
 	.dashboard-grid.mobile .grid-cell > :global(.panel) {
 		height: auto;
 		min-height: 180px;
+	}
+
+	.grid-cell.focused {
+		z-index: 10;
+		box-shadow: 0 0 0 2px var(--accent-primary);
+		border-radius: 12px;
+	}
+
+	.grid-cell.dimmed {
+		opacity: 0.35;
+		transition:
+			top 0.3s ease,
+			left 0.3s ease,
+			opacity 0.3s ease;
 	}
 
 	/* Tablet: 2-column grid */

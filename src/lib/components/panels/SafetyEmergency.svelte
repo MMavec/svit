@@ -3,6 +3,7 @@
 	import { fetchSafetyAlerts } from '$lib/api/safety';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
+	import { isValidHttpUrl } from '$lib/utils/sanitize';
 	import type { SafetyAlert } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
@@ -115,7 +116,7 @@
 	{:else if error}
 		<PanelError message={error} onRetry={loadAlerts} />
 	{:else if alerts.length === 0}
-		<div class="all-clear">
+		<div class="all-clear" role="status">
 			<div class="check-icon">&#10003;</div>
 			<div class="clear-text">No active alerts</div>
 			<div class="clear-sub">All clear in the CRD</div>
@@ -156,8 +157,10 @@
 					{/if}
 					<div class="alert-footer">
 						<span class="source-agency">{alert.sourceAgency}</span>
-						{#if alert.url}
-							<a href={alert.url} target="_blank" rel="noopener" class="more-link"> More info </a>
+						{#if isValidHttpUrl(alert.url)}
+							<a href={alert.url} target="_blank" rel="noopener noreferrer" class="more-link">
+								More info
+							</a>
 						{/if}
 					</div>
 				</div>

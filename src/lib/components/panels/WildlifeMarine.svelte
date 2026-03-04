@@ -84,7 +84,7 @@
 	{:else if error}
 		<PanelError message={error} onRetry={loadData} />
 	{:else if sightings.length === 0}
-		<div class="empty">No recent sightings</div>
+		<div class="empty" role="status">No recent sightings</div>
 	{:else}
 		<div class="sighting-list">
 			{#each sightings as sighting (sighting.id)}

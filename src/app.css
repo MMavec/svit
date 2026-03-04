@@ -20,6 +20,7 @@ html {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	height: 100%;
+	line-height: 1.5;
 }
 
 body {
@@ -51,7 +52,7 @@ pre,
 
 	--text-primary: #e2e8f0;
 	--text-secondary: #a0aec0;
-	--text-tertiary: #718096;
+	--text-tertiary: #8b9bb4;
 	--text-inverse: #0a0e1a;
 
 	--accent-primary: #63b3ed;
@@ -73,7 +74,7 @@ pre,
 	--palette-green: #38a169;
 	--palette-pink: #f687b3;
 	--palette-sky: #76e4f7;
-	--palette-muted: #718096;
+	--palette-muted: #5a6578;
 
 	--panel-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
 	--panel-radius: 12px;

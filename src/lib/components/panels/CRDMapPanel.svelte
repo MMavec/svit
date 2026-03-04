@@ -4,10 +4,12 @@
 	import { fetchConstruction } from '$lib/api/construction';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { MapFeature, DevelopmentApplication, ConstructionEvent } from '$lib/types/index';
+	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import { constructionSeverityColor } from '$lib/utils/color-maps';
 
 	let features = $state<MapFeature[]>([]);
+	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let showDevelopment = $state(true);
 	let showConstruction = $state(true);
@@ -53,6 +55,7 @@
 	}
 
 	async function loadFeatures() {
+		loading = true;
 		error = null;
 		const slug = municipalityStore.slug;
 		const [devResult, conResult] = await Promise.all([
@@ -74,6 +77,7 @@
 			.filter((f): f is MapFeature => f !== null);
 
 		features = [...devFeatures, ...conFeatures];
+		loading = false;
 	}
 
 	$effect(() => {
@@ -82,7 +86,9 @@
 	});
 </script>
 
-{#if error}
+{#if loading}
+	<PanelSkeleton variant="card" />
+{:else if error}
 	<PanelError message={error} onRetry={loadFeatures} />
 {:else}
 	<div class="map-panel">

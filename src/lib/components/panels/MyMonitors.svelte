@@ -225,7 +225,7 @@
 					</div>
 				</div>
 			{:else}
-				<div class="empty">
+				<div class="empty" role="status">
 					{showAdd
 						? 'Create your first monitor above'
 						: 'No monitors yet — tap + Add to create one'}

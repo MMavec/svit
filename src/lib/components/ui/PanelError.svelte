@@ -8,7 +8,7 @@
 </script>
 
 <div class="panel-error" role="alert">
-	<span class="error-icon">&#x26A0;</span>
+	<span class="error-icon" aria-hidden="true">&#x26A0;</span>
 	<span class="error-message">{message}</span>
 	{#if onRetry}
 		<button class="retry-btn" onclick={onRetry}>Try again</button>
@@ -41,8 +41,8 @@
 
 	.retry-btn {
 		margin-top: 2px;
-		padding: 3px 12px;
-		font-size: 0.6875rem;
+		padding: 6px 16px;
+		font-size: 0.75rem;
 		font-weight: 500;
 		border: 1px solid var(--border-primary);
 		border-radius: 6px;

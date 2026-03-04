@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **GTFS-RT**: `gtfs-realtime-bindings` for BC Transit protobuf alert decoding
 - **Auth/DB**: Supabase (auth store + modal wired, optional accounts only)
 - **Fonts**: Inter (body) + Geist Mono (data/monospace)
+- **Caching**: IndexedDB (`svit-cache`) — per-endpoint TTL, stale-while-revalidate, fire-and-forget writes
 - **Persistence**: localStorage (anonymous) + Supabase (future, logged-in users)
 
 ## Commands
@@ -75,7 +76,7 @@ Every panel follows the same structure: local `$state` for data/loading, `$effec
 
 ### Reactive State (Svelte 5 Runes)
 
-Seven stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
+Nine stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
 
 - **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`, `isAllCRD`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
 - **`theme.svelte.ts`** — Dark/light theme (exported as `theme`, not `themeStore`). Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark. Methods: `toggle()`, `init()`.
@@ -84,6 +85,8 @@ Seven stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStora
 - **`auth.svelte.ts`** — Supabase auth state (user, session, loading). Methods: `signInWithEmail()`, `signUpWithEmail()`, `signOut()`, `resetPassword()`.
 - **`bookmarks.svelte.ts`** — Item bookmarking with localStorage persistence. Methods: `add()`, `remove()`, `removeByExternalId()`, `has()`, `getByType()`. Used by `BookmarkButton.svelte` in council, news, development, and events panels.
 - **`search.svelte.ts`** — Cross-panel global search with 300ms debounce. Searches 5 API sources (council, news, development, events, safety). Methods: `open()`, `close()`, query getter/setter. Keyboard shortcut: Cmd+K / Ctrl+K.
+- **`url-state.svelte.ts`** — URL param synchronization (`?m=`, `?panel=`, `?q=`). Methods: `initialize()`, `setMunicipality()`, `focusPanel()`, `setSearchQuery()`, `getShareUrl()`. Municipality uses `replaceState`, panel focus uses `pushState` (enables Back button).
+- **`leads.svelte.ts`** — Lead capture state (submitted/dismissed) with localStorage persistence (`svit-lead-capture`). Methods: `shouldShowPrompt()`, `submitLead()`, `dismiss()`, `openModal()`, `markSubmitted()`.
 
 ### API Proxy Pattern
 
@@ -97,7 +100,18 @@ All external data fetched through SvelteKit server routes at `src/routes/api/*/+
 
 Client-side fetch via thin wrappers in `src/lib/api/*.ts` → generic `apiFetch<T>()` in `fetcher.ts`.
 
-Cache tiers: 5min (news, social, transit, safety), 15min (council, development, construction, weather-tides), future: 6hrs (tides-only), 24hrs (GIS).
+### IndexedDB Cache Layer (`src/lib/cache/idb-cache.ts`)
+
+Transparent caching at the `apiFetch` level — all 13 API clients and 23 panels benefit automatically with zero changes:
+
+1. **Fresh cache** (within TTL): Return immediately, skip network
+2. **Network success**: Store result in cache, return fresh data
+3. **Network error**: Return stale cache (if <24h old) with `meta._cached: true` and `meta._cachedAt`
+4. AbortError re-thrown (preserves panel cancellation)
+
+Per-endpoint TTL: 2min (safety, transit), 5min (news, social, construction), 15min (council, development, weather-tides, environment), 30min (events, wildlife, trees), 60min (housing, budget). Auto-cleanup of entries >24h old on first load.
+
+Vercel edge cache tiers: 5min (news, social, transit, safety), 15min (council, development, construction, weather-tides), future: 6hrs (tides-only), 24hrs (GIS).
 
 ### Implemented API Routes
 
@@ -119,6 +133,16 @@ Cache tiers: 5min (news, social, transit, safety), 15min (council, development, 
 | `GET /api/environment`   | AQICN air quality via `AQICN_API_TOKEN` + ONC ocean temperature (VENUS observatory)                                | 8 readings (AQI, PM2.5, UV, pollen, water, ocean)     |
 
 All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`. Development accepts `?flagged=true`. Construction accepts `?event_type=CONSTRUCTION|INCIDENT`. Events accepts `?category=`. Budget accepts `?type=revenue|expenditure`. Wildlife accepts `?category=`. Trees accepts `?heritage=true`.
+
+**Non-panel API routes**:
+
+- `POST /api/leads` — Lead capture submission. Server-side validation (email regex, consent check), upsert on email, social accounts stored separately. Returns `{ success: true }` or `{ error }`. Requires Supabase (503 if unconfigured).
+
+**SSR Share Route** (`/share`):
+
+- `src/routes/share/+layout.ts` — Overrides parent's `ssr = false` with `ssr = true` for social crawler compatibility
+- `src/routes/share/+page.server.ts` — Generates dynamic OG meta tags from `?m=` and `?panel=` params
+- `src/routes/share/+page.svelte` — Renders `<svelte:head>` OG tags + `<meta http-equiv="refresh">` redirect to main SPA
 
 **Panels without API routes**: Bylaw Tracker, Public Hearings, and Demographics use local seed data only (no external API). Voices combines social + news API data.
 
@@ -195,19 +219,19 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 - **Svelte 5 runes only** — no legacy `writable`/`readable` stores
 - **Svelte 5 event handling** — no modifier syntax (`onclick|stopPropagation` is invalid). Use wrapper functions: `onclick={(e) => { e.stopPropagation(); handler(); }}`
 - **Stores** in `.svelte.ts` files using `$state`, `$derived`, `$effect`
-- **TypeScript strict** — all interfaces in `src/lib/types/index.ts`
-- **SSR disabled** — `src/routes/+layout.ts` exports `ssr = false` (client-only SPA)
+- **TypeScript strict** — all interfaces in `src/lib/types/index.ts` (includes `Lead`, `LeadSocialAccount`, `LeadSubmission` types and `_cached`/`_cachedAt` in `ApiResponse.meta`)
+- **SSR disabled** — `src/routes/+layout.ts` exports `ssr = false` (client-only SPA). Exception: `/share` route re-enables SSR for OG meta tag generation.
 - **Panel components** in `src/lib/components/panels/`, each manages its own data loading + municipality reactivity
 - **API clients** in `src/lib/api/`, thin wrappers around `apiFetch<T>()`
 - **`$lib/` imports must NOT use `.ts` extensions** — only relative imports can (due to `rewriteRelativeImportExtensions: true` in tsconfig)
 - **Municipality attribution** — every data item tagged with its municipality slug for filtering. Attribution uses coordinate-in-bbox matching first, then text matching against municipality names.
 - **Seed data** — every API route has hardcoded fallback arrays for when live APIs fail. Routes never throw.
 - **Prettier**: tabs, single quotes, no trailing commas, 100-char width, svelte plugin
-- **Testing**: Vitest with jsdom environment (`npm run test`). `globals: true` in vite config — `describe`, `it`, `expect` available without imports. Test setup (`src/test-setup.ts`) mocks localStorage + matchMedia. Tests colocated at `src/lib/*/__tests__/*.test.ts`. Playwright E2E smoke tests in `tests/*.e2e.ts` (`npm run test:e2e`).
+- **Testing**: Vitest with jsdom environment (`npm run test`). `globals: true` in vite config — `describe`, `it`, `expect` available without imports. Test setup (`src/test-setup.ts`) mocks localStorage + matchMedia. Tests colocated at `src/lib/*/__tests__/*.test.ts`. Playwright E2E tests in `tests/*.e2e.ts` (`npm run test:e2e`) — 9 files, 72 tests. E2E tests run against preview build (`localhost:4173`). Use stable selectors (`data-panel-id`, `role`, `aria-label`, CSS classes). Lead capture tests need `test.setTimeout(80_000)` due to 30s banner delay.
 - **ESLint**: `@typescript-eslint/no-unused-vars` allows `_` prefix for unused vars/args. In `.svelte.ts` files, `svelte/prefer-svelte-reactivity` flags `new Date()` — extract to helper functions.
 - **Loading states**: `PanelSkeleton.svelte` component provides shimmer skeletons (variants: `list`, `card`, `chart`, `hero`). All panels use it during loading. Skeleton unmount auto-triggers data freshness timestamp via Svelte context.
 - **Error states**: `PanelError.svelte` component with message and optional retry callback (`role="alert"`). All panels display it when API calls fail.
-- **Data freshness**: `DataFreshness.svelte` shows relative timestamp ("Just now", "3m ago") in panel headers. Auto-updates via `Panel.svelte` context — no per-panel wiring needed.
+- **Data freshness**: `DataFreshness.svelte` shows relative timestamp ("Just now", "3m ago") in panel headers with green/amber/red color coding (fresh <2min, recent 2-10min, stale >10min). Shows "Cached" badge when serving stale IndexedDB data. Auto-updates via `Panel.svelte` context — no per-panel wiring needed.
 - **API validation**: `parseLimit()` and `parseMunicipality()` from `$lib/utils/api-validation` — used in all API routes to clamp limits and validate municipality slugs.
 
 ## Environment Variables
@@ -222,29 +246,33 @@ ONC_API_TOKEN=              # Free from data.oceannetworks.ca
 PUBLIC_MAPTILER_KEY=        # Free tier (optional — currently using CARTO basemaps, no key needed)
 ```
 
-## Database (Supabase — Phase 4)
+## Database (Supabase)
 
-Supabase with 4 tables (all with RLS):
+Supabase with 6 tables (all with RLS):
 
 - `profiles` — extends auth.users (display_name, default_municipality, theme_preference)
 - `monitors` — custom keyword alerts (keyword, municipality filter, source filter)
 - `connections` — civic contact tracking (name, municipality, relationship, notes)
 - `threads` — discussion threads (title, municipality, messages JSONB)
+- `leads` — visitor lead capture (email unique, phone, name, municipality_interest, interests[], consent flags, source, user_agent, referrer). RLS: INSERT-only for anon.
+- `lead_social_accounts` — social handles per lead (lead_id FK, platform, handle). RLS: INSERT-only for anon. Unique on (lead_id, platform).
 
-Additional future tables:
+Admin reads all data via Supabase dashboard (service role bypasses RLS).
 
-- `layout_preferences` — saved panel grid positions (JSONB)
-- `saved_items` — bookmarked meetings/bylaws/news (item_type, external_id, metadata JSONB)
+Future tables: `layout_preferences` (saved grid positions), `saved_items` (bookmarked items).
 
 ## Cross-Panel Features
 
 - **Global Search** (`SearchOverlay.svelte`): Full-screen overlay searching council, news, development, events, safety. Cmd+K shortcut. Results categorized with badges.
 - **Item Bookmarks** (`BookmarkButton.svelte` + `bookmarks.svelte.ts`): Star icon on council, news, development, event items. localStorage-persisted. Flyout in header shows saved items.
 - **Monitor Matching** (`monitor-matcher.ts`): MyMonitors panel scans 5 API sources for keyword matches. Case-insensitive, source-filtered, grouped by monitor with expandable match lists.
+- **Shareable URL State** (`url-state.svelte.ts`): Municipality, focused panel, and search query reflected in URL params (`?m=victoria&panel=council-watch&q=transit`). Back button unfocuses panels. Validated against config.
+- **Social Sharing** (`ShareDrawer.svelte` + `ShareButton.svelte`): Share buttons in header and panel headers. Twitter/X, Facebook, Instagram, TikTok via URL intent links (no JS SDKs). Copy-link with clipboard feedback. Share URLs point to `/share` SSR route for OG tag support.
+- **Lead Capture** (`LeadCaptureBanner.svelte` + `LeadCaptureModal.svelte`): Bottom banner appears after 30s delay. Quick email subscribe or full 3-step modal (email → social accounts → interests/consent). Supabase backend with INSERT-only RLS. localStorage tracks dismiss/submit state.
 
 ## Implementation Status
 
-Phases 0–10 complete. All 23 panels are live across all 4 tiers. Tier 4 panels (My Monitors, Connections, Threads, Demographics) require Supabase auth to be configured for full functionality — they gracefully show auth prompts when Supabase is unconfigured. 85 unit tests, 7 E2E smoke tests.
+Phases 0–11 complete. All 23 panels live across 4 tiers. 121 unit tests, 72 E2E tests (9 files). Tier 4 panels require Supabase auth. Lead capture requires Supabase (graceful 503 if unconfigured).
 
 ### Phase 5 Additions
 
@@ -297,7 +325,17 @@ Phases 0–10 complete. All 23 panels are live across all 4 tiers. Tier 4 panels
 - **Sparkline memoization**: Pre-computed `$derived` sparkline paths in Pulse (avoid re-running D3 on every render)
 - **Lazy loading**: Tier 3/4 panels (11 of 23) loaded via dynamic `import()` through `LazyPanel.svelte` — reduces initial bundle
 - **SEO**: Open Graph, Twitter Card meta tags, JSON-LD `WebApplication` structured data in `app.html`
-- **E2E tests**: Playwright config + 7 smoke tests (page load, panels render, theme toggle, search overlay, no console errors)
+- **E2E tests**: Initial Playwright config + 7 smoke tests (expanded to 72 tests in Phase 11)
+
+### Phase 11: Growth Features & E2E Testing
+
+- **IndexedDB cache layer**: `src/lib/cache/idb-cache.ts` — transparent stale-while-revalidate at `apiFetch` level. Per-endpoint TTL (2-60min). Silent degradation. 13 unit tests.
+- **Data freshness enhancement**: Cached data shows "Cached" badge with amber/red aging. `meta._cached` and `meta._cachedAt` threaded through Panel → DataFreshness.
+- **Shareable URL state**: `url-state.svelte.ts` — municipality, panel focus, search query in URL params. `pushState` for panel focus (Back button), `replaceState` for municipality/search.
+- **Social sharing**: `ShareDrawer.svelte` + `ShareButton.svelte` — Twitter/X, Facebook, Instagram, TikTok via URL intents (no JS SDKs). `/share` SSR route for OG meta tags with client redirect.
+- **Lead capture system**: Banner (30s delay) + 3-step modal (email → social → interests/consent). Supabase INSERT-only RLS. `POST /api/leads` with server-side validation + upsert on email.
+- **E2E test suite**: 72 Playwright tests across 9 files (smoke, panels, municipality, search, theme, bookmarks, navigation, url-sharing, lead-capture). `screenshot: 'only-on-failure'`, `retries: 1`.
+- **DashboardGrid drag fix**: Panel header drag handler now excludes `button, a, input, select, textarea` — clicking collapse/focus/share buttons no longer initiates drag.
 
 ### Earlier Improvements
 
