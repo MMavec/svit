@@ -28,7 +28,9 @@
 	// Collapsed state shared from Panel children via context
 	let collapsedMap = $state<Record<string, boolean>>({});
 	setContext('grid:setCollapsed', (id: string, collapsed: boolean) => {
-		collapsedMap = { ...collapsedMap, [id]: collapsed };
+		if (collapsedMap[id] !== collapsed) {
+			collapsedMap = { ...collapsedMap, [id]: collapsed };
+		}
 	});
 
 	// Tier 1 + 2: eagerly loaded

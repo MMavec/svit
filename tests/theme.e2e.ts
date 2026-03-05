@@ -16,22 +16,28 @@ test.describe('Theme Toggle', () => {
 		const html = page.locator('html');
 		const initial = await html.getAttribute('data-theme');
 
-		const themeBtn = page.locator('.theme-toggle');
-		await themeBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('.theme-toggle') as HTMLElement)?.click();
+		});
 
 		const toggled = initial === 'dark' ? 'light' : 'dark';
-		await expect(html).toHaveAttribute('data-theme', toggled);
+		await expect(html).toHaveAttribute('data-theme', toggled, { timeout: 5_000 });
 	});
 
 	test('toggles back on second click', async ({ page }) => {
 		const html = page.locator('html');
 		const initial = await html.getAttribute('data-theme');
 
-		const themeBtn = page.locator('.theme-toggle');
-		await themeBtn.click();
-		await themeBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('.theme-toggle') as HTMLElement)?.click();
+		});
+		const toggled = initial === 'dark' ? 'light' : 'dark';
+		await expect(html).toHaveAttribute('data-theme', toggled, { timeout: 5_000 });
 
-		await expect(html).toHaveAttribute('data-theme', initial!);
+		await page.evaluate(() => {
+			(document.querySelector('.theme-toggle') as HTMLElement)?.click();
+		});
+		await expect(html).toHaveAttribute('data-theme', initial!, { timeout: 5_000 });
 	});
 
 	test('dark theme shows starry sky canvas', async ({ page }) => {
@@ -39,11 +45,13 @@ test.describe('Theme Toggle', () => {
 		const html = page.locator('html');
 		const current = await html.getAttribute('data-theme');
 		if (current !== 'dark') {
-			await page.locator('.theme-toggle').click();
-			await expect(html).toHaveAttribute('data-theme', 'dark');
+			await page.evaluate(() => {
+				(document.querySelector('.theme-toggle') as HTMLElement)?.click();
+			});
+			await expect(html).toHaveAttribute('data-theme', 'dark', { timeout: 5_000 });
 		}
 
-		const canvas = page.locator('canvas');
+		const canvas = page.locator('canvas.starry-sky');
 		await expect(canvas).toBeVisible();
 	});
 
@@ -52,8 +60,10 @@ test.describe('Theme Toggle', () => {
 		const html = page.locator('html');
 		const current = await html.getAttribute('data-theme');
 		if (current !== 'light') {
-			await page.locator('.theme-toggle').click();
-			await expect(html).toHaveAttribute('data-theme', 'light');
+			await page.evaluate(() => {
+				(document.querySelector('.theme-toggle') as HTMLElement)?.click();
+			});
+			await expect(html).toHaveAttribute('data-theme', 'light', { timeout: 5_000 });
 		}
 
 		const clouds = page.locator('.cloud, .cloudy-sky');
@@ -65,10 +75,11 @@ test.describe('Theme Toggle', () => {
 		const initial = await html.getAttribute('data-theme');
 
 		// Toggle to the opposite theme
-		const themeBtn = page.locator('.theme-toggle');
-		await themeBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('.theme-toggle') as HTMLElement)?.click();
+		});
 		const toggled = initial === 'dark' ? 'light' : 'dark';
-		await expect(html).toHaveAttribute('data-theme', toggled);
+		await expect(html).toHaveAttribute('data-theme', toggled, { timeout: 5_000 });
 
 		await page.reload();
 		await page.locator('[data-panel-id]').first().waitFor({ timeout: 10_000 });

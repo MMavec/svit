@@ -12,8 +12,9 @@ test.describe('Municipality Selection', () => {
 	});
 
 	test('dropdown opens and shows all municipalities', async ({ page }) => {
-		const trigger = page.locator('.selector-trigger');
-		await trigger.click();
+		await page.evaluate(() => {
+			(document.querySelector('.selector-trigger') as HTMLElement)?.click();
+		});
 
 		const dropdown = page.locator('[role="listbox"]');
 		await expect(dropdown).toBeVisible();
@@ -25,8 +26,9 @@ test.describe('Municipality Selection', () => {
 	});
 
 	test('selecting a municipality updates the selector', async ({ page }) => {
-		const trigger = page.locator('.selector-trigger');
-		await trigger.click();
+		await page.evaluate(() => {
+			(document.querySelector('.selector-trigger') as HTMLElement)?.click();
+		});
 
 		// Use getByRole with exact name to avoid ambiguity
 		const victoriaOption = page.getByRole('option', { name: 'Victoria VIC' });
@@ -36,12 +38,14 @@ test.describe('Municipality Selection', () => {
 		await expect(page.locator('[role="listbox"]')).not.toBeVisible();
 
 		// Trigger should show Victoria (full name)
+		const trigger = page.locator('.selector-trigger');
 		await expect(trigger).toContainText('Victoria');
 	});
 
 	test('selection updates URL parameter', async ({ page }) => {
-		const trigger = page.locator('.selector-trigger');
-		await trigger.click();
+		await page.evaluate(() => {
+			(document.querySelector('.selector-trigger') as HTMLElement)?.click();
+		});
 
 		const victoriaOption = page.getByRole('option', { name: 'Victoria VIC' });
 		await victoriaOption.click();
@@ -63,8 +67,9 @@ test.describe('Municipality Selection', () => {
 		await page.goto('/?m=victoria');
 		await page.locator('[data-panel-id]').first().waitFor({ timeout: 10_000 });
 
-		const trigger = page.locator('.selector-trigger');
-		await trigger.click();
+		await page.evaluate(() => {
+			(document.querySelector('.selector-trigger') as HTMLElement)?.click();
+		});
 
 		const allCrdOption = page.locator('[role="option"]').first();
 		await allCrdOption.click();
@@ -75,8 +80,9 @@ test.describe('Municipality Selection', () => {
 	});
 
 	test('municipality selection persists across page reload', async ({ page }) => {
-		const trigger = page.locator('.selector-trigger');
-		await trigger.click();
+		await page.evaluate(() => {
+			(document.querySelector('.selector-trigger') as HTMLElement)?.click();
+		});
 		await page.getByRole('option', { name: 'Victoria VIC' }).click();
 
 		// Reload

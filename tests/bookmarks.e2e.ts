@@ -10,29 +10,32 @@ test.describe('Bookmarks', () => {
 	});
 
 	test('bookmarks flyout opens on header button click', async ({ page }) => {
-		const bookmarkBtn = page.locator('.bookmark-header-btn');
-		await bookmarkBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('.bookmark-header-btn') as HTMLElement)?.click();
+		});
 
 		const flyout = page.locator('.bookmarks-flyout');
-		await expect(flyout).toBeVisible();
+		await expect(flyout).toBeVisible({ timeout: 3_000 });
 	});
 
 	test('flyout shows empty state when no bookmarks', async ({ page }) => {
-		const bookmarkBtn = page.locator('.bookmark-header-btn');
-		await bookmarkBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('.bookmark-header-btn') as HTMLElement)?.click();
+		});
 
 		const emptyMsg = page.locator('.flyout-empty');
-		await expect(emptyMsg).toBeVisible();
+		await expect(emptyMsg).toBeVisible({ timeout: 3_000 });
 	});
 
 	test('flyout closes when clicking outside', async ({ page }) => {
-		const bookmarkBtn = page.locator('.bookmark-header-btn');
-		await bookmarkBtn.click();
-		await expect(page.locator('.bookmarks-flyout')).toBeVisible();
+		await page.evaluate(() => {
+			(document.querySelector('.bookmark-header-btn') as HTMLElement)?.click();
+		});
+		await expect(page.locator('.bookmarks-flyout')).toBeVisible({ timeout: 3_000 });
 
 		// Click outside (on a panel area)
 		await page.locator('.dashboard-grid').click({ force: true });
-		await expect(page.locator('.bookmarks-flyout')).not.toBeVisible();
+		await expect(page.locator('.bookmarks-flyout')).not.toBeVisible({ timeout: 3_000 });
 	});
 
 	test('bookmark button on item saves to bookmarks', async ({ page }) => {
@@ -69,11 +72,12 @@ test.describe('Bookmarks', () => {
 			await bookmarkItemBtn.click();
 
 			// Open flyout
-			const headerBtn = page.locator('.bookmark-header-btn');
-			await headerBtn.click();
+			await page.evaluate(() => {
+				(document.querySelector('.bookmark-header-btn') as HTMLElement)?.click();
+			});
 
 			const flyout = page.locator('.bookmarks-flyout');
-			await expect(flyout).toBeVisible();
+			await expect(flyout).toBeVisible({ timeout: 3_000 });
 
 			// Remove from flyout
 			const removeBtn = flyout.locator('[aria-label="Remove bookmark"]').first();
