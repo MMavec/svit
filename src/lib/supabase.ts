@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import { env } from '$env/dynamic/public';
+
+const supabaseUrl = env.PUBLIC_SUPABASE_URL ?? '';
+const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
 export const supabase =
-	PUBLIC_SUPABASE_URL && PUBLIC_SUPABASE_ANON_KEY
-		? createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
-		: null;
+	supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 export function isConfigured(): boolean {
 	return supabase !== null;
