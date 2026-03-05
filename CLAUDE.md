@@ -61,12 +61,12 @@ Municipality selector → municipalityStore (reactive) → panels read store.slu
 
 Single-page dashboard with a 12-column draggable grid (60px rows, 12px gap). Panels are absolutely positioned via `layoutStore` and draggable from their headers via pointer events. Layout persists to localStorage.
 
-23 panels across 4 priority tiers:
+22 panels across 4 priority tiers:
 
-- **Tier 1** (implemented): Council Watch, Bylaw Tracker, Voices, Public Hearings, Development Watch, Councillor Profiles
-- **Tier 2** (implemented): Local Wire, CRD Map (MapLibre), Pulse (D3), Construction & Roads, Transit, Safety & Emergency
-- **Tier 3** (implemented): Weather & Tides, Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment
-- **Tier 4** (implemented, requires account): My Monitors, Connections, Threads, Demographics
+- **Tier 1** (eagerly loaded): Council Watch, Bylaw Tracker, Voices, Public Hearings, Development Watch, Councillors & Mayors
+- **Tier 2** (eagerly loaded): Local Wire, Pulse (D3), Construction & Roads, Transit, Safety & Emergency, Weather & Tides
+- **Tier 3** (lazily loaded): Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment, Demographics
+- **Tier 4** (auth-gated, lazily loaded): My Monitors, Connections, Threads
 
 Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components. Tier 1+2 are eagerly loaded via `panelComponents: Record<string, Component>`. Tier 3+4 are lazily loaded via `lazyPanels: Record<string, () => Promise<...>>` using dynamic `import()` and `LazyPanel.svelte` wrapper — new panels in Tier 3/4 only need a `lazyPanels` entry. All panels are wrapped in `<svelte:boundary>` for error isolation — a crashing panel shows a retry button instead of breaking the dashboard.
 
@@ -76,17 +76,18 @@ Every panel follows the same structure: local `$state` for data/loading, `$effec
 
 ### Reactive State (Svelte 5 Runes)
 
-Nine stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
+Ten stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
 
 - **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`, `isAllCRD`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
 - **`theme.svelte.ts`** — Dark/light theme (exported as `theme`, not `themeStore`). Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark. Methods: `toggle()`, `init()`.
-- **`layout.svelte.ts`** — Panel grid positions (id → {x, y, w, h}). Methods: `getPosition()`, `updatePosition()`, `reset()`.
+- **`layout.svelte.ts`** — Panel grid positions (id → {x, y, w, h}). Methods: `getPosition()`, `updatePosition()`, `updateAll()`, `reset()`. `updateAll()` enables atomic position swaps for dashboard mode switching.
 - **`refresh.svelte.ts`** — Auto-refresh toggle + per-panel intervals. Methods: `toggle()`, `getInterval(panelId)`.
 - **`auth.svelte.ts`** — Supabase auth state (user, session, loading). Methods: `signInWithEmail()`, `signUpWithEmail()`, `signOut()`, `resetPassword()`.
 - **`bookmarks.svelte.ts`** — Item bookmarking with localStorage persistence. Methods: `add()`, `remove()`, `removeByExternalId()`, `has()`, `getByType()`. Used by `BookmarkButton.svelte` in council, news, development, and events panels.
 - **`search.svelte.ts`** — Cross-panel global search with 300ms debounce. Searches 5 API sources (council, news, development, events, safety). Methods: `open()`, `close()`, query getter/setter. Keyboard shortcut: Cmd+K / Ctrl+K.
-- **`url-state.svelte.ts`** — URL param synchronization (`?m=`, `?panel=`, `?q=`). Methods: `initialize()`, `setMunicipality()`, `focusPanel()`, `setSearchQuery()`, `getShareUrl()`. Municipality uses `replaceState`, panel focus uses `pushState` (enables Back button).
+- **`url-state.svelte.ts`** — URL param synchronization (`?m=`, `?panel=`, `?q=`, `?mode=`). Methods: `initialize()`, `setMunicipality()`, `focusPanel()`, `setSearchQuery()`, `setMode()`, `getShareUrl()`. Municipality uses `replaceState`, panel focus uses `pushState` (enables Back button).
 - **`leads.svelte.ts`** — Lead capture state (submitted/dismissed) with localStorage persistence (`svit-lead-capture`). Methods: `shouldShowPrompt()`, `submitLead()`, `dismiss()`, `openModal()`, `markSubmitted()`.
+- **`dashboard-mode.svelte.ts`** — Dashboard mode state (generalist/political/nature/social). Persisted to localStorage (`svit-mode`). Methods: `setMode()`. Recomputes panel positions from mode-specific panel ordering and calls `layoutStore.updateAll()`.
 
 ### API Proxy Pattern
 
@@ -146,15 +147,16 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 
 **Panels without API routes**: Bylaw Tracker, Public Hearings, and Demographics use local seed data only (no external API). Voices combines social + news API data.
 
-### MapLibre Gotchas
+### HeroMap & MapLibre
 
-- `CRDMap.svelte` in `src/lib/components/map/` is the reusable map component; `CRDMapPanel.svelte` is the panel wrapper that feeds it `MapFeature[]` data
+`HeroMap.svelte` is the full-width interactive map above the dashboard grid. It fetches from 7 APIs (development, construction, safety, events, wildlife, trees, environment) and renders clustered pins with a category legend.
+
+- **Dynamic import**: MapLibre is loaded via `await import('maplibre-gl')` in `onMount` (not static import) to avoid crashing headless browsers without WebGL
+- **`$effect` dependency ordering**: Guards must read `$state` vars before short-circuiting. Use `if (!mapReady || !map) return;` (not `!map || !mapReady`) — JavaScript `||` short-circuits, so if `map` (a plain `let`) is checked first and is falsy, `mapReady` (a `$state`) is never read and never tracked as a dependency
 - On `setStyle()` (theme toggle), all sources/layers are destroyed — the `style.load` event callback must re-add them
 - Municipality boundaries are static GeoJSON at `static/data/crd-municipalities.geojson` (real CRD polygons from BC WFS, Douglas-Peucker simplified)
-- Feature pins come from development applications + construction events with coordinates
-- **Clustering**: Features source has `cluster: true, clusterMaxZoom: 14, clusterRadius: 50`. Three layers: `feature-clusters` (circles), `feature-cluster-count` (labels), `feature-circles` (unclustered). Click on cluster zooms in via `getClusterExpansionZoom()`.
+- **Clustering**: Features source has `cluster: true, clusterMaxZoom: 13, clusterRadius: 40`. Three layers: `feature-clusters` (circles), `feature-cluster-count` (labels), `feature-circles` (unclustered). Click on cluster zooms in via `getClusterExpansionZoom()`.
 - **Keyboard nav**: Map container has `tabindex="0"`, `role="application"`. Escape closes popup. MapLibre's built-in arrow keys/+/- work once focused.
-- **Filter UI**: `CRDMapPanel.svelte` has checkboxes for development/construction/flagged-only, passing `filteredFeatures` to `CRDMap`
 - **WebGL limitation**: MapLibre paint properties cannot use CSS custom properties — use hex color values for cluster/circle paint
 
 ### Multi-Source API Pattern
@@ -198,6 +200,7 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 6. Wire into `DashboardGrid.svelte`:
    - **Tier 1/2**: Static import + add to `panelComponents` map
    - **Tier 3/4**: Add dynamic `import()` entry to `lazyPanels` map (no static import needed)
+7. Add panel ID to mode orderings in `src/lib/config/dashboard-modes.ts` (each mode's `panelOrder`; panels not explicitly listed appear after prioritized ones)
 
 ### Shared Utilities (`src/lib/utils/`)
 
@@ -266,13 +269,14 @@ Future tables: `layout_preferences` (saved grid positions), `saved_items` (bookm
 - **Global Search** (`SearchOverlay.svelte`): Full-screen overlay searching council, news, development, events, safety. Cmd+K shortcut. Results categorized with badges.
 - **Item Bookmarks** (`BookmarkButton.svelte` + `bookmarks.svelte.ts`): Star icon on council, news, development, event items. localStorage-persisted. Flyout in header shows saved items.
 - **Monitor Matching** (`monitor-matcher.ts`): MyMonitors panel scans 5 API sources for keyword matches. Case-insensitive, source-filtered, grouped by monitor with expandable match lists.
-- **Shareable URL State** (`url-state.svelte.ts`): Municipality, focused panel, and search query reflected in URL params (`?m=victoria&panel=council-watch&q=transit`). Back button unfocuses panels. Validated against config.
+- **Shareable URL State** (`url-state.svelte.ts`): Municipality, focused panel, search query, and dashboard mode reflected in URL params (`?m=victoria&panel=council-watch&q=transit&mode=political`). Back button unfocuses panels. Validated against config.
 - **Social Sharing** (`ShareDrawer.svelte` + `ShareButton.svelte`): Share buttons in header and panel headers. Twitter/X, Facebook, Instagram, TikTok via URL intent links (no JS SDKs). Copy-link with clipboard feedback. Share URLs point to `/share` SSR route for OG tag support.
+- **Dashboard Modes** (`DashboardModeSelector.svelte` + `dashboard-mode.svelte.ts`): 4 mode buttons in header that reorganize tile order by interest area. Modes: Generalist (default), Political (council/bylaw/councillors first), Nature (wildlife/trees/environment first), Social (events/voices/local-wire first). Mode config in `src/lib/config/dashboard-modes.ts`. Positions auto-computed: 3 per row, w:4 each. Persisted to localStorage and URL.
 - **Lead Capture** (`LeadCaptureBanner.svelte` + `LeadCaptureModal.svelte`): Bottom banner appears after 30s delay. Quick email subscribe or full 3-step modal (email → social accounts → interests/consent). Supabase backend with INSERT-only RLS. localStorage tracks dismiss/submit state.
 
 ## Implementation Status
 
-Phases 0–11 complete. All 23 panels live across 4 tiers. 121 unit tests, 72 E2E tests (9 files). Tier 4 panels require Supabase auth. Lead capture requires Supabase (graceful 503 if unconfigured).
+Phases 0–13 complete. 22 panels live across 4 tiers (CRD Map removed in Phase 13 — redundant with HeroMap). 121 unit tests, 72 E2E tests (9 files). Tier 4 panels require Supabase auth. Lead capture requires Supabase (graceful 503 if unconfigured).
 
 ### Phase 5 Additions
 
@@ -336,6 +340,26 @@ Phases 0–11 complete. All 23 panels live across 4 tiers. 121 unit tests, 72 E2
 - **Lead capture system**: Banner (30s delay) + 3-step modal (email → social → interests/consent). Supabase INSERT-only RLS. `POST /api/leads` with server-side validation + upsert on email.
 - **E2E test suite**: 72 Playwright tests across 9 files (smoke, panels, municipality, search, theme, bookmarks, navigation, url-sharing, lead-capture). `screenshot: 'only-on-failure'`, `retries: 1`.
 - **DashboardGrid drag fix**: Panel header drag handler now excludes `button, a, input, select, textarea` — clicking collapse/focus/share buttons no longer initiates drag.
+
+### Phase 12: Dashboard UI Overhaul
+
+- **HeroMap**: Full-width interactive MapLibre map above the grid showing data from 7 APIs with clustered pins and category legend filters
+- **MapLibre dynamic import**: Static `import maplibregl` crashes headless Chromium (no WebGL). Fixed with `import type` + dynamic `await import('maplibre-gl')` in `onMount` with try-catch
+- **Visual polish**: Frosted glass panels, animated backgrounds (starry sky canvas / cloudy sky SVG), Inter + Geist Mono typography
+- **Panel collapse**: Individual panels can be collapsed to header-only. State persisted to localStorage via `svit-collapsed-{id}` keys
+- **Panel focus**: Clicking expand button on a panel makes it full-width, hides others. Uses `urlState.focusPanel()` with `pushState` for Back button support
+- **E2E test fixes**: Svelte 5 event delegation requires `dispatchEvent` with `bubbles: true` for backdrop clicks. Canvas selectors need specificity (`.starry-sky`) to avoid matching MapLibre canvas. Playwright workers limited to 1 in CI to prevent server overload.
+
+### Phase 13: Bug Fixes, Polish & Dashboard Modes
+
+- **CRD Map panel removed**: Duplicate of HeroMap functionality. Deleted `CRDMapPanel.svelte` and `CRDMap.svelte`. Remaining panels repositioned to fill gap.
+- **HeroMap `$effect` fix**: Reversed guard from `!map || !mapReady` to `!mapReady || !map` — JavaScript `||` short-circuits, so `mapReady` ($state) was never tracked when `map` (plain let) was falsy. Also added direct `loadFeatures()` call in `map.on('load')` callback.
+- **Voices HTML entities**: Applied `stripHtml()` to RSS title field (was only on description). Added entity decodings for `&rsquo;`, `&ldquo;`, `&mdash;`, `&hellip;`, `&apos;`, `&quot;`, plus generic `&#\d+;` numeric decoder.
+- **Share Drawer positioning**: Added `max-height: 80vh; overflow-y: auto` to prevent drawer from overflowing viewport.
+- **Panel renaming**: "Councillor Profiles" → "Councillors & Mayors"
+- **Demographics repositioned**: Moved from Tier 4 to Tier 3 (above auth-gated tiles)
+- **Supabase configured**: `.env` file created with credentials for auth and lead capture
+- **Dashboard Modes**: 4-mode system (Generalist, Political, Nature, Social) with mode selector in header. Each mode defines a `panelOrder` array; positions auto-computed as 3 per row. Config in `src/lib/config/dashboard-modes.ts`, state in `src/lib/stores/dashboard-mode.svelte.ts`, UI in `DashboardModeSelector.svelte`. Persisted to localStorage + URL param (`?mode=political`).
 
 ### Earlier Improvements
 
