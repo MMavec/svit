@@ -511,6 +511,26 @@
 		</div>
 	{/if}
 
+	<button
+		class="reset-view-btn"
+		onclick={() => {
+			if (!map) return;
+			const bbox = municipalityStore.bbox;
+			const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			map.fitBounds(bbox as maplibregl.LngLatBoundsLike, {
+				padding: 40,
+				duration: prefersReducedMotion ? 0 : 800
+			});
+		}}
+		title="Reset map view"
+		aria-label="Reset map view"
+	>
+		<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+			<polyline points="9 22 9 12 15 12 15 22" />
+		</svg>
+	</button>
+
 	<div class="feature-count">
 		{filteredFeatures.length} live item{filteredFeatures.length !== 1 ? 's' : ''}
 	</div>
@@ -587,7 +607,7 @@
 	.loading-indicator {
 		position: absolute;
 		top: 14px;
-		left: 14px;
+		left: 54px;
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -635,6 +655,32 @@
 		font-weight: 500;
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
+	}
+
+	.reset-view-btn {
+		position: absolute;
+		top: 14px;
+		left: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		border-radius: 8px;
+		border: 1px solid var(--border-primary);
+		background: var(--bg-surface);
+		color: var(--text-secondary);
+		cursor: pointer;
+		transition: all 0.15s;
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		z-index: 1;
+	}
+
+	.reset-view-btn:hover {
+		color: var(--text-primary);
+		border-color: var(--text-tertiary);
+		transform: translateY(-1px);
 	}
 
 	.map-container :global(.maplibregl-ctrl-top-right) {

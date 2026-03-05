@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 import { supabase } from '$lib/supabase';
 
@@ -11,8 +12,27 @@ function sanitizeString(str: string | undefined | null, maxLength = 200): string
 	return str.trim().slice(0, maxLength) || null;
 }
 
+async function relayToWebhook(leadData: Record<string, unknown>) {
+	const webhookUrl = env.LEADS_WEBHOOK_URL;
+	if (!webhookUrl) return;
+
+	try {
+		await fetch(webhookUrl, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(leadData),
+			signal: AbortSignal.timeout(10000)
+		});
+	} catch (err) {
+		console.error('Webhook relay failed:', err);
+	}
+}
+
 export const POST: RequestHandler = async ({ request }) => {
-	if (!supabase) {
+	const hasSupabase = !!supabase;
+	const hasWebhook = !!env.LEADS_WEBHOOK_URL;
+
+	if (!hasSupabase && !hasWebhook) {
 		return json({ error: 'Service not configured' }, { status: 503 });
 	}
 
@@ -48,48 +68,76 @@ export const POST: RequestHandler = async ({ request }) => {
 		referrer: request.headers.get('referer')?.substring(0, 500) || null
 	};
 
-	const { data, error } = await supabase
-		.from('leads')
-		.upsert(leadData, { onConflict: 'email' })
-		.select('id')
-		.single();
+	// Save to Supabase if configured
+	if (hasSupabase) {
+		const { data, error } = await supabase!
+			.from('leads')
+			.upsert(leadData, { onConflict: 'email' })
+			.select('id')
+			.single();
 
-	if (error) {
-		console.error('Lead insert error:', error);
-		return json({ error: 'Failed to save' }, { status: 500 });
+		if (error) {
+			console.error('Lead insert error:', error);
+			// If webhook is available, continue to relay even if Supabase fails
+			if (!hasWebhook) {
+				return json({ error: 'Failed to save' }, { status: 500 });
+			}
+		}
+
+		// Insert social accounts if provided
+		if (body.social_accounts && Array.isArray(body.social_accounts) && data?.id) {
+			const validPlatforms = new Set([
+				'bluesky',
+				'twitter',
+				'facebook',
+				'instagram',
+				'linkedin',
+				'tiktok'
+			]);
+			const socialRows = (body.social_accounts as { platform?: string; handle?: string }[])
+				.filter(
+					(s) =>
+						s &&
+						typeof s.platform === 'string' &&
+						typeof s.handle === 'string' &&
+						validPlatforms.has(s.platform.toLowerCase()) &&
+						s.handle.trim().length > 0
+				)
+				.slice(0, 10)
+				.map((s) => ({
+					lead_id: data.id,
+					platform: s.platform!.toLowerCase().trim(),
+					handle: s.handle!.trim().slice(0, 200)
+				}));
+
+			if (socialRows.length > 0) {
+				await supabase!
+					.from('lead_social_accounts')
+					.upsert(socialRows, { onConflict: 'lead_id,platform' });
+			}
+		}
 	}
 
-	// Insert social accounts if provided
-	if (body.social_accounts && Array.isArray(body.social_accounts) && data?.id) {
-		const validPlatforms = new Set([
-			'bluesky',
-			'twitter',
-			'facebook',
-			'instagram',
-			'linkedin',
-			'tiktok'
-		]);
-		const socialRows = (body.social_accounts as { platform?: string; handle?: string }[])
-			.filter(
-				(s) =>
-					s &&
-					typeof s.platform === 'string' &&
-					typeof s.handle === 'string' &&
-					validPlatforms.has(s.platform.toLowerCase()) &&
-					s.handle.trim().length > 0
-			)
-			.slice(0, 10)
-			.map((s) => ({
-				lead_id: data.id,
-				platform: s.platform!.toLowerCase().trim(),
-				handle: s.handle!.trim().slice(0, 200)
-			}));
+	// Relay to Google Sheet (or any webhook) — fire-and-forget
+	if (hasWebhook) {
+		const socialAccounts = Array.isArray(body.social_accounts)
+			? (body.social_accounts as { platform?: string; handle?: string }[])
+					.filter((s) => s?.platform && s?.handle)
+					.map((s) => `${s.platform}: ${s.handle}`)
+					.join(', ')
+			: '';
 
-		if (socialRows.length > 0) {
-			await supabase
-				.from('lead_social_accounts')
-				.upsert(socialRows, { onConflict: 'lead_id,platform' });
-		}
+		relayToWebhook({
+			timestamp: new Date().toISOString(),
+			email: leadData.email,
+			name: leadData.display_name || '',
+			phone: leadData.phone || '',
+			municipality: leadData.municipality_interest || 'All CRD',
+			interests: (leadData.interests as string[]).join(', '),
+			social_accounts: socialAccounts,
+			consent_marketing: leadData.consent_marketing,
+			source: leadData.source
+		});
 	}
 
 	return json({ success: true });
