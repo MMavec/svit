@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
-	import maplibregl from 'maplibre-gl';
-	import 'maplibre-gl/dist/maplibre-gl.css';
+	import type maplibregl from 'maplibre-gl';
 	import { theme } from '$lib/stores/theme.svelte';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { CRD_BBOX } from '$lib/config/municipalities';
@@ -352,19 +351,34 @@
 		}
 	}
 
-	onMount(() => {
-		map = new maplibregl.Map({
-			container: mapContainer,
-			style: theme.value === 'dark' ? DARK_STYLE : LIGHT_STYLE,
-			bounds: CRD_BBOX as maplibregl.LngLatBoundsLike,
-			fitBoundsOptions: { padding: 40 },
-			attributionControl: false
-		});
+	onMount(async () => {
+		let ml: typeof maplibregl;
+		try {
+			ml = (await import('maplibre-gl')).default;
+			await import('maplibre-gl/dist/maplibre-gl.css');
+		} catch {
+			loading = false;
+			return;
+		}
 
-		map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
-		map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+		try {
+			map = new ml.Map({
+				container: mapContainer,
+				style: theme.value === 'dark' ? DARK_STYLE : LIGHT_STYLE,
+				bounds: CRD_BBOX as maplibregl.LngLatBoundsLike,
+				fitBoundsOptions: { padding: 40 },
+				attributionControl: false
+			});
+		} catch {
+			// WebGL unavailable (headless browsers, older hardware)
+			loading = false;
+			return;
+		}
 
-		popup = new maplibregl.Popup({ closeButton: true, maxWidth: '280px', offset: 12 });
+		map.addControl(new ml.NavigationControl({ showCompass: true }), 'top-right');
+		map.addControl(new ml.AttributionControl({ compact: true }), 'bottom-right');
+
+		popup = new ml.Popup({ closeButton: true, maxWidth: '280px', offset: 12 });
 
 		map.on('load', () => {
 			mapReady = true;

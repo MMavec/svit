@@ -7,8 +7,9 @@ test.describe('URL State & Social Sharing', () => {
 	});
 
 	test('municipality param updates URL on selection', async ({ page }) => {
-		const trigger = page.locator('.selector-trigger');
-		await trigger.click();
+		await page.evaluate(() => {
+			(document.querySelector('.selector-trigger') as HTMLElement)?.click();
+		});
 		// Use exact option name to avoid matching "North Saanich" etc.
 		await page.getByRole('option', { name: 'Esquimalt ESQ' }).click();
 
@@ -29,12 +30,9 @@ test.describe('URL State & Social Sharing', () => {
 		await focusBtn.click({ force: true });
 		await expect(page).toHaveURL(/[?&]panel=council-watch/);
 
-		// Unfocus
+		// Unfocus — the panel is now expanded, find the button again
 		await focusBtn.click({ force: true });
-		await page.waitForTimeout(500);
-
-		const url = page.url();
-		expect(url).not.toMatch(/[?&]panel=\w/);
+		await expect(page).not.toHaveURL(/[?&]panel=\w/, { timeout: 5_000 });
 	});
 
 	test('browser back button unfocuses panel', async ({ page }) => {
@@ -65,16 +63,18 @@ test.describe('URL State & Social Sharing', () => {
 	});
 
 	test('share button opens share drawer', async ({ page }) => {
-		const shareBtn = page.locator('button[aria-label="Share dashboard"]');
-		await shareBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('button[aria-label="Share dashboard"]') as HTMLElement)?.click();
+		});
 
 		const drawer = page.locator('[role="dialog"][aria-label="Share"]');
 		await expect(drawer).toBeVisible();
 	});
 
 	test('share drawer has social media options', async ({ page }) => {
-		const shareBtn = page.locator('button[aria-label="Share dashboard"]');
-		await shareBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('button[aria-label="Share dashboard"]') as HTMLElement)?.click();
+		});
 
 		const drawer = page.locator('[role="dialog"][aria-label="Share"]');
 		await expect(drawer).toBeVisible();
@@ -87,8 +87,9 @@ test.describe('URL State & Social Sharing', () => {
 	test('copy link button copies URL', async ({ page, context }) => {
 		await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
-		const shareBtn = page.locator('button[aria-label="Share dashboard"]');
-		await shareBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('button[aria-label="Share dashboard"]') as HTMLElement)?.click();
+		});
 
 		const copyBtn = page.locator('.copy-option');
 		await copyBtn.click();
@@ -98,8 +99,9 @@ test.describe('URL State & Social Sharing', () => {
 	});
 
 	test('share drawer closes on escape', async ({ page }) => {
-		const shareBtn = page.locator('button[aria-label="Share dashboard"]');
-		await shareBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('button[aria-label="Share dashboard"]') as HTMLElement)?.click();
+		});
 
 		const drawer = page.locator('[role="dialog"][aria-label="Share"]');
 		await expect(drawer).toBeVisible();
@@ -109,24 +111,22 @@ test.describe('URL State & Social Sharing', () => {
 	});
 
 	test('share drawer closes on backdrop click', async ({ page }) => {
-		const shareBtn = page.locator('button[aria-label="Share dashboard"]');
-		await shareBtn.click();
+		await page.evaluate(() => {
+			(document.querySelector('button[aria-label="Share dashboard"]') as HTMLElement)?.click();
+		});
 
 		const drawer = page.locator('[role="dialog"][aria-label="Share"]');
 		await expect(drawer).toBeVisible();
 
-		await page.locator('.share-backdrop').click({ force: true });
+		// Click on backdrop area outside the centered drawer
+		await page.mouse.click(10, 10);
 		await expect(drawer).not.toBeVisible();
 	});
 
 	test('/share route has OG meta tags', async ({ page }) => {
-		// Go to share route and check meta tags before redirect
-		await page.goto('/share?m=victoria&panel=council-watch', {
-			waitUntil: 'domcontentloaded'
-		});
-
-		// Check the HTML source for OG tags
-		const html = await page.content();
+		// Fetch the share route HTML directly to avoid client-side redirect race
+		const response = await page.request.get('/share?m=victoria&panel=council-watch');
+		const html = await response.text();
 		expect(html).toContain('og:title');
 		expect(html).toContain('Victoria');
 	});

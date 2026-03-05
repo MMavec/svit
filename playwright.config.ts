@@ -6,14 +6,16 @@ export default defineConfig({
 	fullyParallel: true,
 	retries: 1,
 	timeout: 30_000,
+	workers: process.env.CI ? 1 : undefined,
 	use: {
 		baseURL: 'http://localhost:4173',
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure'
 	},
 	webServer: {
-		command: 'npm run build && npm run preview',
+		command: 'rm -rf .vercel && npm run build && npm run preview',
 		port: 4173,
+		timeout: 120_000,
 		reuseExistingServer: !process.env.CI
 	}
 });

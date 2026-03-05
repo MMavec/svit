@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PanelConfig } from '$lib/types/index';
 	import type { Snippet } from 'svelte';
-	import { setContext, getContext } from 'svelte';
+	import { onMount, setContext, getContext } from 'svelte';
 	import DataFreshness from '$lib/components/ui/DataFreshness.svelte';
 	import ShareButton from '$lib/components/ui/ShareButton.svelte';
 	import { urlState } from '$lib/stores/url-state.svelte';
@@ -35,11 +35,10 @@
 		cachedAt = timestamp ?? null;
 	});
 
-	$effect.pre(() => {
-		if (typeof window !== 'undefined') {
-			collapsed = localStorage.getItem(`svit-collapsed-${config.id}`) === '1';
-			setCollapsedInGrid?.(config.id, collapsed);
-		}
+	onMount(() => {
+		const isCollapsed = localStorage.getItem(`svit-collapsed-${config.id}`) === '1';
+		collapsed = isCollapsed;
+		setCollapsedInGrid?.(config.id, isCollapsed);
 	});
 
 	function toggleCollapse() {
