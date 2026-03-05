@@ -21,6 +21,9 @@ Thumbs.db
 # Test artifacts
 test-results/
 
+# Docs
+*.docx
+
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
