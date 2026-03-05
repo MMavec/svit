@@ -14,7 +14,6 @@
 
 	// Tier 2 panel components (eagerly loaded — critical data)
 	import LocalWire from '$lib/components/panels/LocalWire.svelte';
-	import CRDMapPanel from '$lib/components/panels/CRDMapPanel.svelte';
 	import Pulse from '$lib/components/panels/Pulse.svelte';
 	import ConstructionRoads from '$lib/components/panels/ConstructionRoads.svelte';
 	import Transit from '$lib/components/panels/Transit.svelte';
@@ -42,7 +41,6 @@
 		'development-watch': DevelopmentWatch,
 		'councillor-profiles': CouncillorProfiles,
 		'local-wire': LocalWire,
-		'crd-map': CRDMapPanel,
 		pulse: Pulse,
 		'construction-roads': ConstructionRoads,
 		transit: Transit,

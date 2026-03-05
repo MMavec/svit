@@ -7,6 +7,7 @@
 	import { bookmarkStore } from '$lib/stores/bookmarks.svelte';
 	import { searchStore } from '$lib/stores/search.svelte';
 	import ShareDrawer from '$lib/components/ui/ShareDrawer.svelte';
+	import DashboardModeSelector from './DashboardModeSelector.svelte';
 
 	let showBookmarks = $state(false);
 	let mobileMenuOpen = $state(false);
@@ -44,6 +45,7 @@
 
 	<div class="header-center">
 		<MunicipalitySelector />
+		<DashboardModeSelector />
 	</div>
 
 	<div class="header-right">
@@ -397,6 +399,7 @@
 	.header-center {
 		display: flex;
 		align-items: center;
+		gap: 10px;
 	}
 
 	.logo {

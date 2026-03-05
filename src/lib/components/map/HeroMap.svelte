@@ -261,7 +261,7 @@
 	}
 
 	function updateFeatureSource() {
-		if (!map || !mapReady) return;
+		if (!mapReady || !map) return;
 
 		const geojson = {
 			type: 'FeatureCollection' as const,
@@ -383,6 +383,7 @@
 		map.on('load', () => {
 			mapReady = true;
 			addLayers();
+			loadFeatures();
 		});
 
 		map.on('style.load', () => {
@@ -461,7 +462,7 @@
 
 	$effect(() => {
 		const bbox = municipalityStore.bbox;
-		if (!map || !mapReady) return;
+		if (!mapReady || !map) return;
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		map.fitBounds(bbox as maplibregl.LngLatBoundsLike, {
 			padding: 40,

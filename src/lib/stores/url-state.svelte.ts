@@ -1,28 +1,35 @@
 import { municipalities } from '$lib/config/municipalities';
 import { panels } from '$lib/config/panels';
 import { municipalityStore } from '$lib/stores/municipality.svelte';
+import type { DashboardMode } from '$lib/config/dashboard-modes';
+
+const validModes = new Set<string>(['generalist', 'political', 'nature', 'social']);
 
 interface UrlState {
 	municipality: string | null;
 	panel: string | null;
 	query: string | null;
+	mode: DashboardMode | null;
 }
 
 const validMunicipalities = new Set(municipalities.map((m) => m.slug));
 const validPanels = new Set(panels.map((p) => p.id));
 
 function parseUrlState(): UrlState {
-	if (typeof window === 'undefined') return { municipality: null, panel: null, query: null };
+	if (typeof window === 'undefined')
+		return { municipality: null, panel: null, query: null, mode: null };
 	const params = new URLSearchParams(window.location.search);
 
 	const m = params.get('m');
 	const panel = params.get('panel');
 	const q = params.get('q');
+	const mode = params.get('mode');
 
 	return {
 		municipality: m && validMunicipalities.has(m) ? m : null,
 		panel: panel && validPanels.has(panel) ? panel : null,
-		query: q && q.trim().length > 0 ? q.trim() : null
+		query: q && q.trim().length > 0 ? q.trim() : null,
+		mode: mode && validModes.has(mode) ? (mode as DashboardMode) : null
 	};
 }
 
@@ -41,6 +48,10 @@ function updateUrl(state: Partial<UrlState>, usePushState = false) {
 	if (state.query !== undefined) {
 		if (state.query) url.searchParams.set('q', state.query);
 		else url.searchParams.delete('q');
+	}
+	if (state.mode !== undefined) {
+		if (state.mode && state.mode !== 'generalist') url.searchParams.set('mode', state.mode);
+		else url.searchParams.delete('mode');
 	}
 
 	const newUrl = url.pathname + url.search;
@@ -74,6 +85,11 @@ export const urlState = {
 		if (parsed.panel) {
 			focusedPanelId = parsed.panel;
 		}
+		if (parsed.mode) {
+			import('$lib/stores/dashboard-mode.svelte').then(({ dashboardModeStore }) => {
+				dashboardModeStore.setMode(parsed.mode!);
+			});
+		}
 
 		// Listen for browser back/forward
 		window.addEventListener('popstate', () => {
@@ -84,6 +100,11 @@ export const urlState = {
 				municipalityStore.select(null);
 			}
 			focusedPanelId = state.panel;
+			if (state.mode) {
+				import('$lib/stores/dashboard-mode.svelte').then(({ dashboardModeStore }) => {
+					dashboardModeStore.setMode(state.mode!);
+				});
+			}
 		});
 	},
 
@@ -99,6 +120,10 @@ export const urlState = {
 
 	setSearchQuery(query: string | null) {
 		updateUrl({ query });
+	},
+
+	setMode(mode: DashboardMode | null) {
+		updateUrl({ mode });
 	},
 
 	getShareUrl(panelId?: string): string {
