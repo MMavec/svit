@@ -137,7 +137,7 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 
 **Non-panel API routes**:
 
-- `POST /api/leads` — Lead capture submission. Server-side validation (email regex, consent check), upsert on email, social accounts stored separately. Returns `{ success: true }` or `{ error }`. Requires Supabase (503 if unconfigured).
+- `POST /api/leads` — Lead capture submission. Server-side validation (email regex, consent check), upsert on email, social accounts stored separately. Returns `{ success: true }` or `{ error }`. Works with Supabase, `LEADS_WEBHOOK_URL` (Google Sheet relay), or both — 503 only if neither is configured.
 
 **SSR Share Route** (`/share`):
 
@@ -243,6 +243,7 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 # .env (never committed)
 PUBLIC_SUPABASE_URL=
 PUBLIC_SUPABASE_ANON_KEY=
+LEADS_WEBHOOK_URL=          # Google Apps Script web app URL for lead relay to Google Sheets
 EBIRD_API_KEY=              # Free from ebird.org
 AQICN_API_TOKEN=            # Free from aqicn.org
 ONC_API_TOKEN=              # Free from data.oceannetworks.ca
@@ -272,11 +273,11 @@ Future tables: `layout_preferences` (saved grid positions), `saved_items` (bookm
 - **Shareable URL State** (`url-state.svelte.ts`): Municipality, focused panel, search query, and dashboard mode reflected in URL params (`?m=victoria&panel=council-watch&q=transit&mode=political`). Back button unfocuses panels. Validated against config.
 - **Social Sharing** (`ShareDrawer.svelte` + `ShareButton.svelte`): Share buttons in header and panel headers. Twitter/X, Facebook, Instagram, TikTok via URL intent links (no JS SDKs). Copy-link with clipboard feedback. Share URLs point to `/share` SSR route for OG tag support.
 - **Dashboard Modes** (`DashboardModeSelector.svelte` + `dashboard-mode.svelte.ts`): 4 mode buttons in header that reorganize tile order by interest area. Modes: Generalist (default), Political (council/bylaw/councillors first), Nature (wildlife/trees/environment first), Social (events/voices/local-wire first). Mode config in `src/lib/config/dashboard-modes.ts`. Positions auto-computed: 3 per row, w:4 each. Persisted to localStorage and URL.
-- **Lead Capture** (`LeadCaptureBanner.svelte` + `LeadCaptureModal.svelte`): Bottom banner appears after 30s delay. Quick email subscribe or full 3-step modal (email → social accounts → interests/consent). Supabase backend with INSERT-only RLS. localStorage tracks dismiss/submit state.
+- **Lead Capture** (`LeadCaptureBanner.svelte` + `LeadCaptureModal.svelte`): Bottom banner appears after 30s delay. Quick email subscribe or full 3-step modal (email → social accounts → interests/consent). Dual backend: Supabase (INSERT-only RLS) + optional `LEADS_WEBHOOK_URL` relay to Google Sheets. localStorage tracks dismiss/submit state.
 
 ## Implementation Status
 
-Phases 0–13 complete. 22 panels live across 4 tiers (CRD Map removed in Phase 13 — redundant with HeroMap). 121 unit tests, 72 E2E tests (9 files). Tier 4 panels require Supabase auth. Lead capture requires Supabase (graceful 503 if unconfigured).
+Phases 0–13 complete. 22 panels live across 4 tiers (CRD Map removed in Phase 13 — redundant with HeroMap). 121 unit tests, 72 E2E tests (9 files). Tier 4 panels require Supabase auth. Lead capture works with Supabase and/or Google Sheet webhook (graceful 503 if neither configured).
 
 ### Phase 5 Additions
 
