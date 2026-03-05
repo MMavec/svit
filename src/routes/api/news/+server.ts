@@ -37,7 +37,7 @@ function parseRss(xml: string, sourceSlug: string, sourceName: string): NewsItem
 		if (title && cleanLink && isValidHttpUrl(cleanLink)) {
 			items.push({
 				id: `${sourceSlug}-${hashCode(cleanLink)}`,
-				title: stripCdata(title),
+				title: stripHtml(stripCdata(title)),
 				description: stripHtml(stripCdata(description || '')).slice(0, 300),
 				url: cleanLink,
 				source: sourceName,
@@ -92,8 +92,22 @@ function stripHtml(str: string): string {
 		.replace(/&lt;/g, '<')
 		.replace(/&gt;/g, '>')
 		.replace(/&#8217;/g, "'")
-		.replace(/&#8220;/g, '"')
-		.replace(/&#8221;/g, '"')
+		.replace(/&#8216;/g, "'")
+		.replace(/&#8220;/g, '\u201c')
+		.replace(/&#8221;/g, '\u201d')
+		.replace(/&#8211;/g, '\u2013')
+		.replace(/&#8212;/g, '\u2014')
+		.replace(/&#8230;/g, '\u2026')
+		.replace(/&rsquo;/g, "'")
+		.replace(/&lsquo;/g, "'")
+		.replace(/&rdquo;/g, '\u201d')
+		.replace(/&ldquo;/g, '\u201c')
+		.replace(/&mdash;/g, '\u2014')
+		.replace(/&ndash;/g, '\u2013')
+		.replace(/&hellip;/g, '\u2026')
+		.replace(/&apos;/g, "'")
+		.replace(/&quot;/g, '"')
+		.replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
 		.trim();
 }
 

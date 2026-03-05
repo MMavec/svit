@@ -49,7 +49,7 @@ export const panels: PanelConfig[] = [
 	},
 	{
 		id: 'councillor-profiles',
-		title: 'Councillor Profiles',
+		title: 'Councillors & Mayors',
 		tier: 1,
 		icon: '👤',
 		defaultPosition: { x: 8, y: 6, w: 4, h: 6 },
@@ -68,20 +68,11 @@ export const panels: PanelConfig[] = [
 		minHeight: 4
 	},
 	{
-		id: 'crd-map',
-		title: 'CRD Map',
-		tier: 2,
-		icon: '🗺',
-		defaultPosition: { x: 4, y: 12, w: 4, h: 6 },
-		minWidth: 4,
-		minHeight: 4
-	},
-	{
 		id: 'pulse',
 		title: 'Pulse',
 		tier: 2,
 		icon: '📊',
-		defaultPosition: { x: 8, y: 12, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 12, w: 4, h: 6 },
 		minWidth: 2,
 		minHeight: 3
 	},
@@ -90,7 +81,7 @@ export const panels: PanelConfig[] = [
 		title: 'Construction & Roads',
 		tier: 2,
 		icon: '🚧',
-		defaultPosition: { x: 0, y: 18, w: 4, h: 6 },
+		defaultPosition: { x: 8, y: 12, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -99,7 +90,7 @@ export const panels: PanelConfig[] = [
 		title: 'Transit',
 		tier: 2,
 		icon: '🚌',
-		defaultPosition: { x: 4, y: 18, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 18, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -108,6 +99,15 @@ export const panels: PanelConfig[] = [
 		title: 'Safety & Emergency',
 		tier: 2,
 		icon: '🚨',
+		defaultPosition: { x: 4, y: 18, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'weather-tides',
+		title: 'Weather & Tides',
+		tier: 2,
+		icon: '🌊',
 		defaultPosition: { x: 8, y: 18, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
@@ -115,20 +115,11 @@ export const panels: PanelConfig[] = [
 
 	// Tier 3 — Quality of Life
 	{
-		id: 'weather-tides',
-		title: 'Weather & Tides',
-		tier: 3,
-		icon: '🌊',
-		defaultPosition: { x: 0, y: 24, w: 4, h: 6 },
-		minWidth: 3,
-		minHeight: 4
-	},
-	{
 		id: 'housing',
 		title: 'Housing & Development',
 		tier: 3,
 		icon: '🏠',
-		defaultPosition: { x: 4, y: 24, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 24, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -137,7 +128,7 @@ export const panels: PanelConfig[] = [
 		title: 'Community Events',
 		tier: 3,
 		icon: '🎉',
-		defaultPosition: { x: 8, y: 24, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 24, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -146,7 +137,7 @@ export const panels: PanelConfig[] = [
 		title: 'Budget & Finance',
 		tier: 3,
 		icon: '💰',
-		defaultPosition: { x: 0, y: 30, w: 4, h: 6 },
+		defaultPosition: { x: 8, y: 24, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -155,7 +146,7 @@ export const panels: PanelConfig[] = [
 		title: 'Wildlife & Marine',
 		tier: 3,
 		icon: '🐋',
-		defaultPosition: { x: 4, y: 30, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 30, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -164,7 +155,7 @@ export const panels: PanelConfig[] = [
 		title: 'Trees & Urban Forest',
 		tier: 3,
 		icon: '🌳',
-		defaultPosition: { x: 8, y: 30, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 30, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -173,6 +164,15 @@ export const panels: PanelConfig[] = [
 		title: 'Nature & Environment',
 		tier: 3,
 		icon: '🌿',
+		defaultPosition: { x: 8, y: 30, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'demographics',
+		title: 'Demographics',
+		tier: 3,
+		icon: '📈',
 		defaultPosition: { x: 0, y: 36, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
@@ -203,15 +203,6 @@ export const panels: PanelConfig[] = [
 		tier: 4,
 		icon: '🧵',
 		defaultPosition: { x: 0, y: 42, w: 4, h: 6 },
-		minWidth: 3,
-		minHeight: 4
-	},
-	{
-		id: 'demographics',
-		title: 'Demographics',
-		tier: 4,
-		icon: '📈',
-		defaultPosition: { x: 4, y: 42, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	}

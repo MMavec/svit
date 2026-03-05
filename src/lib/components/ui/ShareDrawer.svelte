@@ -185,6 +185,8 @@
 		box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
 		z-index: 201;
 		padding: 16px;
+		max-height: 80vh;
+		overflow-y: auto;
 		animation: slide-up 0.25s ease;
 	}
 

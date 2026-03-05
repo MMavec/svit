@@ -152,7 +152,7 @@
 	<div class="search-bar">
 		<input
 			type="text"
-			placeholder="Search councillors..."
+			placeholder="Search councillors and mayors..."
 			bind:value={searchQuery}
 			class="search-input"
 		/>
@@ -208,7 +208,7 @@
 				{#if activityLoading}
 					<div class="activity-loading">Scanning news, social, and council data...</div>
 				{:else if activityItems.length === 0}
-					<div class="activity-empty">No recent activity found for this councillor</div>
+					<div class="activity-empty">No recent activity found</div>
 				{:else}
 					<div class="activity-timeline">
 						{#each activityItems as item, i (i)}
