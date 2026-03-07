@@ -51,8 +51,11 @@ export async function apiFetch<T>(
 		}
 	}
 
+	// Use provided signal or default 30s timeout to prevent indefinite hangs
+	const effectiveSignal = signal ?? AbortSignal.timeout(30_000);
+
 	try {
-		const response = await fetch(url.toString(), signal ? { signal } : undefined);
+		const response = await fetch(url.toString(), { signal: effectiveSignal });
 
 		if (!response.ok) {
 			// Network error: fall back to stale cache if available
@@ -79,10 +82,11 @@ export async function apiFetch<T>(
 
 		return result;
 	} catch (err) {
-		// Re-throw AbortErrors so panels can handle cancellation
+		// Re-throw AbortErrors from caller-provided signals so panels can handle cancellation
 		if (signal?.aborted) {
 			throw err;
 		}
+		// Don't re-throw default timeout aborts — fall through to stale cache
 
 		// Network failure (offline, timeout): fall back to stale cache
 		if (cached) {

@@ -402,7 +402,7 @@ export interface WildlifeSighting {
 	id: string;
 	species: string;
 	commonName: string;
-	category: 'bird' | 'marine-mammal' | 'fish' | 'invertebrate' | 'plant' | 'reptile' | 'other';
+	category: 'bird' | 'marine-mammal' | 'mammal' | 'fish' | 'invertebrate' | 'plant' | 'reptile' | 'other';
 	observedAt: string;
 	location?: string;
 	coordinates?: [number, number];

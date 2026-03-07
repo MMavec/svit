@@ -4,8 +4,10 @@ import { newsSources } from '$lib/config/news-sources';
 import type { NewsItem } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipalityByText } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, parseEnum } from '$lib/utils/api-validation';
 import { isValidHttpUrl } from '$lib/utils/sanitize';
+
+const validNewsSources = new Set(newsSources.map((s) => s.slug));
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -114,7 +116,7 @@ function stripHtml(str: string): string {
 export const GET: RequestHandler = async ({ url }) => {
 	const municipality = parseMunicipality(url.searchParams.get('municipality'));
 	const limit = parseLimit(url.searchParams.get('limit'), 50);
-	const sourceFilter = url.searchParams.get('source');
+	const sourceFilter = parseEnum(url.searchParams.get('source'), validNewsSources);
 
 	// Filter sources by municipality if requested
 	let sources = newsSources;

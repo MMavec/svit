@@ -4,7 +4,12 @@ import type { RequestHandler } from './$types';
 import type { WildlifeSighting } from '$lib/types/index';
 import { CRD_CENTER } from '$lib/config/municipalities';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse, parseEnum } from '$lib/utils/api-validation';
+
+type WildlifeCategory = 'bird' | 'marine-mammal' | 'mammal' | 'fish' | 'invertebrate' | 'plant' | 'reptile' | 'other';
+const validWildlifeCategories = new Set<WildlifeCategory>([
+	'bird', 'marine-mammal', 'mammal', 'fish', 'invertebrate', 'plant', 'reptile', 'other'
+]);
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -116,7 +121,7 @@ function mapIconicTaxon(taxon: string): WildlifeSighting['category'] {
 		case 'Aves':
 			return 'bird';
 		case 'Mammalia':
-			return 'marine-mammal';
+			return 'mammal';
 		case 'Actinopterygii':
 			return 'fish';
 		case 'Reptilia':
@@ -235,7 +240,7 @@ function getSeedData(): WildlifeSighting[] {
 
 export const GET: RequestHandler = async ({ url }) => {
 	const municipality = parseMunicipality(url.searchParams.get('municipality'));
-	const category = url.searchParams.get('category');
+	const category = parseEnum(url.searchParams.get('category'), validWildlifeCategories);
 	const limit = parseLimit(url.searchParams.get('limit'), 20);
 
 	const [inatResult, ebirdResult] = await Promise.allSettled([fetchINaturalist(), fetchEBird()]);

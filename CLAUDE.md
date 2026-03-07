@@ -295,13 +295,10 @@ Future tables: `layout_preferences` (saved grid positions), `saved_items` (bookm
 
 ### API Routes
 
-- **`parseEnum()` not used everywhere**: `budget` (type), `wildlife` (category), `environment` (type), `real-estate` (category), `news` (source) accept raw query params without `parseEnum()` validation. Other routes use it correctly.
 - **Duplicated utility functions**: `timeAgo()` is copy-pasted across 8 panels, `formatDate()` across 5, `stripHtml()`/`extractTag()` across 4 API routes, `attributeMunicipality()` across 3 routes. These should be extracted to shared utilities.
 - **`weather-tides` returns single object**: Only route where `data` is an object instead of an array. All others return `{ data: T[], meta }`.
 - **`transit` and `weather-tides` ignore `?municipality=`**: Transit alerts are region-wide; weather serves a single station. Other routes accept the param.
 - **Development data is Victoria-only when live**: Only Victoria open data portal is queried. Other municipalities show seed data when the live API succeeds.
-- **`environment` `fetchUVIndex()` is a no-op**: Makes a real HTTP request to Environment Canada, then always returns `[]`. Seed data provides UV instead.
-- **`wildlife` maps all `Mammalia` to `marine-mammal`**: iNaturalist's Mammalia includes terrestrial mammals (deer, bears). Most CRD observations are not marine.
 
 ### MapLibre
 
@@ -309,18 +306,6 @@ Future tables: `layout_preferences` (saved grid positions), `saved_items` (bookm
 - **Paint properties can't use CSS vars**: MapLibre WebGL renderer doesn't support `var()` — use hex colors for cluster/circle paint.
 - **`setStyle()` destroys all sources/layers**: Theme toggle triggers `setStyle()` — the `style.load` callback must re-add all data layers.
 
-### Dead Code
-
-- `CRDMapPanel.svelte` and `CRDMap.svelte` still exist on disk despite being removed from the dashboard in Phase 13. They are not imported anywhere but should be deleted. `CRDMap.svelte` also has an unescaped HTML XSS vulnerability in its popup code (uses string interpolation without `escapeHtml()`).
-
-### Data Accuracy
-
-- **Pepper's Foods coordinates**: Currently `[-123.3448, 48.4192]` (Fairfield area). Actual location at Cadboro Bay Rd is approximately `[-123.2987, 48.4558]`.
-- **Merridale Cidery**: Listed in local-food but is in Cobble Hill (Cowichan Valley RD), not the CRD.
-- **Housing municipality filter broken on live data**: CMHC fetch never sets `municipality` on metrics, so the filter passes everything through when live data is available.
-
 ### Store Patterns
 
 - **Dashboard mode validation is hardcoded in two places**: `dashboard-mode.svelte.ts` and `url-state.svelte.ts` each maintain their own mode validation lists. Adding a new mode requires updating both.
-- **Auth store has no initialization guard**: `initialize()` can register duplicate `onAuthStateChange` listeners (e.g., during HMR).
-- **`apiFetch` has no default timeout**: Client-side fetcher accepts an optional `signal` but doesn't create a default timeout. Network hangs are possible.

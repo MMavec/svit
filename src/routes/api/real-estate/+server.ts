@@ -1,7 +1,12 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { RealEstateMetric } from '$lib/types/index';
-import { parseLimit } from '$lib/utils/api-validation';
+import { parseLimit, parseEnum } from '$lib/utils/api-validation';
+
+type RealEstateCategory = 'sales' | 'prices' | 'inventory' | 'days-on-market';
+const validRealEstateCategories = new Set<RealEstateCategory>([
+	'sales', 'prices', 'inventory', 'days-on-market'
+]);
 
 const CACHE_MAX_AGE = 3600; // 1 hour — stats update monthly
 
@@ -120,11 +125,11 @@ function getLatestStats(): RealEstateMetric[] {
 
 export const GET: RequestHandler = async ({ url }) => {
 	const limit = parseLimit(url.searchParams.get('limit'), 20);
-	const category = url.searchParams.get('category');
+	const category = parseEnum(url.searchParams.get('category'), validRealEstateCategories);
 
 	let metrics = getLatestStats();
 
-	if (category && ['sales', 'prices', 'inventory', 'days-on-market'].includes(category)) {
+	if (category) {
 		metrics = metrics.filter((m) => m.category === category);
 	}
 

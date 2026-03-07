@@ -5,8 +5,12 @@ let user = $state<User | null>(null);
 let session = $state<Session | null>(null);
 let loading = $state(true);
 let showAuthModal = $state(false);
+let initialized = false;
 
 async function initialize() {
+	if (initialized) return;
+	initialized = true;
+
 	if (!isConfigured() || !supabase) {
 		loading = false;
 		return;

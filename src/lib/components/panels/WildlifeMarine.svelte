@@ -35,6 +35,8 @@
 				return 'B';
 			case 'marine-mammal':
 				return 'M';
+			case 'mammal':
+				return 'M';
 			case 'fish':
 				return 'F';
 			case 'invertebrate':
@@ -54,6 +56,8 @@
 				return 'Bird';
 			case 'marine-mammal':
 				return 'Marine';
+			case 'mammal':
+				return 'Mammal';
 			case 'fish':
 				return 'Fish';
 			case 'invertebrate':

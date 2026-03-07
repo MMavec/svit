@@ -171,8 +171,8 @@ const STORE_META: Record<number, StoreMeta> = {
 		locations: [
 			{
 				name: "Pepper's Foods — Cadboro Bay",
-				municipality: 'victoria',
-				coordinates: [-123.3448, 48.4192]
+				municipality: 'saanich',
+				coordinates: [-123.2987, 48.4558]
 			}
 		],
 		flyerPage: 'https://peppersfoods.com/'

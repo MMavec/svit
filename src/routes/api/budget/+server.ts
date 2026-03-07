@@ -1,7 +1,10 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { BudgetItem } from '$lib/types/index';
-import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, parseEnum } from '$lib/utils/api-validation';
+
+type BudgetType = 'revenue' | 'expenditure';
+const validBudgetTypes = new Set<BudgetType>(['revenue', 'expenditure']);
 
 const CACHE_MAX_AGE = 86400; // 24 hours — budget data changes rarely
 
@@ -180,7 +183,7 @@ function getSeedData(): BudgetItem[] {
 
 export const GET: RequestHandler = async ({ url }) => {
 	const municipality = parseMunicipality(url.searchParams.get('municipality'));
-	const type = url.searchParams.get('type') as 'revenue' | 'expenditure' | null;
+	const type = parseEnum(url.searchParams.get('type'), validBudgetTypes);
 	const limit = parseLimit(url.searchParams.get('limit'));
 
 	// Budget data is static/annual — always use seed data
