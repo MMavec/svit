@@ -2,7 +2,12 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { EnvironmentReading } from '$lib/types/index';
 import { env } from '$env/dynamic/private';
-import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, isJsonResponse, parseEnum } from '$lib/utils/api-validation';
+
+type EnvironmentType = 'air-quality' | 'water-quality' | 'uv-index' | 'pollen' | 'ocean-temperature';
+const validEnvironmentTypes = new Set<EnvironmentType>([
+	'air-quality', 'water-quality', 'uv-index', 'pollen', 'ocean-temperature'
+]);
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -94,26 +99,6 @@ async function fetchAirQuality(): Promise<EnvironmentReading[]> {
 	}
 }
 
-/** Fetch UV index from Environment Canada */
-async function fetchUVIndex(): Promise<EnvironmentReading[]> {
-	try {
-		const response = await fetch(
-			'https://dd.weather.gc.ca/observations/xml/BC/yesterday/yesterday_bc_e.xml',
-			{
-				headers: { 'User-Agent': 'SVIT/1.0' },
-				signal: AbortSignal.timeout(8000)
-			}
-		);
-
-		if (!response.ok) return [];
-
-		// UV data is harder to parse from EC — return empty for now, seed will cover it
-		return [];
-	} catch (err) {
-		console.error('Failed to fetch UV index:', err);
-		return [];
-	}
-}
 
 /** Fetch ocean temperature data from Ocean Networks Canada (ONC) */
 async function fetchONCData(): Promise<EnvironmentReading[]> {
@@ -302,18 +287,16 @@ function getSeedData(): EnvironmentReading[] {
 
 export const GET: RequestHandler = async ({ url }) => {
 	const municipality = parseMunicipality(url.searchParams.get('municipality'));
-	const type = url.searchParams.get('type');
+	const type = parseEnum(url.searchParams.get('type'), validEnvironmentTypes);
 	const limit = parseLimit(url.searchParams.get('limit'), 20);
 
-	const [aqiResult, uvResult, oncResult] = await Promise.allSettled([
+	const [aqiResult, oncResult] = await Promise.allSettled([
 		fetchAirQuality(),
-		fetchUVIndex(),
 		fetchONCData()
 	]);
 
 	let readings: EnvironmentReading[] = [
 		...(aqiResult.status === 'fulfilled' ? aqiResult.value : []),
-		...(uvResult.status === 'fulfilled' ? uvResult.value : []),
 		...(oncResult.status === 'fulfilled' ? oncResult.value : [])
 	];
 
@@ -337,7 +320,6 @@ export const GET: RequestHandler = async ({ url }) => {
 				municipality,
 				sources: {
 					airQuality: aqiResult.status === 'fulfilled' ? aqiResult.value.length : 0,
-					uv: uvResult.status === 'fulfilled' ? uvResult.value.length : 0,
 					ocean: oncResult.status === 'fulfilled' ? oncResult.value.length : 0
 				}
 			}

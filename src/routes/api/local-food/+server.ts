@@ -72,26 +72,6 @@ function getSeedData(): LocalFoodItem[] {
 			coordinates: [-123.4638, 48.6547],
 			source: 'directory'
 		},
-		{
-			id: 'lf-merridale',
-			name: 'Merridale Cidery & Distillery',
-			category: 'cidery',
-			description:
-				'Farm-based cidery and distillery in the Cobble Hill area. Restaurant, wood-fired pizza, and extensive grounds.',
-			address: '1230 Merridale Rd, Cobble Hill',
-			url: 'https://merridalecider.com',
-			phone: '250-743-4293',
-			hours: 'Daily 10:30am-5:30pm',
-			coordinates: [-123.5984, 48.6839],
-			specials: [
-				{
-					title: 'Wood-Fired Pizza Fridays',
-					description: 'Artisan pizza paired with new cider & spirit releases',
-					recurring: true
-				}
-			],
-			source: 'directory'
-		},
 		// Breweries
 		{
 			id: 'lf-spinnakers',

@@ -154,13 +154,19 @@ export const GET: RequestHandler = async ({ url }) => {
 	const municipality = parseMunicipality(url.searchParams.get('municipality'));
 	const limit = parseLimit(url.searchParams.get('limit'), 20);
 
-	// Try live data first
-	let metrics = await fetchCMHCStarts();
+	// Combine live CMHC data (region-wide) with municipality-specific seed data
+	const liveMetrics = await fetchCMHCStarts();
+	let metrics: HousingMetric[];
 
-	// Fall back to seed data
-	if (metrics.length === 0) {
-		metrics = getSeedData(municipality);
-	} else if (municipality) {
+	if (liveMetrics.length > 0) {
+		// Merge: live region-wide metrics + municipality-specific seed data
+		const seedMuniMetrics = getSeedData(null).filter((m) => m.municipality);
+		metrics = [...liveMetrics, ...seedMuniMetrics];
+	} else {
+		metrics = getSeedData(null);
+	}
+
+	if (municipality) {
 		metrics = metrics.filter((m) => !m.municipality || m.municipality === municipality);
 	}
 

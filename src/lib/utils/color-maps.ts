@@ -71,11 +71,12 @@ export const envStatusColor = colorMap<
 
 /** Wildlife sighting category → color */
 export const wildlifeCategoryColor = colorMap<
-	'bird' | 'marine-mammal' | 'fish' | 'invertebrate' | 'reptile' | 'plant' | 'other'
+	'bird' | 'marine-mammal' | 'mammal' | 'fish' | 'invertebrate' | 'reptile' | 'plant' | 'other'
 >(
 	{
 		bird: 'var(--accent-warning)',
 		'marine-mammal': 'var(--palette-blue)',
+		mammal: 'var(--palette-orange, #d69e2e)',
 		fish: 'var(--palette-cyan)',
 		invertebrate: 'var(--palette-purple)',
 		reptile: 'var(--palette-green)',
