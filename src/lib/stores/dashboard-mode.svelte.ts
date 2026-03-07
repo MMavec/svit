@@ -14,7 +14,7 @@ function loadMode(): DashboardMode {
 		stored === 'political' ||
 		stored === 'nature' ||
 		stored === 'social' ||
-		stored === 'boomer' ||
+		stored === 'active-senior' ||
 		stored === 'family'
 	)
 		return stored;

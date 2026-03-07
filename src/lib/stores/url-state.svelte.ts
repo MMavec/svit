@@ -8,7 +8,7 @@ const validModes = new Set<string>([
 	'political',
 	'nature',
 	'social',
-	'boomer',
+	'active-senior',
 	'family'
 ]);
 

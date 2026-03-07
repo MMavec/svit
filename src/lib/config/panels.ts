@@ -207,7 +207,7 @@ export const panels: PanelConfig[] = [
 		minHeight: 4
 	},
 
-	// Tier 3 — Boomer Mode panels
+	// Tier 3 — Active Senior Mode panels
 	{
 		id: 'grocery-flyers',
 		title: 'Grocery Flyers',

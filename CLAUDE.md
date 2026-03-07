@@ -87,7 +87,7 @@ Ten stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage
 - **`search.svelte.ts`** — Cross-panel global search with 300ms debounce. Searches 5 API sources (council, news, development, events, safety). Methods: `open()`, `close()`, query getter/setter. Keyboard shortcut: Cmd+K / Ctrl+K.
 - **`url-state.svelte.ts`** — URL param synchronization (`?m=`, `?panel=`, `?q=`, `?mode=`). Methods: `initialize()`, `setMunicipality()`, `focusPanel()`, `setSearchQuery()`, `setMode()`, `getShareUrl()`. Municipality uses `replaceState`, panel focus uses `pushState` (enables Back button).
 - **`leads.svelte.ts`** — Lead capture state (submitted/dismissed) with localStorage persistence (`svit-lead-capture`). Methods: `shouldShowPrompt()`, `submitLead()`, `dismiss()`, `openModal()`, `markSubmitted()`.
-- **`dashboard-mode.svelte.ts`** — Dashboard mode state (generalist/political/nature/social/boomer/family). Persisted to localStorage (`svit-mode`). Methods: `setMode()`. Recomputes panel positions from mode-specific panel ordering and calls `layoutStore.updateAll()`.
+- **`dashboard-mode.svelte.ts`** — Dashboard mode state (generalist/political/nature/social/active-senior/family). Persisted to localStorage (`svit-mode`). Methods: `setMode()`. Recomputes panel positions from mode-specific panel ordering and calls `layoutStore.updateAll()`.
 
 ### API Proxy Pattern
 
@@ -280,7 +280,7 @@ Future tables: `layout_preferences` (saved grid positions), `saved_items` (bookm
 - **Monitor Matching** (`monitor-matcher.ts`): MyMonitors panel scans 5 API sources for keyword matches. Case-insensitive, source-filtered, grouped by monitor with expandable match lists.
 - **Shareable URL State** (`url-state.svelte.ts`): Municipality, focused panel, search query, and dashboard mode reflected in URL params (`?m=victoria&panel=council-watch&q=transit&mode=political`). Back button unfocuses panels. Validated against config.
 - **Social Sharing** (`ShareDrawer.svelte` + `ShareButton.svelte`): Share buttons in header and panel headers. Twitter/X, Facebook, Instagram, TikTok via URL intent links (no JS SDKs). Copy-link with clipboard feedback. Share URLs point to `/share` SSR route for OG tag support.
-- **Dashboard Modes** (`DashboardModeSelector.svelte` + `dashboard-mode.svelte.ts`): 6 mode buttons in header that reorganize tile order by interest area. Modes: Generalist (default), Political (council/bylaw/councillors first), Nature (wildlife/trees/environment first), Social (events/voices/local-wire first), Boomer (flyers/food/real-estate/classifieds first), Family (activities/parks/schools first). Mode config in `src/lib/config/dashboard-modes.ts`. Positions auto-computed: 3 per row, w:4 each. Persisted to localStorage and URL (`?mode=boomer`).
+- **Dashboard Modes** (`DashboardModeSelector.svelte` + `dashboard-mode.svelte.ts`): 6 mode buttons in header that reorganize tile order by interest area. Modes: Generalist (default), Political (council/bylaw/councillors first), Nature (wildlife/trees/environment first), Social (events/voices/local-wire first), Active Senior (flyers/food/real-estate/classifieds first), Family (activities/parks/schools first). Mode config in `src/lib/config/dashboard-modes.ts`. Positions auto-computed: 3 per row, w:4 each. Persisted to localStorage and URL (`?mode=active-senior`).
 - **Lead Capture** (`LeadCaptureBanner.svelte` + `LeadCaptureModal.svelte`): Bottom banner appears after 30s delay. Quick email subscribe or full 3-step modal (email → social accounts → interests/consent). Dual backend: Supabase (INSERT-only RLS) + optional `LEADS_WEBHOOK_URL` relay to Google Sheets. localStorage tracks dismiss/submit state.
 
 ## Implementation Status
@@ -370,10 +370,10 @@ Phases 0–14 complete. 29 panels live across 4 tiers (CRD Map removed in Phase 
 - **Supabase configured**: `.env` with credentials for auth and lead capture. Uses `$env/dynamic/public` (not `import.meta.env` or `$env/static/public`) — required for Vercel runtime and CI compatibility.
 - **Dashboard Modes**: 4-mode system (Generalist, Political, Nature, Social) with mode selector in header. Each mode defines a `panelOrder` array; positions auto-computed as 3 per row. Config in `src/lib/config/dashboard-modes.ts`, state in `src/lib/stores/dashboard-mode.svelte.ts`, UI in `DashboardModeSelector.svelte`. Persisted to localStorage + URL param (`?mode=political`).
 
-### Phase 14: Boomer Mode & Family Mode
+### Phase 14: Active Senior Mode & Family Mode
 
 - **7 new Tier 3 panels**: Grocery Flyers, Local Food & Drink, Real Estate Market, Community Board, Family Activities, Parks & Recreation, Schools & Libraries
-- **Boomer Mode** (`📰`): Prioritizes grocery flyers, local wineries/breweries/farms, VREB real estate stats, community classifieds (Craigslist/UsedVictoria), then local news and events. Targets 50+ demographic who want practical daily-life info.
+- **Active Senior Mode** (`📰`): Prioritizes grocery flyers, local wineries/breweries/farms, VREB real estate stats, community classifieds (Craigslist/UsedVictoria), then local news and events. Targets 50+ demographic who want practical daily-life info.
 - **Family Mode** (`👨‍👩‍👧‍👦`): Prioritizes family activities (swim, storytime, nature), parks/rec centres/playgrounds/beaches, schools/libraries/programs, then events and safety. Shows age ranges and FREE badges.
 - **Grocery Flyers**: Links to weekly flyers for 6 local grocery stores (Thrifty Foods, Save-On-Foods, Fairway Market, Country Grocer, Red Barn, Pepper's). Scrapes RedFlagDeals for live data with directory fallback.
 - **Local Food & Drink**: Directory of 15 wineries (Church & State, Deep Cove), cideries (Sea Cider, Merridale), breweries (Spinnakers, Driftwood, Hoyne, Phillips, Category 12), distillery (Victoria Distillers), farm markets (Moss St, Root Cellar, Island Farm Fresh). Filterable by category.
