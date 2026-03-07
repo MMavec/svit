@@ -4,11 +4,31 @@ import type { RequestHandler } from './$types';
 import type { WildlifeSighting } from '$lib/types/index';
 import { CRD_CENTER } from '$lib/config/municipalities';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality, isJsonResponse, parseEnum } from '$lib/utils/api-validation';
+import {
+	parseLimit,
+	parseMunicipality,
+	isJsonResponse,
+	parseEnum
+} from '$lib/utils/api-validation';
 
-type WildlifeCategory = 'bird' | 'marine-mammal' | 'mammal' | 'fish' | 'invertebrate' | 'plant' | 'reptile' | 'other';
+type WildlifeCategory =
+	| 'bird'
+	| 'marine-mammal'
+	| 'mammal'
+	| 'fish'
+	| 'invertebrate'
+	| 'plant'
+	| 'reptile'
+	| 'other';
 const validWildlifeCategories = new Set<WildlifeCategory>([
-	'bird', 'marine-mammal', 'mammal', 'fish', 'invertebrate', 'plant', 'reptile', 'other'
+	'bird',
+	'marine-mammal',
+	'mammal',
+	'fish',
+	'invertebrate',
+	'plant',
+	'reptile',
+	'other'
 ]);
 
 const CACHE_MAX_AGE = 300; // 5 minutes
