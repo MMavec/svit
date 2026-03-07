@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fetchLocalFood } from '$lib/api/local-food';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
+	import { mapFocusStore } from '$lib/stores/map-focus.svelte';
 	import type { LocalFoodItem } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
@@ -82,6 +83,17 @@
 				return '#6c757d';
 		}
 	}
+
+	function showOnMap(item: LocalFoodItem) {
+		if (!item.coordinates) return;
+		mapFocusStore.focus({
+			coordinates: item.coordinates,
+			title: item.name,
+			description: item.address || item.category,
+			color: categoryColor(item.category),
+			zoom: 14
+		});
+	}
 </script>
 
 <div class="local-food">
@@ -120,8 +132,42 @@
 								{item.name}
 							{/if}
 						</div>
+						{#if item.coordinates}
+							<button
+								class="map-btn"
+								onclick={() => showOnMap(item)}
+								title="Show on map"
+								aria-label="Show {item.name} on map"
+							>
+								<svg
+									width="12"
+									height="12"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+									<circle cx="12" cy="10" r="3" />
+								</svg>
+							</button>
+						{/if}
 					</div>
 					<div class="item-desc">{item.description}</div>
+					{#if item.specials && item.specials.length > 0}
+						<div class="specials">
+							{#each item.specials as special (special.title)}
+								<div class="special-item">
+									<span class="special-title">{special.title}</span>
+									{#if special.description}
+										<span class="special-desc">{special.description}</span>
+									{/if}
+								</div>
+							{/each}
+						</div>
+					{/if}
 					<div class="item-footer">
 						{#if item.address}
 							<span class="item-address">{item.address}</span>
@@ -216,6 +262,8 @@
 		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text-primary);
+		flex: 1;
+		min-width: 0;
 	}
 
 	.item-name a {
@@ -227,6 +275,26 @@
 		color: var(--accent-primary);
 	}
 
+	.map-btn {
+		width: 24px;
+		height: 24px;
+		border-radius: 5px;
+		border: 1px solid var(--border-subtle);
+		background: transparent;
+		color: var(--text-tertiary);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: all 0.15s;
+	}
+
+	.map-btn:hover {
+		color: var(--accent-primary);
+		border-color: var(--accent-primary);
+	}
+
 	.item-desc {
 		font-size: 0.6875rem;
 		color: var(--text-secondary);
@@ -236,6 +304,31 @@
 		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	.specials {
+		margin-top: 4px;
+		padding: 4px 6px;
+		border-radius: 4px;
+		background: var(--bg-surface-elevated);
+		border-left: 2px solid var(--accent-secondary);
+	}
+
+	.special-item {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+
+	.special-title {
+		font-size: 0.5625rem;
+		font-weight: 600;
+		color: var(--accent-secondary);
+	}
+
+	.special-desc {
+		font-size: 0.5rem;
+		color: var(--text-tertiary);
 	}
 
 	.item-footer {
