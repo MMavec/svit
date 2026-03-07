@@ -116,29 +116,29 @@ Vercel edge cache tiers: 5min (news, social, transit, safety), 15min (council, d
 
 ### Implemented API Routes
 
-| Route                    | External Source                                                                                                    | Seed Fallback                                         |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| `GET /api/council`       | eSCRIBE WebMethods (Victoria, Langford) + CivicWeb HTML scraping (9 municipalities)                                | 20 meetings across 5 municipalities                   |
-| `GET /api/news`          | 8 RSS feeds (CHEK, VicNews, VictoriaBuzz, SaanichNews, OakBayNews, GoldstreamGazette, PeninsulaNewsReview, CBC BC) | None needed (live feeds work)                         |
-| `GET /api/social`        | Bluesky AT Protocol search (#yyj, #yyjpoli)                                                                        | 5 representative posts                                |
-| `GET /api/development`   | Victoria Open Data ArcGIS Hub                                                                                      | 6 applications across 4 municipalities                |
-| `GET /api/construction`  | DriveBC Open511 (Vancouver Island, filtered to CRD bbox)                                                           | 5 events across 4 municipalities                      |
-| `GET /api/transit`       | BC Transit GTFS-RT alerts (operator 48, protobuf)                                                                  | 3 service alerts                                      |
-| `GET /api/safety`        | Environment Canada ATOM + BC Wildfire ArcGIS + DriveBC incidents + USGS FDSN earthquakes                           | 4 alerts (weather + wildfire + road + earthquake)     |
-| `GET /api/weather-tides` | Environment Canada CityPage XML (s0000828) + CHS IWLS tides API (Victoria Harbour 07120)                           | Current conditions + 4 forecasts + 4 tide predictions |
-| `GET /api/housing`       | CMHC housing indicators (Victoria CMA)                                                                             | 10 metrics (median price, rent, vacancy, starts)      |
-| `GET /api/events`        | Tourism Victoria events feed                                                                                       | 8 events across 6 municipalities                      |
-| `GET /api/budget`        | Static (future: open data portals)                                                                                 | 15 items across Victoria, Saanich, Langford           |
-| `GET /api/wildlife`      | iNaturalist API + eBird API v2 (CRD observations, 25km radius)                                                     | 8 sightings (orca, eagle, heron, seal, etc.)          |
-| `GET /api/trees`         | iNaturalist (CRD tree observations)                                                                                | 8 trees (Garry Oak, Douglas Fir, Arbutus, etc.)       |
-| `GET /api/environment`   | AQICN air quality via `AQICN_API_TOKEN` + ONC ocean temperature (VENUS observatory)                                | 8 readings (AQI, PM2.5, UV, pollen, water, ocean)     |
-| `GET /api/flyers`        | RedFlagDeals Victoria grocery flyers (HTML scraping)                                                               | 6 stores (Thrifty, Save-On, Fairway, Country, Red Barn, Pepper's) |
-| `GET /api/local-food`    | Static directory                                                                                                   | 15 entries (wineries, breweries, cideries, farm markets) |
-| `GET /api/real-estate`   | Static (VREB MLS stats)                                                                                            | 10 metrics (sales, benchmarks, listings, days on market) |
-| `GET /api/community-board` | Craigslist Victoria RSS + UsedVictoria RSS                                                                       | 6 posts (for-sale, free, wanted, services)            |
-| `GET /api/family-activities` | Tourism Victoria events + Saanich events RSS (family-filtered)                                                 | 10 activities (swim, library, nature, sports, arts)   |
-| `GET /api/parks`         | Static directory                                                                                                   | 15 facilities (parks, pools, playgrounds, trails, beaches) |
-| `GET /api/schools-libraries` | Static directory                                                                                               | 12 items (GVPL branches, programs, school districts)  |
+| Route                        | External Source                                                                                                    | Seed Fallback                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `GET /api/council`           | eSCRIBE WebMethods (Victoria, Langford) + CivicWeb HTML scraping (9 municipalities)                                | 20 meetings across 5 municipalities                               |
+| `GET /api/news`              | 8 RSS feeds (CHEK, VicNews, VictoriaBuzz, SaanichNews, OakBayNews, GoldstreamGazette, PeninsulaNewsReview, CBC BC) | None needed (live feeds work)                                     |
+| `GET /api/social`            | Bluesky AT Protocol search (#yyj, #yyjpoli)                                                                        | 5 representative posts                                            |
+| `GET /api/development`       | Victoria Open Data ArcGIS Hub                                                                                      | 6 applications across 4 municipalities                            |
+| `GET /api/construction`      | DriveBC Open511 (Vancouver Island, filtered to CRD bbox)                                                           | 5 events across 4 municipalities                                  |
+| `GET /api/transit`           | BC Transit GTFS-RT alerts (operator 48, protobuf)                                                                  | 3 service alerts                                                  |
+| `GET /api/safety`            | Environment Canada ATOM + BC Wildfire ArcGIS + DriveBC incidents + USGS FDSN earthquakes                           | 4 alerts (weather + wildfire + road + earthquake)                 |
+| `GET /api/weather-tides`     | Environment Canada CityPage XML (s0000828) + CHS IWLS tides API (Victoria Harbour 07120)                           | Current conditions + 4 forecasts + 4 tide predictions             |
+| `GET /api/housing`           | CMHC housing indicators (Victoria CMA)                                                                             | 10 metrics (median price, rent, vacancy, starts)                  |
+| `GET /api/events`            | Tourism Victoria events feed                                                                                       | 8 events across 6 municipalities                                  |
+| `GET /api/budget`            | Static (future: open data portals)                                                                                 | 15 items across Victoria, Saanich, Langford                       |
+| `GET /api/wildlife`          | iNaturalist API + eBird API v2 (CRD observations, 25km radius)                                                     | 8 sightings (orca, eagle, heron, seal, etc.)                      |
+| `GET /api/trees`             | iNaturalist (CRD tree observations)                                                                                | 8 trees (Garry Oak, Douglas Fir, Arbutus, etc.)                   |
+| `GET /api/environment`       | AQICN air quality via `AQICN_API_TOKEN` + ONC ocean temperature (VENUS observatory)                                | 8 readings (AQI, PM2.5, UV, pollen, water, ocean)                 |
+| `GET /api/flyers`            | RedFlagDeals Victoria grocery flyers (HTML scraping)                                                               | 6 stores (Thrifty, Save-On, Fairway, Country, Red Barn, Pepper's) |
+| `GET /api/local-food`        | Static directory                                                                                                   | 15 entries (wineries, breweries, cideries, farm markets)          |
+| `GET /api/real-estate`       | Static (VREB MLS stats)                                                                                            | 10 metrics (sales, benchmarks, listings, days on market)          |
+| `GET /api/community-board`   | Craigslist Victoria RSS + UsedVictoria RSS                                                                         | 6 posts (for-sale, free, wanted, services)                        |
+| `GET /api/family-activities` | Tourism Victoria events + Saanich events RSS (family-filtered)                                                     | 10 activities (swim, library, nature, sports, arts)               |
+| `GET /api/parks`             | Static directory                                                                                                   | 15 facilities (parks, pools, playgrounds, trails, beaches)        |
+| `GET /api/schools-libraries` | Static directory                                                                                                   | 12 items (GVPL branches, programs, school districts)              |
 
 All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`. Development accepts `?flagged=true`. Construction accepts `?event_type=CONSTRUCTION|INCIDENT`. Events accepts `?category=`. Budget accepts `?type=revenue|expenditure`. Wildlife accepts `?category=`. Trees accepts `?heritage=true`.
 
