@@ -113,7 +113,7 @@
 
 <div class="parks">
 	<div class="filters">
-		{#each filters as filter}
+		{#each filters as filter (filter.label)}
 			<button
 				class="filter-btn"
 				class:active={activeFilter === filter.value}
@@ -155,7 +155,7 @@
 					<div class="facility-desc">{facility.description}</div>
 					{#if facility.amenities && facility.amenities.length > 0}
 						<div class="amenity-tags">
-							{#each facility.amenities.slice(0, 4) as amenity}
+							{#each facility.amenities.slice(0, 4) as amenity (amenity)}
 								<span class="amenity-tag">{amenity}</span>
 							{/each}
 							{#if facility.amenities.length > 4}

@@ -86,7 +86,7 @@
 
 <div class="local-food">
 	<div class="filters">
-		{#each filters as filter}
+		{#each filters as filter (filter.label)}
 			<button
 				class="filter-btn"
 				class:active={activeFilter === filter.value}

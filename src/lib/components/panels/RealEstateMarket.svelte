@@ -55,28 +55,6 @@
 		const sign = change > 0 ? '+' : '';
 		return `${sign}${change}% YoY`;
 	}
-
-	function categoryLabel(cat: RealEstateMetric['category']): string {
-		switch (cat) {
-			case 'sales':
-				return 'Sales';
-			case 'prices':
-				return 'Prices';
-			case 'inventory':
-				return 'Inventory';
-			case 'days-on-market':
-				return 'Market Speed';
-		}
-	}
-
-	// Group metrics by category
-	const grouped = $derived(() => {
-		const groups: Record<string, RealEstateMetric[]> = {};
-		for (const m of metrics) {
-			(groups[m.category] ??= []).push(m);
-		}
-		return groups;
-	});
 </script>
 
 <div class="real-estate">
