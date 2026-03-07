@@ -3,7 +3,14 @@ import { panels } from '$lib/config/panels';
 import { municipalityStore } from '$lib/stores/municipality.svelte';
 import type { DashboardMode } from '$lib/config/dashboard-modes';
 
-const validModes = new Set<string>(['generalist', 'political', 'nature', 'social']);
+const validModes = new Set<string>([
+	'generalist',
+	'political',
+	'nature',
+	'social',
+	'boomer',
+	'family'
+]);
 
 interface UrlState {
 	municipality: string | null;

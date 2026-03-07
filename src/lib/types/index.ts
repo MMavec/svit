@@ -498,3 +498,124 @@ export interface ThreadMessage {
 	authorId: string;
 	createdAt: string;
 }
+
+// --- Boomer Mode Types ---
+
+export interface GroceryFlyer {
+	id: string;
+	store: string;
+	storeSlug: string;
+	title: string;
+	validFrom: string; // ISO 8601
+	validTo: string;
+	flyerUrl: string;
+	thumbnailUrl?: string;
+	municipality?: string;
+	source: string;
+}
+
+export interface LocalFoodItem {
+	id: string;
+	name: string;
+	category: 'farm' | 'winery' | 'brewery' | 'cidery' | 'distillery' | 'market' | 'restaurant';
+	description: string;
+	address?: string;
+	municipality?: string;
+	url?: string;
+	phone?: string;
+	hours?: string;
+	seasonal?: boolean;
+	source: string;
+}
+
+export interface RealEstateMetric {
+	id: string;
+	label: string;
+	value: number;
+	unit: 'dollars' | 'percent' | 'count' | 'ratio';
+	change?: number; // % change from prior period
+	period: string; // e.g. "Feb 2026"
+	category: 'sales' | 'prices' | 'inventory' | 'days-on-market';
+	propertyType?: 'all' | 'single-family' | 'condo' | 'townhouse';
+	municipality?: string;
+	source: string;
+}
+
+export interface CommunityPost {
+	id: string;
+	title: string;
+	description: string;
+	category: 'for-sale' | 'free' | 'wanted' | 'services' | 'housing' | 'events' | 'other';
+	authorName?: string;
+	municipality?: string;
+	contactMethod?: string;
+	imageUrl?: string;
+	postedAt: string; // ISO 8601
+	expiresAt?: string;
+	source: string;
+}
+
+// --- Family Mode Types ---
+
+export interface FamilyActivity {
+	id: string;
+	title: string;
+	description: string;
+	ageRange?: string; // e.g. "0-5", "6-12", "all ages"
+	category:
+		| 'outdoor'
+		| 'indoor'
+		| 'sports'
+		| 'arts'
+		| 'education'
+		| 'library'
+		| 'swimming'
+		| 'playground'
+		| 'nature'
+		| 'other';
+	date?: string; // ISO 8601 if event-based
+	time?: string;
+	location: string;
+	venue?: string;
+	municipality?: string;
+	url?: string;
+	free: boolean;
+	recurring?: boolean;
+	source: string;
+}
+
+export interface ParkFacility {
+	id: string;
+	name: string;
+	type:
+		| 'park'
+		| 'playground'
+		| 'splash-pad'
+		| 'pool'
+		| 'rec-centre'
+		| 'sports-field'
+		| 'trail'
+		| 'beach';
+	description: string;
+	address?: string;
+	municipality?: string;
+	amenities?: string[];
+	url?: string;
+	coordinates?: [number, number];
+	source: string;
+}
+
+export interface SchoolLibraryItem {
+	id: string;
+	name: string;
+	type: 'school' | 'library' | 'program' | 'event';
+	description: string;
+	address?: string;
+	municipality?: string;
+	url?: string;
+	date?: string; // for events/programs
+	time?: string;
+	ageRange?: string;
+	free: boolean;
+	source: string;
+}

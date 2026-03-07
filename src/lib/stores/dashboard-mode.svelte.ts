@@ -10,7 +10,14 @@ const STORAGE_KEY = 'svit-mode';
 function loadMode(): DashboardMode {
 	if (typeof window === 'undefined') return 'generalist';
 	const stored = localStorage.getItem(STORAGE_KEY);
-	if (stored === 'political' || stored === 'nature' || stored === 'social') return stored;
+	if (
+		stored === 'political' ||
+		stored === 'nature' ||
+		stored === 'social' ||
+		stored === 'boomer' ||
+		stored === 'family'
+	)
+		return stored;
 	return 'generalist';
 }
 

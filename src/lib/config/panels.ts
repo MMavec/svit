@@ -205,6 +205,73 @@ export const panels: PanelConfig[] = [
 		defaultPosition: { x: 0, y: 42, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
+	},
+
+	// Tier 3 — Boomer Mode panels
+	{
+		id: 'grocery-flyers',
+		title: 'Grocery Flyers',
+		tier: 3,
+		icon: '🛒',
+		defaultPosition: { x: 4, y: 42, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'local-food-drink',
+		title: 'Local Food & Drink',
+		tier: 3,
+		icon: '🍷',
+		defaultPosition: { x: 8, y: 42, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'real-estate-market',
+		title: 'Real Estate Market',
+		tier: 3,
+		icon: '🏡',
+		defaultPosition: { x: 0, y: 48, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'community-board',
+		title: 'Community Board',
+		tier: 3,
+		icon: '📌',
+		defaultPosition: { x: 4, y: 48, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+
+	// Tier 3 — Family Mode panels
+	{
+		id: 'family-activities',
+		title: 'Family Activities',
+		tier: 3,
+		icon: '👨‍👩‍👧‍👦',
+		defaultPosition: { x: 8, y: 48, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'parks-recreation',
+		title: 'Parks & Recreation',
+		tier: 3,
+		icon: '🏊',
+		defaultPosition: { x: 0, y: 54, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'schools-libraries',
+		title: 'Schools & Libraries',
+		tier: 3,
+		icon: '📚',
+		defaultPosition: { x: 4, y: 54, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
 	}
 ];
 

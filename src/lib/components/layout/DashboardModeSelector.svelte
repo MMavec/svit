@@ -66,7 +66,7 @@
 		display: none;
 	}
 
-	@media (min-width: 768px) {
+	@media (min-width: 1024px) {
 		.mode-label {
 			display: inline;
 		}
