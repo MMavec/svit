@@ -71,14 +71,30 @@
 	}
 
 	function showOnMap(flyer: GroceryFlyer) {
-		if (!flyer.coordinates) return;
+		// Pick the best location: municipality-matching first, then primary coordinates
+		const muni = municipalityStore.slug;
+		let coords = flyer.coordinates;
+		let locationName = flyer.store;
+
+		if (flyer.locations && flyer.locations.length > 0) {
+			const match = muni ? flyer.locations.find((l) => l.municipality === muni) : undefined;
+			const loc = match || flyer.locations[0];
+			coords = loc.coordinates;
+			locationName = loc.name;
+		}
+
+		if (!coords) return;
 		mapFocusStore.focus({
-			coordinates: flyer.coordinates,
-			title: flyer.store,
+			coordinates: coords,
+			title: locationName,
 			description: `${flyer.title} — ${formatDateRange(flyer.validFrom, flyer.validTo)}`,
 			color: storeColor(flyer.storeSlug),
 			zoom: 14
 		});
+	}
+
+	function locationCount(flyer: GroceryFlyer): number {
+		return flyer.locations?.length || (flyer.coordinates ? 1 : 0);
 	}
 </script>
 
@@ -108,7 +124,7 @@
 							</div>
 						</div>
 						<div class="flyer-actions">
-							{#if flyer.coordinates}
+							{#if flyer.coordinates || (flyer.locations && flyer.locations.length > 0)}
 								<button
 									class="map-btn"
 									onclick={() => showOnMap(flyer)}
@@ -128,6 +144,9 @@
 										<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
 										<circle cx="12" cy="10" r="3" />
 									</svg>
+									{#if locationCount(flyer) > 1}
+										<span class="location-count">{locationCount(flyer)}</span>
+									{/if}
 								</button>
 							{/if}
 							<a
@@ -165,14 +184,16 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
+		min-height: 0;
 	}
 
 	.flyer-list {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 8px;
 		overflow-y: auto;
 		flex: 1;
+		min-height: 0;
 	}
 
 	.flyer-card {
@@ -180,6 +201,7 @@
 		background: var(--bg-surface-hover);
 		transition: background 0.2s;
 		overflow: hidden;
+		flex-shrink: 0;
 	}
 
 	.flyer-card:hover {
@@ -190,17 +212,17 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		padding: 10px;
+		padding: 8px 10px;
 	}
 
 	.store-badge {
-		width: 36px;
-		height: 36px;
+		width: 32px;
+		height: 32px;
 		border-radius: 8px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 0.875rem;
+		font-size: 0.8125rem;
 		font-weight: 700;
 		color: #fff;
 		flex-shrink: 0;
@@ -215,11 +237,17 @@
 		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text-primary);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.flyer-title {
 		font-size: 0.6875rem;
 		color: var(--text-secondary);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.flyer-meta {
@@ -249,6 +277,7 @@
 	}
 
 	.map-btn {
+		position: relative;
 		width: 28px;
 		height: 28px;
 		border-radius: 6px;
@@ -265,6 +294,23 @@
 	.map-btn:hover {
 		color: var(--accent-primary);
 		border-color: var(--accent-primary);
+	}
+
+	.location-count {
+		position: absolute;
+		top: -4px;
+		right: -4px;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--accent-primary);
+		color: #fff;
+		font-size: 0.5rem;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 1;
 	}
 
 	.view-btn {
@@ -285,10 +331,9 @@
 	}
 
 	.highlights {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1px;
-		background: var(--border-subtle);
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0;
 		border-top: 1px solid var(--border-subtle);
 	}
 
@@ -296,13 +341,15 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 4px 10px;
-		background: var(--bg-surface-hover);
-		gap: 6px;
+		padding: 3px 10px;
+		width: 50%;
+		gap: 4px;
+		box-sizing: border-box;
+		border-bottom: 1px solid var(--border-subtle);
 	}
 
-	.flyer-card:hover .highlight-item {
-		background: var(--bg-surface-elevated);
+	.highlight-item:nth-child(odd) {
+		border-right: 1px solid var(--border-subtle);
 	}
 
 	.hl-name {
