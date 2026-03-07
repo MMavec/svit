@@ -76,7 +76,7 @@ Every panel follows the same structure: local `$state` for data/loading, `$effec
 
 ### Reactive State (Svelte 5 Runes)
 
-Ten stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
+Eleven stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
 
 - **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`, `isAllCRD`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
 - **`theme.svelte.ts`** — Dark/light theme (exported as `theme`, not `themeStore`). Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark. Methods: `toggle()`, `init()`.
@@ -88,6 +88,7 @@ Ten stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage
 - **`url-state.svelte.ts`** — URL param synchronization (`?m=`, `?panel=`, `?q=`, `?mode=`). Methods: `initialize()`, `setMunicipality()`, `focusPanel()`, `setSearchQuery()`, `setMode()`, `getShareUrl()`. Municipality uses `replaceState`, panel focus uses `pushState` (enables Back button).
 - **`leads.svelte.ts`** — Lead capture state (submitted/dismissed) with localStorage persistence (`svit-lead-capture`). Methods: `shouldShowPrompt()`, `submitLead()`, `dismiss()`, `openModal()`, `markSubmitted()`.
 - **`dashboard-mode.svelte.ts`** — Dashboard mode state (generalist/political/nature/social/active-senior/family). Persisted to localStorage (`svit-mode`). Methods: `setMode()`. Recomputes panel positions from mode-specific panel ordering and calls `layoutStore.updateAll()`.
+- **`map-focus.svelte.ts`** — Cross-panel map focus requests. Any panel can call `mapFocusStore.focus({ coordinates, title, description, color, zoom })` to fly HeroMap to a location with a popup. Used by Grocery Flyers and Local Food & Drink panels.
 
 ### API Proxy Pattern
 
@@ -132,8 +133,8 @@ Vercel edge cache tiers: 5min (news, social, transit, safety), 15min (council, d
 | `GET /api/wildlife`          | iNaturalist API + eBird API v2 (CRD observations, 25km radius)                                                     | 8 sightings (orca, eagle, heron, seal, etc.)                      |
 | `GET /api/trees`             | iNaturalist (CRD tree observations)                                                                                | 8 trees (Garry Oak, Douglas Fir, Arbutus, etc.)                   |
 | `GET /api/environment`       | AQICN air quality via `AQICN_API_TOKEN` + ONC ocean temperature (VENUS observatory)                                | 8 readings (AQI, PM2.5, UV, pollen, water, ocean)                 |
-| `GET /api/flyers`            | RedFlagDeals Victoria grocery flyers (HTML scraping)                                                               | 6 stores (Thrifty, Save-On, Fairway, Country, Red Barn, Pepper's) |
-| `GET /api/local-food`        | Static directory                                                                                                   | 15 entries (wineries, breweries, cideries, farm markets)          |
+| `GET /api/flyers`            | Flipp API (`backflipp.wishabi.com`) — live flyer data with deal highlights for 9 Victoria-area grocery stores      | 6 stores (Thrifty, Save-On, Fairway, Country, Pepper's, Root Cellar) |
+| `GET /api/local-food`        | Static directory with coordinates and specials/promos                                                              | 15 entries (wineries, breweries, cideries, farm markets)          |
 | `GET /api/real-estate`       | Static (VREB MLS stats)                                                                                            | 10 metrics (sales, benchmarks, listings, days on market)          |
 | `GET /api/community-board`   | Craigslist Victoria RSS + UsedVictoria RSS                                                                         | 6 posts (for-sale, free, wanted, services)                        |
 | `GET /api/family-activities` | Tourism Victoria events + Saanich events RSS (family-filtered)                                                     | 10 activities (swim, library, nature, sports, arts)               |
@@ -163,6 +164,7 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 - On `setStyle()` (theme toggle), all sources/layers are destroyed — the `style.load` event callback must re-add them
 - Municipality boundaries are static GeoJSON at `static/data/crd-municipalities.geojson` (real CRD polygons from BC WFS, Douglas-Peucker simplified)
 - **Clustering**: Features source has `cluster: true, clusterMaxZoom: 13, clusterRadius: 40`. Three layers: `feature-clusters` (circles), `feature-cluster-count` (labels), `feature-circles` (unclustered). Click on cluster zooms in via `getClusterExpansionZoom()`.
+- **Cross-panel focus**: Subscribes to `mapFocusStore` — any panel can trigger `flyTo()` with a popup via `mapFocusStore.focus()`. Used by Grocery Flyers (show store location) and Local Food & Drink (show venue location).
 - **Reset view button**: Home icon button (top-left) calls `map.fitBounds()` with current municipality bbox. Respects `prefers-reduced-motion`.
 - **Keyboard nav**: Map container has `tabindex="0"`, `role="application"`. Escape closes popup. MapLibre's built-in arrow keys/+/- work once focused.
 - **WebGL limitation**: MapLibre paint properties cannot use CSS custom properties — use hex color values for cluster/circle paint
@@ -375,8 +377,9 @@ Phases 0–14 complete. 29 panels live across 4 tiers (CRD Map removed in Phase 
 - **7 new Tier 3 panels**: Grocery Flyers, Local Food & Drink, Real Estate Market, Community Board, Family Activities, Parks & Recreation, Schools & Libraries
 - **Active Senior Mode** (`📰`): Prioritizes grocery flyers, local wineries/breweries/farms, VREB real estate stats, community classifieds (Craigslist/UsedVictoria), then local news and events. Targets 50+ demographic who want practical daily-life info.
 - **Family Mode** (`👨‍👩‍👧‍👦`): Prioritizes family activities (swim, storytime, nature), parks/rec centres/playgrounds/beaches, schools/libraries/programs, then events and safety. Shows age ranges and FREE badges.
-- **Grocery Flyers**: Links to weekly flyers for 6 local grocery stores (Thrifty Foods, Save-On-Foods, Fairway Market, Country Grocer, Red Barn, Pepper's). Scrapes RedFlagDeals for live data with directory fallback.
-- **Local Food & Drink**: Directory of 15 wineries (Church & State, Deep Cove), cideries (Sea Cider, Merridale), breweries (Spinnakers, Driftwood, Hoyne, Phillips, Category 12), distillery (Victoria Distillers), farm markets (Moss St, Root Cellar, Island Farm Fresh). Filterable by category.
+- **Grocery Flyers**: Auto-updating via Flipp API (`backflipp.wishabi.com`) — live flyer data with deal highlights (item name + price), item counts, and real valid date ranges for 9 Victoria-area grocery stores (Thrifty, Save-On, Fairway, Country Grocer, Pepper's, Root Cellar, Walmart, Costco, Quality Foods). Pin button flies HeroMap to store location. Falls back to seed data when API is down.
+- **Local Food & Drink**: Directory of 15 venues with coordinates and specials/promos — wineries (Church & State, Deep Cove), cideries (Sea Cider, Merridale), breweries (Spinnakers, Driftwood, Hoyne, Phillips, Category 12), distillery (Victoria Distillers), farm markets (Moss St, Root Cellar, Island Farm Fresh). Filterable by category. Pin button flies HeroMap to venue. Specials shown as accent-colored callout cards (happy hours, tasting events, weekly specials).
+- **Cross-panel map integration**: New `mapFocusStore` (`map-focus.svelte.ts`) enables any panel to fly HeroMap to a [lng, lat] with a popup. Grocery Flyers and Local Food & Drink panels have pin buttons that trigger this.
 - **Real Estate Market**: VREB MLS statistics (Feb 2026): total sales, single-family/condo/townhouse benchmarks, active listings, days on market, sales-to-listings ratio. Year-over-year change indicators. Links to vreb.org full report.
 - **Community Board**: Aggregates Craigslist Victoria RSS (for-sale, free, services) + UsedVictoria RSS. Classified-style listings filterable by category. Inspired by Craigslist's organic community board model.
 - **Family Activities**: Aggregates Tourism Victoria + Saanich events RSS (filtered for family/kids). Seed data: Crystal Pool swims, GVPL storytime, Beacon Hill petting zoo, Bug Zoo, WildPlay, Code Ninjas, art gallery family Sundays.
