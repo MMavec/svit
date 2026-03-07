@@ -1,6 +1,6 @@
 import { panels } from './panels';
 
-export type DashboardMode = 'generalist' | 'political' | 'nature' | 'social';
+export type DashboardMode = 'generalist' | 'political' | 'nature' | 'social' | 'boomer' | 'family';
 
 export interface ModeConfig {
 	id: DashboardMode;
@@ -63,6 +63,53 @@ export const dashboardModes: ModeConfig[] = [
 			'councillor-profiles',
 			'housing',
 			'pulse'
+		])
+	},
+	{
+		id: 'boomer',
+		label: 'Boomer',
+		icon: '📰',
+		panelOrder: buildOrder([
+			// Lead with practical daily-life tiles
+			'grocery-flyers',
+			'local-food-drink',
+			'real-estate-market',
+			// Community classifieds — the Craigslist/UsedVictoria digest
+			'community-board',
+			// Local news and events (Facebook-page-style digest feel)
+			'local-wire',
+			'voices',
+			'events',
+			// Civic engagement — boomers vote and attend hearings
+			'council-watch',
+			'councillor-profiles',
+			'public-hearings',
+			// Weather matters for daily planning
+			'weather-tides',
+			'safety-emergency'
+		])
+	},
+	{
+		id: 'family',
+		label: 'Family',
+		icon: '👨‍👩‍👧‍👦',
+		panelOrder: buildOrder([
+			// Family-first tiles
+			'family-activities',
+			'parks-recreation',
+			'schools-libraries',
+			// Events and community
+			'events',
+			'safety-emergency',
+			'weather-tides',
+			// Nature & outdoor (family outings)
+			'wildlife-marine',
+			'nature-environment',
+			'trees-urban-forest',
+			// Local news and practical
+			'local-wire',
+			'construction-roads',
+			'transit'
 		])
 	}
 ];

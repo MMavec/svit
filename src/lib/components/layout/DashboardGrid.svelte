@@ -59,7 +59,14 @@
 		'my-monitors': () => import('$lib/components/panels/MyMonitors.svelte'),
 		connections: () => import('$lib/components/panels/Connections.svelte'),
 		threads: () => import('$lib/components/panels/Threads.svelte'),
-		demographics: () => import('$lib/components/panels/Demographics.svelte')
+		demographics: () => import('$lib/components/panels/Demographics.svelte'),
+		'grocery-flyers': () => import('$lib/components/panels/GroceryFlyers.svelte'),
+		'local-food-drink': () => import('$lib/components/panels/LocalFoodDrink.svelte'),
+		'real-estate-market': () => import('$lib/components/panels/RealEstateMarket.svelte'),
+		'community-board': () => import('$lib/components/panels/CommunityBoard.svelte'),
+		'family-activities': () => import('$lib/components/panels/FamilyActivities.svelte'),
+		'parks-recreation': () => import('$lib/components/panels/ParksRecreation.svelte'),
+		'schools-libraries': () => import('$lib/components/panels/SchoolsLibraries.svelte')
 	};
 
 	const COLS = 12;
