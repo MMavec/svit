@@ -1,6 +1,12 @@
 import { panels } from './panels';
 
-export type DashboardMode = 'generalist' | 'political' | 'nature' | 'social' | 'boomer' | 'family';
+export type DashboardMode =
+	| 'generalist'
+	| 'political'
+	| 'nature'
+	| 'social'
+	| 'active-senior'
+	| 'family';
 
 export interface ModeConfig {
 	id: DashboardMode;
@@ -66,8 +72,8 @@ export const dashboardModes: ModeConfig[] = [
 		])
 	},
 	{
-		id: 'boomer',
-		label: 'Boomer',
+		id: 'active-senior',
+		label: 'Active Senior',
 		icon: '📰',
 		panelOrder: buildOrder([
 			// Lead with practical daily-life tiles
@@ -80,7 +86,7 @@ export const dashboardModes: ModeConfig[] = [
 			'local-wire',
 			'voices',
 			'events',
-			// Civic engagement — boomers vote and attend hearings
+			// Civic engagement — active seniors vote and attend hearings
 			'council-watch',
 			'councillor-profiles',
 			'public-hearings',

@@ -499,7 +499,7 @@ export interface ThreadMessage {
 	createdAt: string;
 }
 
-// --- Boomer Mode Types ---
+// --- Active Senior Mode Types ---
 
 export interface GroceryFlyer {
 	id: string;
