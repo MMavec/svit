@@ -285,112 +285,42 @@ Future tables: `layout_preferences` (saved grid positions), `saved_items` (bookm
 - **Dashboard Modes** (`DashboardModeSelector.svelte` + `dashboard-mode.svelte.ts`): 6 mode buttons in header that reorganize tile order by interest area. Modes: Generalist (default), Political (council/bylaw/councillors first), Nature (wildlife/trees/environment first), Social (events/voices/local-wire first), Active Senior (flyers/food/real-estate/classifieds first), Family (activities/parks/schools first). Mode config in `src/lib/config/dashboard-modes.ts`. Positions auto-computed: 3 per row, w:4 each. Persisted to localStorage and URL (`?mode=active-senior`).
 - **Lead Capture** (`LeadCaptureBanner.svelte` + `LeadCaptureModal.svelte`): Bottom banner appears after 30s delay. Quick email subscribe or full 3-step modal (email → social accounts → interests/consent). Dual backend: Supabase (INSERT-only RLS) + optional `LEADS_WEBHOOK_URL` relay to Google Sheets. localStorage tracks dismiss/submit state.
 
-## Implementation Status
+## Known Issues & Gotchas
 
-Phases 0–14 complete. 29 panels live across 4 tiers (CRD Map removed in Phase 13 — redundant with HeroMap). 121 unit tests, 72 E2E tests (9 files). Tier 4 panels require Supabase auth. Lead capture works with Supabase and/or Google Sheet webhook (graceful 503 if neither configured).
+### Svelte 5 Reactivity
 
-### Phase 5 Additions
+- **`$effect` dependency ordering**: Guards must read `$state` vars before short-circuiting. `if (!mapReady || !map) return;` — not `!map || !mapReady`. If a plain `let` is checked first and is falsy, `$state` vars after `||` are never read, never tracked.
+- **No `AbortController` in panel `$effect`s**: Rapid municipality changes can race — two in-flight fetches, with the slower one overwriting newer data. `apiFetch` accepts a `signal` param but no panel currently uses it.
+- **`$effect` with no reactive reads runs once**: An `$effect(() => { loadData(); })` that reads no `$state` won't re-fire. Always read a reactive variable inside.
 
-- **Data expansion**: eBird API (wildlife), CivicWeb HTML scraping for 9 municipalities (council), ONC ocean temperature (environment)
-- **Loading skeletons**: `PanelSkeleton.svelte` with shimmer animation (4 variants: `list`, `card`, `chart`, `hero`)
-- **Global search**: Cross-panel search overlay with Cmd+K shortcut
-- **Item bookmarks**: Star-based bookmarking with header flyout
-- **Monitor matching engine**: Real-time keyword scanning across 5 data sources
-- **Threads conversations**: Two-view thread detail with message list and reply input
-- **Vitest unit tests**: 85 tests across 7 files (monitor-matcher, bookmarks, fetcher, hash, geo-attribution, api-validation, color-maps)
+### API Routes
 
-### Phase 6: Production Hardening
+- **`parseEnum()` not used everywhere**: `budget` (type), `wildlife` (category), `environment` (type), `real-estate` (category), `news` (source) accept raw query params without `parseEnum()` validation. Other routes use it correctly.
+- **Duplicated utility functions**: `timeAgo()` is copy-pasted across 8 panels, `formatDate()` across 5, `stripHtml()`/`extractTag()` across 4 API routes, `attributeMunicipality()` across 3 routes. These should be extracted to shared utilities.
+- **`weather-tides` returns single object**: Only route where `data` is an object instead of an array. All others return `{ data: T[], meta }`.
+- **`transit` and `weather-tides` ignore `?municipality=`**: Transit alerts are region-wide; weather serves a single station. Other routes accept the param.
+- **Development data is Victoria-only when live**: Only Victoria open data portal is queried. Other municipalities show seed data when the live API succeeds.
+- **`environment` `fetchUVIndex()` is a no-op**: Makes a real HTTP request to Environment Canada, then always returns `[]`. Seed data provides UV instead.
+- **`wildlife` maps all `Mammalia` to `marine-mammal`**: iNaturalist's Mammalia includes terrestrial mammals (deer, bears). Most CRD observations are not marine.
 
-- **Councillor data**: 92 verified elected officials across all 13 CRD municipalities (was 40 with test data)
-- **Double-fetch elimination**: Removed redundant `onMount` load calls from 14 panels — `$effect` handles initial load
-- **Shared utilities**: Extracted `hashCode()` and `attributeMunicipality()` to `src/lib/utils/` (was duplicated across 13 routes)
-- **Bug fixes**: Pulse timer leak (missing `onDestroy`), search debounce timer cleanup, `$derived.by` fix, ThreadMessage type dedup
+### MapLibre
 
-### Phase 7: Robustness & Quality
+- **Dynamic import required**: Static `import maplibregl` crashes headless Chromium (no WebGL). Use `await import('maplibre-gl')` in `onMount`.
+- **Paint properties can't use CSS vars**: MapLibre WebGL renderer doesn't support `var()` — use hex colors for cluster/circle paint.
+- **`setStyle()` destroys all sources/layers**: Theme toggle triggers `setStyle()` — the `style.load` callback must re-add all data layers.
 
-- **Error handling**: `PanelError.svelte` component with retry — added to all 16 data panels (was only CouncilWatch)
-- **Input validation**: `parseLimit()` and `parseMunicipality()` utilities applied to 13 API routes — clamps limits, validates slugs
-- **Test expansion**: 24→61 tests — added hash, geo-attribution, api-validation test suites; geo-attribution ordering bug found and fixed
-- **Accessibility**: `role="alert"` on errors, `role="status"` on loading, `aria-live` on search results, `focus-visible` outline, aria-labels on buttons
-- **Fetcher**: Added optional `AbortSignal` parameter for request cancellation
+### Dead Code
 
-### Phase 8: UX Polish
+- `CRDMapPanel.svelte` and `CRDMap.svelte` still exist on disk despite being removed from the dashboard in Phase 13. They are not imported anywhere but should be deleted. `CRDMap.svelte` also has an unescaped HTML XSS vulnerability in its popup code (uses string interpolation without `escapeHtml()`).
 
-- **Panel wiring refactor**: Replaced 47-line `{#if}`/`{:else if}` chain in DashboardGrid with `panelComponents: Record<string, Component>` map + dynamic `<PanelComponent />` rendering
-- **Empty states**: All 12 generic empty messages replaced with contextual, domain-specific messages (e.g., "No active transit alerts — service is running normally")
-- **Data freshness indicators**: `DataFreshness.svelte` component shows relative timestamps in panel headers. Uses Svelte context pattern — `Panel.svelte` provides setter, `PanelSkeleton` triggers on unmount. Zero individual panel changes required.
+### Data Accuracy
 
-### Phase 9: Color System Standardization
+- **Pepper's Foods coordinates**: Currently `[-123.3448, 48.4192]` (Fairfield area). Actual location at Cadboro Bay Rd is approximately `[-123.2987, 48.4558]`.
+- **Merridale Cidery**: Listed in local-food but is in Cobble Hill (Cowichan Valley RD), not the CRD.
+- **Housing municipality filter broken on live data**: CMHC fetch never sets `municipality` on metrics, so the filter passes everything through when live data is available.
 
-- **CSS color palette**: Added `--status-critical`, `--status-high`, `--status-hazardous` severity scale and `--palette-*` data visualization colors to both dark/light themes in `app.css`
-- **Hardcoded color elimination**: Replaced all ~50 hardcoded hex colors across 13 panel components with CSS custom properties. Status/category/severity color functions now use `var()` for full theme awareness.
-- **Consistent fallback removal**: Removed unnecessary `var(--x, #fallback)` patterns in Transit, ConstructionRoads, SafetyEmergency — `app.css` always provides values
+### Store Patterns
 
-### Phase 10: Comprehensive Product Improvement
-
-- **Color map extraction**: 7+ duplicate `severityColor`/`statusColor`/`categoryColor` functions replaced by shared `colorMap<T>()` factory in `src/lib/utils/color-maps.ts` with 24 tests
-- **Dead code removal**: Removed unused `hasError`/`errorMessage` state and error UI from `Panel.svelte` (panels handle their own errors via `PanelError`)
-- **Error boundaries**: `<svelte:boundary>` wraps all panel renders in DashboardGrid — single-panel crashes no longer break the dashboard
-- **ARIA improvements**: `role="img"` + aria-labels on Pulse sparkline SVGs, `role="status"` on DataFreshness, visually-hidden live region for search result count
-- **Mobile hamburger menu**: Secondary header buttons (auto-refresh, reset layout, sign-in/out) collapse into hamburger dropdown at <600px. Primary (search, bookmarks, theme) stay visible.
-- **Mobile panel sizing**: Reduced min-height from 300px→200px / 280px→180px
-- **Map keyboard navigation**: `tabindex="0"`, `role="application"`, Escape closes popup, built-in MapLibre arrow keys activate
-- **Map feature clustering**: `cluster: true` on features source with click-to-zoom expansion
-- **Map filter UI**: Checkboxes for development/construction/flagged-only in CRDMapPanel
-- **Sparkline memoization**: Pre-computed `$derived` sparkline paths in Pulse (avoid re-running D3 on every render)
-- **Lazy loading**: Tier 3/4 panels (11 of 23) loaded via dynamic `import()` through `LazyPanel.svelte` — reduces initial bundle
-- **SEO**: Open Graph, Twitter Card meta tags, JSON-LD `WebApplication` structured data in `app.html`
-- **E2E tests**: Initial Playwright config + 7 smoke tests (expanded to 72 tests in Phase 11)
-
-### Phase 11: Growth Features & E2E Testing
-
-- **IndexedDB cache layer**: `src/lib/cache/idb-cache.ts` — transparent stale-while-revalidate at `apiFetch` level. Per-endpoint TTL (2-60min). Silent degradation. 13 unit tests.
-- **Data freshness enhancement**: Cached data shows "Cached" badge with amber/red aging. `meta._cached` and `meta._cachedAt` threaded through Panel → DataFreshness.
-- **Shareable URL state**: `url-state.svelte.ts` — municipality, panel focus, search query in URL params. `pushState` for panel focus (Back button), `replaceState` for municipality/search.
-- **Social sharing**: `ShareDrawer.svelte` + `ShareButton.svelte` — Twitter/X, Facebook, Instagram, TikTok via URL intents (no JS SDKs). `/share` SSR route for OG meta tags with client redirect.
-- **Lead capture system**: Banner (30s delay) + 3-step modal (email → social → interests/consent). Supabase INSERT-only RLS. `POST /api/leads` with server-side validation + upsert on email.
-- **E2E test suite**: 72 Playwright tests across 9 files (smoke, panels, municipality, search, theme, bookmarks, navigation, url-sharing, lead-capture). `screenshot: 'only-on-failure'`, `retries: 1`.
-- **DashboardGrid drag fix**: Panel header drag handler now excludes `button, a, input, select, textarea` — clicking collapse/focus/share buttons no longer initiates drag.
-
-### Phase 12: Dashboard UI Overhaul
-
-- **HeroMap**: Full-width interactive MapLibre map above the grid showing data from 7 APIs with clustered pins and category legend filters
-- **MapLibre dynamic import**: Static `import maplibregl` crashes headless Chromium (no WebGL). Fixed with `import type` + dynamic `await import('maplibre-gl')` in `onMount` with try-catch
-- **Visual polish**: Frosted glass panels, animated backgrounds (starry sky canvas / cloudy sky SVG), Inter + Geist Mono typography
-- **Panel collapse**: Individual panels can be collapsed to header-only. State persisted to localStorage via `svit-collapsed-{id}` keys
-- **Panel focus**: Clicking expand button on a panel makes it full-width, hides others. Uses `urlState.focusPanel()` with `pushState` for Back button support
-- **E2E test fixes**: Svelte 5 event delegation requires `dispatchEvent` with `bubbles: true` for backdrop clicks. Canvas selectors need specificity (`.starry-sky`) to avoid matching MapLibre canvas. Playwright workers limited to 1 in CI to prevent server overload.
-
-### Phase 13: Bug Fixes, Polish & Dashboard Modes
-
-- **CRD Map panel removed**: Duplicate of HeroMap functionality. Deleted `CRDMapPanel.svelte` and `CRDMap.svelte`. Remaining panels repositioned to fill gap.
-- **HeroMap `$effect` fix**: Reversed guard from `!map || !mapReady` to `!mapReady || !map` — JavaScript `||` short-circuits, so `mapReady` ($state) was never tracked when `map` (plain let) was falsy. Also added direct `loadFeatures()` call in `map.on('load')` callback.
-- **Voices HTML entities**: Applied `stripHtml()` to RSS title field (was only on description). Added entity decodings for `&rsquo;`, `&ldquo;`, `&mdash;`, `&hellip;`, `&apos;`, `&quot;`, plus generic `&#\d+;` numeric decoder.
-- **Share Drawer positioning**: Added `max-height: 80vh; overflow-y: auto` to prevent drawer from overflowing viewport.
-- **Panel renaming**: "Councillor Profiles" → "Councillors & Mayors"
-- **Demographics repositioned**: Moved from Tier 4 to Tier 3 (above auth-gated tiles)
-- **Supabase configured**: `.env` with credentials for auth and lead capture. Uses `$env/dynamic/public` (not `import.meta.env` or `$env/static/public`) — required for Vercel runtime and CI compatibility.
-- **Dashboard Modes**: 4-mode system (Generalist, Political, Nature, Social) with mode selector in header. Each mode defines a `panelOrder` array; positions auto-computed as 3 per row. Config in `src/lib/config/dashboard-modes.ts`, state in `src/lib/stores/dashboard-mode.svelte.ts`, UI in `DashboardModeSelector.svelte`. Persisted to localStorage + URL param (`?mode=political`).
-
-### Phase 14: Active Senior Mode & Family Mode
-
-- **7 new Tier 3 panels**: Grocery Flyers, Local Food & Drink, Real Estate Market, Community Board, Family Activities, Parks & Recreation, Schools & Libraries
-- **Active Senior Mode** (`📰`): Prioritizes grocery flyers, local wineries/breweries/farms, VREB real estate stats, community classifieds (Craigslist/UsedVictoria), then local news and events. Targets 50+ demographic who want practical daily-life info.
-- **Family Mode** (`👨‍👩‍👧‍👦`): Prioritizes family activities (swim, storytime, nature), parks/rec centres/playgrounds/beaches, schools/libraries/programs, then events and safety. Shows age ranges and FREE badges.
-- **Grocery Flyers**: Auto-updating via Flipp API (`backflipp.wishabi.com`) — live flyer data with deal highlights (item name + price), item counts, and real valid date ranges for 9 Victoria-area grocery stores (Thrifty, Save-On, Fairway, Country Grocer, Pepper's, Root Cellar, Walmart, Costco, Quality Foods). Pin button flies HeroMap to store location. Falls back to seed data when API is down.
-- **Local Food & Drink**: Directory of 15 venues with coordinates and specials/promos — wineries (Church & State, Deep Cove), cideries (Sea Cider, Merridale), breweries (Spinnakers, Driftwood, Hoyne, Phillips, Category 12), distillery (Victoria Distillers), farm markets (Moss St, Root Cellar, Island Farm Fresh). Filterable by category. Pin button flies HeroMap to venue. Specials shown as accent-colored callout cards (happy hours, tasting events, weekly specials).
-- **Cross-panel map integration**: New `mapFocusStore` (`map-focus.svelte.ts`) enables any panel to fly HeroMap to a [lng, lat] with a popup. Grocery Flyers and Local Food & Drink panels have pin buttons that trigger this.
-- **Real Estate Market**: VREB MLS statistics (Feb 2026): total sales, single-family/condo/townhouse benchmarks, active listings, days on market, sales-to-listings ratio. Year-over-year change indicators. Links to vreb.org full report.
-- **Community Board**: Aggregates Craigslist Victoria RSS (for-sale, free, services) + UsedVictoria RSS. Classified-style listings filterable by category. Inspired by Craigslist's organic community board model.
-- **Family Activities**: Aggregates Tourism Victoria + Saanich events RSS (filtered for family/kids). Seed data: Crystal Pool swims, GVPL storytime, Beacon Hill petting zoo, Bug Zoo, WildPlay, Code Ninjas, art gallery family Sundays.
-- **Parks & Recreation**: Directory of 15 facilities: pools (Crystal Pool, Commonwealth Place), major parks (Beacon Hill, Mt Douglas, Elk/Beaver Lake, Thetis, Goldstream), playgrounds (Topaz, Langford), regional trails (Galloping Goose, Lochside), beaches (Willows, Cadboro Bay). Filterable by type with amenity tags.
-- **Schools & Libraries**: GVPL branches (Central, Saanich, Oak Bay, Esquimalt) + Sidney VIRL, programs (storytime, LEGO club, summer reading, teen zone), school districts (SD61, SD62, SD63). Age ranges and FREE badges.
-- **Dashboard mode selector**: Expanded from 4 to 6 modes. Labels hidden below 1024px (was 768px) to fit all 6 buttons.
-
-### Earlier Improvements
-
-- Real CRD municipality boundary polygons from BC WFS (replaced bbox rectangles)
-- USGS earthquake integration in Safety & Emergency panel
-- Auto-refresh system with per-panel intervals and header toggle
-- Panel collapse/minimize with localStorage persistence
-- Responsive mobile layout (stacked below 768px)
+- **Dashboard mode validation is hardcoded in two places**: `dashboard-mode.svelte.ts` and `url-state.svelte.ts` each maintain their own mode validation lists. Adding a new mode requires updating both.
+- **Auth store has no initialization guard**: `initialize()` can register duplicate `onAuthStateChange` listeners (e.g., during HMR).
+- **`apiFetch` has no default timeout**: Client-side fetcher accepts an optional `signal` but doesn't create a default timeout. Network hangs are possible.
