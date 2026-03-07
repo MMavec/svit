@@ -5,7 +5,10 @@ import { parseLimit, parseEnum } from '$lib/utils/api-validation';
 
 type RealEstateCategory = 'sales' | 'prices' | 'inventory' | 'days-on-market';
 const validRealEstateCategories = new Set<RealEstateCategory>([
-	'sales', 'prices', 'inventory', 'days-on-market'
+	'sales',
+	'prices',
+	'inventory',
+	'days-on-market'
 ]);
 
 const CACHE_MAX_AGE = 3600; // 1 hour — stats update monthly

@@ -2,11 +2,25 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { EnvironmentReading } from '$lib/types/index';
 import { env } from '$env/dynamic/private';
-import { parseLimit, parseMunicipality, isJsonResponse, parseEnum } from '$lib/utils/api-validation';
+import {
+	parseLimit,
+	parseMunicipality,
+	isJsonResponse,
+	parseEnum
+} from '$lib/utils/api-validation';
 
-type EnvironmentType = 'air-quality' | 'water-quality' | 'uv-index' | 'pollen' | 'ocean-temperature';
+type EnvironmentType =
+	| 'air-quality'
+	| 'water-quality'
+	| 'uv-index'
+	| 'pollen'
+	| 'ocean-temperature';
 const validEnvironmentTypes = new Set<EnvironmentType>([
-	'air-quality', 'water-quality', 'uv-index', 'pollen', 'ocean-temperature'
+	'air-quality',
+	'water-quality',
+	'uv-index',
+	'pollen',
+	'ocean-temperature'
 ]);
 
 const CACHE_MAX_AGE = 300; // 5 minutes
@@ -98,7 +112,6 @@ async function fetchAirQuality(): Promise<EnvironmentReading[]> {
 		return [];
 	}
 }
-
 
 /** Fetch ocean temperature data from Ocean Networks Canada (ONC) */
 async function fetchONCData(): Promise<EnvironmentReading[]> {
@@ -290,10 +303,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const type = parseEnum(url.searchParams.get('type'), validEnvironmentTypes);
 	const limit = parseLimit(url.searchParams.get('limit'), 20);
 
-	const [aqiResult, oncResult] = await Promise.allSettled([
-		fetchAirQuality(),
-		fetchONCData()
-	]);
+	const [aqiResult, oncResult] = await Promise.allSettled([fetchAirQuality(), fetchONCData()]);
 
 	let readings: EnvironmentReading[] = [
 		...(aqiResult.status === 'fulfilled' ? aqiResult.value : []),
