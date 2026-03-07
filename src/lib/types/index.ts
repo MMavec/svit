@@ -505,13 +505,23 @@ export interface GroceryFlyer {
 	id: string;
 	store: string;
 	storeSlug: string;
+	merchantId?: number;
 	title: string;
 	validFrom: string; // ISO 8601
 	validTo: string;
 	flyerUrl: string;
 	thumbnailUrl?: string;
+	itemCount?: number;
+	highlights?: FlyerHighlight[];
+	coordinates?: [number, number]; // [lng, lat]
 	municipality?: string;
 	source: string;
+}
+
+export interface FlyerHighlight {
+	name: string;
+	price?: string;
+	imageUrl?: string;
 }
 
 export interface LocalFoodItem {
@@ -525,7 +535,16 @@ export interface LocalFoodItem {
 	phone?: string;
 	hours?: string;
 	seasonal?: boolean;
+	coordinates?: [number, number]; // [lng, lat]
+	specials?: VenueSpecial[];
 	source: string;
+}
+
+export interface VenueSpecial {
+	title: string;
+	description?: string;
+	date?: string;
+	recurring?: boolean;
 }
 
 export interface RealEstateMetric {

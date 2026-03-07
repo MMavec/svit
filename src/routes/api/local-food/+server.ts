@@ -29,6 +29,14 @@ function getSeedData(): LocalFoodItem[] {
 			url: 'https://churchandstatewines.com',
 			phone: '250-652-2671',
 			hours: 'Daily 11am-5pm',
+			coordinates: [-123.4689, 48.5635],
+			specials: [
+				{
+					title: 'Wine Club Release Party',
+					description: 'Quarterly new release tasting for club members + guests',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		{
@@ -42,6 +50,14 @@ function getSeedData(): LocalFoodItem[] {
 			url: 'https://seacider.ca',
 			phone: '250-544-4824',
 			hours: 'Thu-Sun 11am-5pm',
+			coordinates: [-123.4481, 48.5894],
+			specials: [
+				{
+					title: 'Weekend Tasting Flights',
+					description: 'Sample 4 seasonal ciders with a charcuterie board',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		{
@@ -53,6 +69,7 @@ function getSeedData(): LocalFoodItem[] {
 			address: '11190 Chalet Rd, North Saanich',
 			municipality: 'north-saanich',
 			url: 'https://deepcovewinery.ca',
+			coordinates: [-123.4638, 48.6547],
 			source: 'directory'
 		},
 		{
@@ -65,6 +82,14 @@ function getSeedData(): LocalFoodItem[] {
 			url: 'https://merridalecider.com',
 			phone: '250-743-4293',
 			hours: 'Daily 10:30am-5:30pm',
+			coordinates: [-123.5984, 48.6839],
+			specials: [
+				{
+					title: 'Wood-Fired Pizza Fridays',
+					description: 'Artisan pizza paired with new cider & spirit releases',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		// Breweries
@@ -79,6 +104,14 @@ function getSeedData(): LocalFoodItem[] {
 			url: 'https://spinnakers.com',
 			phone: '250-386-2739',
 			hours: 'Daily 8am-11pm',
+			coordinates: [-123.3818, 48.4325],
+			specials: [
+				{
+					title: 'Happy Hour',
+					description: 'Daily 3-5pm — $2 off pints and select appetizers',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		{
@@ -92,6 +125,14 @@ function getSeedData(): LocalFoodItem[] {
 			url: 'https://driftwoodbeer.com',
 			phone: '250-381-2739',
 			hours: 'Mon-Sat 11am-6pm',
+			coordinates: [-123.3976, 48.4327],
+			specials: [
+				{
+					title: 'Seasonal Release',
+					description: 'New limited-edition beer drops monthly',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		{
@@ -104,6 +145,14 @@ function getSeedData(): LocalFoodItem[] {
 			municipality: 'victoria',
 			url: 'https://hoynebrewing.com',
 			phone: '250-590-8767',
+			coordinates: [-123.3618, 48.4432],
+			specials: [
+				{
+					title: 'Tasting Room Growler Fills',
+					description: 'Bring your growler — fresh fills of all current taps',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		{
@@ -116,6 +165,14 @@ function getSeedData(): LocalFoodItem[] {
 			municipality: 'victoria',
 			url: 'https://phillipsbeer.com',
 			phone: '250-380-1912',
+			coordinates: [-123.3606, 48.4385],
+			specials: [
+				{
+					title: 'Tasting Room',
+					description: 'Walk-in tastings and mixed packs available daily',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		{
@@ -127,6 +184,14 @@ function getSeedData(): LocalFoodItem[] {
 			address: '2200 Keating Cross Rd, Central Saanich',
 			municipality: 'central-saanich',
 			url: 'https://category12beer.com',
+			coordinates: [-123.4025, 48.5558],
+			specials: [
+				{
+					title: 'Barrel-Aged Series',
+					description: 'Limited bottle releases from the barrel program',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		// Distillery
@@ -140,6 +205,14 @@ function getSeedData(): LocalFoodItem[] {
 			municipality: 'sidney',
 			url: 'https://victoriadistillers.com',
 			phone: '250-544-8218',
+			coordinates: [-123.3956, 48.6506],
+			specials: [
+				{
+					title: 'Distillery Tours',
+					description: 'Guided tours with tastings — book online',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		// Farm Markets
@@ -153,6 +226,14 @@ function getSeedData(): LocalFoodItem[] {
 			municipality: 'victoria',
 			url: 'https://mossstreetmarket.com',
 			seasonal: true,
+			coordinates: [-123.343, 48.4136],
+			specials: [
+				{
+					title: 'Saturdays 10am-2pm (May-Oct)',
+					description: 'Live music, cooking demos, 100+ local vendors',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		{
@@ -165,6 +246,7 @@ function getSeedData(): LocalFoodItem[] {
 			municipality: 'victoria',
 			url: 'https://victoriapublicmarket.com',
 			hours: 'Wed-Sun 10am-5pm',
+			coordinates: [-123.3642, 48.4288],
 			source: 'directory'
 		},
 		{
@@ -177,6 +259,14 @@ function getSeedData(): LocalFoodItem[] {
 			municipality: 'saanich',
 			url: 'https://therootcellar.ca',
 			hours: 'Daily 8am-8pm',
+			coordinates: [-123.3691, 48.4584],
+			specials: [
+				{
+					title: 'Weekly Specials Board',
+					description: 'In-season produce at reduced prices — updated every Monday',
+					recurring: true
+				}
+			],
 			source: 'directory'
 		},
 		{
@@ -188,6 +278,7 @@ function getSeedData(): LocalFoodItem[] {
 			address: 'Saanichton, BC',
 			municipality: 'central-saanich',
 			url: 'https://islandfarmfresh.com',
+			coordinates: [-123.4149, 48.5826],
 			source: 'directory'
 		},
 		{
@@ -200,6 +291,7 @@ function getSeedData(): LocalFoodItem[] {
 			municipality: 'saanich',
 			url: 'https://redbarnmarket.ca',
 			hours: 'Daily 8am-8pm',
+			coordinates: [-123.4314, 48.4938],
 			source: 'directory'
 		}
 	];
@@ -220,7 +312,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		items = items.filter((item) => item.category === category);
 	}
 
-	// Sort: wineries/breweries first (the 50+ demographic's preference), then farms/markets
+	// Sort: wineries/breweries first, then farms/markets
 	const categoryOrder: Record<string, number> = {
 		winery: 0,
 		cidery: 1,

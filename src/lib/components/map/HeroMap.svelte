@@ -13,6 +13,7 @@
 	import { fetchTreeObservations } from '$lib/api/trees';
 	import { fetchEnvironmentReadings } from '$lib/api/environment';
 	import { escapeHtml } from '$lib/utils/sanitize';
+	import { mapFocusStore } from '$lib/stores/map-focus.svelte';
 	import type { MapFeature } from '$lib/types/index';
 
 	const DARK_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
@@ -474,6 +475,29 @@
 	$effect(() => {
 		const _f = filteredFeatures;
 		updateFeatureSource();
+	});
+
+	// React to cross-panel map focus requests
+	$effect(() => {
+		const _v = mapFocusStore.version;
+		const t = mapFocusStore.target;
+		if (!t || !map || !mapReady) return;
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (prefersReducedMotion) {
+			map.jumpTo({ center: t.coordinates, zoom: t.zoom || 14 });
+		} else {
+			map.flyTo({ center: t.coordinates, zoom: t.zoom || 14, duration: 1200 });
+		}
+		popup
+			?.setLngLat(t.coordinates)
+			.setHTML(
+				`<div style="font-size:0.875rem;line-height:1.4">
+					${t.color ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${t.color};margin-right:6px"></span>` : ''}
+					<strong style="font-size:0.9375rem">${escapeHtml(t.title)}</strong>
+					${t.description ? `<div style="font-size:0.8125rem;margin-top:4px;opacity:0.75">${escapeHtml(t.description)}</div>` : ''}
+				</div>`
+			)
+			.addTo(map);
 	});
 </script>
 
