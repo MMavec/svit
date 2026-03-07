@@ -501,6 +501,12 @@ export interface ThreadMessage {
 
 // --- Active Senior Mode Types ---
 
+export interface StoreLocation {
+	name: string;
+	municipality: string;
+	coordinates: [number, number]; // [lng, lat]
+}
+
 export interface GroceryFlyer {
 	id: string;
 	store: string;
@@ -513,7 +519,8 @@ export interface GroceryFlyer {
 	thumbnailUrl?: string;
 	itemCount?: number;
 	highlights?: FlyerHighlight[];
-	coordinates?: [number, number]; // [lng, lat]
+	coordinates?: [number, number]; // [lng, lat] — primary location
+	locations?: StoreLocation[]; // all store locations for this chain
 	municipality?: string;
 	source: string;
 }
