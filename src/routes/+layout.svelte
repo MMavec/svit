@@ -7,7 +7,9 @@
 	import { urlState } from '$lib/stores/url-state.svelte';
 	import StarrySky from '$lib/components/theme/StarrySky.svelte';
 	import CloudySky from '$lib/components/theme/CloudySky.svelte';
+	import WildlifeSilhouettes from '$lib/components/theme/WildlifeSilhouettes.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
+	import { skyPulseStore } from '$lib/stores/sky-pulse.svelte';
 	import AuthModal from '$lib/components/auth/AuthModal.svelte';
 	import SearchOverlay from '$lib/components/layout/SearchOverlay.svelte';
 	import LeadCaptureBanner from '$lib/components/layout/LeadCaptureBanner.svelte';
@@ -22,6 +24,7 @@
 		theme.init();
 		authStore.initialize();
 		urlState.initialize();
+		skyPulseStore.init();
 	});
 </script>
 
@@ -36,6 +39,7 @@
 		<div class="bg-gradient light"></div>
 		<CloudySky />
 	{/if}
+	<WildlifeSilhouettes />
 
 	<!-- App content -->
 	<div class="app-content">
