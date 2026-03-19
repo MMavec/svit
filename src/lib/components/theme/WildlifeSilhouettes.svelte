@@ -113,7 +113,7 @@
 			const id = nextId++;
 			const duration =
 				config.durationMin + Math.random() * (config.durationMax - config.durationMin);
-			const delay = i * 10 + Math.random() * 8; // stagger 10-18s apart
+			const delay = i * 8 + Math.random() * 4; // stagger 8-12s apart, first appears quickly
 
 			const entry: ActiveSilhouette = {
 				id,
@@ -155,7 +155,7 @@
 				height: {sil.silhouette.height * sil.scale}px;
 				animation-duration: {sil.duration}s;
 				animation-delay: {sil.delay}s;
-				--sil-color: {isDark ? 'rgba(220, 230, 255, 0.12)' : 'rgba(40, 50, 60, 0.08)'};
+				--sil-color: {isDark ? 'rgba(220, 230, 255, 0.25)' : 'rgba(40, 50, 60, 0.15)'};
 			"
 		>
 			<title>{sil.commonName}</title>

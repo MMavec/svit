@@ -59,7 +59,7 @@
 			// civic activity rises, creating a denser starfield when the community
 			// is buzzing.
 			const baseCount = Math.floor((canvas.width * canvas.height) / 4000);
-			const maxCount = Math.floor(baseCount * 1.5);
+			const maxCount = Math.floor(baseCount * 2);
 			stars = [];
 			for (let i = 0; i < maxCount; i++) {
 				stars.push({
@@ -81,22 +81,22 @@
 			const colors = AURORA_COLORS[category] ?? AURORA_COLORS.neutral;
 
 			const gradient = ctx.createLinearGradient(0, canvas.height * 0.6, 0, canvas.height);
-			const wave = Math.sin(time * 0.0003) * 0.02;
-			// Boost aurora brightness with civic activity: 1x (quiet) to 3.5x (buzzing)
-			const boost = 1 + activity * 2.5;
+			const wave = Math.sin(time * 0.0003) * 0.03;
+			// Boost aurora brightness with civic activity: 1.5x (quiet) to 5x (buzzing)
+			const boost = 1.5 + activity * 3.5;
 
 			gradient.addColorStop(0, 'transparent');
 			gradient.addColorStop(
 				0.3,
-				`rgba(${colors[0][0]}, ${colors[0][1]}, ${colors[0][2]}, ${(0.04 + wave) * boost})`
+				`rgba(${colors[0][0]}, ${colors[0][1]}, ${colors[0][2]}, ${(0.06 + wave) * boost})`
 			);
 			gradient.addColorStop(
 				0.6,
-				`rgba(${colors[1][0]}, ${colors[1][1]}, ${colors[1][2]}, ${(0.03 + wave) * boost})`
+				`rgba(${colors[1][0]}, ${colors[1][1]}, ${colors[1][2]}, ${(0.05 + wave) * boost})`
 			);
 			gradient.addColorStop(
 				0.8,
-				`rgba(${colors[2][0]}, ${colors[2][1]}, ${colors[2][2]}, ${(0.025 + wave) * boost})`
+				`rgba(${colors[2][0]}, ${colors[2][1]}, ${colors[2][2]}, ${(0.04 + wave) * boost})`
 			);
 			gradient.addColorStop(1, 'transparent');
 			ctx.fillStyle = gradient;
@@ -125,9 +125,9 @@
 			ctx.closePath();
 
 			const gradient = ctx.createLinearGradient(0, baseY, 0, canvas.height);
-			gradient.addColorStop(0, 'rgba(99, 179, 237, 0.06)');
-			gradient.addColorStop(0.5, 'rgba(99, 179, 237, 0.03)');
-			gradient.addColorStop(1, 'rgba(99, 179, 237, 0.015)');
+			gradient.addColorStop(0, 'rgba(99, 179, 237, 0.15)');
+			gradient.addColorStop(0.5, 'rgba(99, 179, 237, 0.08)');
+			gradient.addColorStop(1, 'rgba(99, 179, 237, 0.03)');
 			ctx.fillStyle = gradient;
 			ctx.fill();
 		}
@@ -211,7 +211,7 @@
 
 			// Stars — density scales with civic activity
 			const activity = skyPulseStore.civicActivity;
-			const speedMul = 1 + activity * 0.3;
+			const speedMul = 1 + activity * 0.8;
 
 			for (const star of stars) {
 				if (star.activityThreshold > activity) continue;
