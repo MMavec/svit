@@ -18,6 +18,7 @@
 	import ConstructionRoads from '$lib/components/panels/ConstructionRoads.svelte';
 	import Transit from '$lib/components/panels/Transit.svelte';
 	import SafetyEmergency from '$lib/components/panels/SafetyEmergency.svelte';
+	import CrimeIncidents from '$lib/components/panels/CrimeIncidents.svelte';
 
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import type { Component } from 'svelte';
@@ -44,7 +45,8 @@
 		pulse: Pulse,
 		'construction-roads': ConstructionRoads,
 		transit: Transit,
-		'safety-emergency': SafetyEmergency
+		'safety-emergency': SafetyEmergency,
+		'crime-incidents': CrimeIncidents
 	};
 
 	// Tier 3 + 4: lazily loaded (below the fold)

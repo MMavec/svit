@@ -104,6 +104,15 @@ export const panels: PanelConfig[] = [
 		minHeight: 4
 	},
 	{
+		id: 'crime-incidents',
+		title: 'Crime & Incidents',
+		tier: 2,
+		icon: '🔍',
+		defaultPosition: { x: 0, y: 24, w: 4, h: 8 },
+		minWidth: 3,
+		minHeight: 5
+	},
+	{
 		id: 'weather-tides',
 		title: 'Weather & Tides',
 		tier: 2,
