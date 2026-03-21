@@ -447,6 +447,25 @@ export interface EnvironmentReading {
 	source: string;
 }
 
+// --- Crime & Incident Types ---
+
+export interface CrimeIncident {
+	id: string;
+	title: string;
+	description: string;
+	type: 'property' | 'person' | 'traffic' | 'drug' | 'disorder' | 'fraud' | 'other';
+	severity: 'minor' | 'moderate' | 'serious' | 'critical';
+	reportedAt: string; // ISO 8601
+	hour: number; // 0-23, for 24h clock visualization
+	location?: string;
+	neighbourhood?: string;
+	coordinates?: [number, number]; // [lng, lat]
+	status: 'reported' | 'under-investigation' | 'resolved' | 'cleared';
+	sourceAgency: string;
+	municipality?: string;
+	source: string;
+}
+
 // --- API Response Wrappers ---
 
 export interface ApiResponse<T> {

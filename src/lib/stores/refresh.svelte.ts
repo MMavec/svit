@@ -16,6 +16,7 @@ export const REFRESH_INTERVALS: Record<string, number> = {
 	'construction-roads': 5 * 60 * 1000,
 	transit: 3 * 60 * 1000,
 	'safety-emergency': 3 * 60 * 1000,
+	'crime-incidents': 5 * 60 * 1000,
 
 	// Tier 3 — quality of life: 15 min
 	'weather-tides': 15 * 60 * 1000,

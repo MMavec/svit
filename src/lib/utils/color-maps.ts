@@ -98,6 +98,33 @@ export const eventCategoryColor = colorMap<
 	government: 'var(--palette-muted)'
 });
 
+/** Crime incident type → color */
+export const crimeTypeColor = colorMap<
+	'property' | 'person' | 'traffic' | 'drug' | 'disorder' | 'fraud' | 'other'
+>(
+	{
+		property: 'var(--accent-warning)',
+		person: 'var(--status-critical)',
+		traffic: 'var(--palette-blue)',
+		drug: 'var(--palette-purple)',
+		disorder: 'var(--palette-orange, #d69e2e)',
+		fraud: 'var(--palette-cyan)',
+		other: 'var(--palette-muted)'
+	},
+	'var(--text-tertiary)'
+);
+
+/** Crime severity → color */
+export const crimeSeverityColor = colorMap<'critical' | 'serious' | 'moderate' | 'minor'>(
+	{
+		critical: 'var(--status-critical)',
+		serious: 'var(--status-high)',
+		moderate: 'var(--accent-warning)',
+		minor: 'var(--text-tertiary)'
+	},
+	'var(--text-tertiary)'
+);
+
 /** Search result category → color */
 export const searchCategoryColor = colorMap<string>({
 	Council: 'var(--accent-primary)',

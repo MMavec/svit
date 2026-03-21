@@ -41,6 +41,7 @@ export const dashboardModes: ModeConfig[] = [
 			'development-watch',
 			'voices',
 			'local-wire',
+			'crime-incidents',
 			'budget-finance',
 			'pulse'
 		])
@@ -92,7 +93,8 @@ export const dashboardModes: ModeConfig[] = [
 			'public-hearings',
 			// Weather matters for daily planning
 			'weather-tides',
-			'safety-emergency'
+			'safety-emergency',
+			'crime-incidents'
 		])
 	},
 	{
