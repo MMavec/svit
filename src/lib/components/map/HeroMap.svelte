@@ -225,7 +225,7 @@
 					type: 'environment',
 					coordinates: r.coordinates,
 					title: `${r.metric}: ${r.value} ${r.unit}`,
-					description: `${r.location} — ${r.status}`,
+					description: `${r.location}: ${r.status}`,
 					severity: r.status === 'good' ? undefined : r.status,
 					municipality: r.municipality,
 					color: CATEGORIES.environment.color,
