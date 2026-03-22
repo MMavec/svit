@@ -131,6 +131,7 @@ export interface Councillor {
 		bluesky?: string;
 		twitter?: string;
 		facebook?: string;
+		instagram?: string;
 		website?: string;
 	};
 	committees?: string[];

@@ -19,11 +19,57 @@
 	let filterType = $state<string | null>(null);
 	let showClock = $state(true);
 
-	async function loadIncidents() {
+	// Time range options
+	const RANGE_OPTIONS = [
+		{ label: '6h', hours: 6 },
+		{ label: '12h', hours: 12 },
+		{ label: '24h', hours: 24 },
+		{ label: '2d', hours: 48 },
+		{ label: '3d', hours: 72 },
+		{ label: '5d', hours: 120 },
+		{ label: '7d', hours: 168 }
+	] as const;
+
+	const STORAGE_KEY = 'svit-crime-range';
+	const DEFAULT_HOURS = 168;
+
+	function loadSavedRange(): number {
+		try {
+			const saved = localStorage.getItem(STORAGE_KEY);
+			if (saved) {
+				const hours = parseInt(saved);
+				if (RANGE_OPTIONS.some((o) => o.hours === hours)) return hours;
+			}
+		} catch {
+			// localStorage unavailable
+		}
+		return DEFAULT_HOURS;
+	}
+
+	let selectedRange = $state(loadSavedRange());
+
+	function selectRange(hours: number) {
+		selectedRange = hours;
+		try {
+			localStorage.setItem(STORAGE_KEY, String(hours));
+		} catch {
+			// localStorage unavailable
+		}
+	}
+
+	const rangeLabelLong = $derived.by(() => {
+		const hours = selectedRange;
+		if (hours < 24) return `Last ${hours} hours`;
+		const days = Math.round(hours / 24);
+		return `Last ${days} day${days !== 1 ? 's' : ''}`;
+	});
+
+	async function loadIncidents(hours: number) {
 		loading = true;
 		error = null;
 		const result = await fetchCrimeIncidents({
-			municipality: municipalityStore.slug
+			municipality: municipalityStore.slug,
+			hours
 		});
 		if (result.error) {
 			error = result.error;
@@ -44,7 +90,7 @@
 	function startRefreshTimer() {
 		stopRefreshTimer();
 		if (refreshStore.enabled) {
-			refreshTimer = setInterval(loadIncidents, REFRESH_INTERVALS['crime-incidents']);
+			refreshTimer = setInterval(() => loadIncidents(selectedRange), REFRESH_INTERVALS['crime-incidents']);
 		}
 	}
 
@@ -62,7 +108,8 @@
 
 	$effect(() => {
 		const _slug = municipalityStore.slug;
-		loadIncidents();
+		const hours = selectedRange;
+		loadIncidents(hours);
 	});
 
 	$effect(() => {
@@ -195,14 +242,44 @@
 	{#if loading}
 		<PanelSkeleton variant="list" />
 	{:else if error}
-		<PanelError message={error} onRetry={loadIncidents} />
+		<PanelError message={error} onRetry={() => loadIncidents(selectedRange)} />
 	{:else if incidents.length === 0}
 		<div class="all-clear" role="status">
+			<!-- Time range selector (shown even when empty) -->
+			<div class="range-selector">
+				{#each RANGE_OPTIONS as opt (opt.hours)}
+					<button
+						class="range-pill"
+						class:selected={selectedRange === opt.hours}
+						onclick={() => selectRange(opt.hours)}
+						aria-pressed={selectedRange === opt.hours}
+					>
+						{opt.label}
+					</button>
+				{/each}
+			</div>
 			<div class="check-icon">&#10003;</div>
 			<div class="clear-text">No recent incidents</div>
-			<div class="clear-sub">The CRD is looking peaceful today.</div>
+			<div class="clear-sub">No incidents in the {rangeLabelLong.toLowerCase()}.</div>
 		</div>
 	{:else}
+		<!-- Time range selector -->
+		<div class="range-row">
+			<div class="range-selector">
+				{#each RANGE_OPTIONS as opt (opt.hours)}
+					<button
+						class="range-pill"
+						class:selected={selectedRange === opt.hours}
+						onclick={() => selectRange(opt.hours)}
+						aria-pressed={selectedRange === opt.hours}
+					>
+						{opt.label}
+					</button>
+				{/each}
+			</div>
+			<span class="range-label">{rangeLabelLong}</span>
+		</div>
+
 		<!-- Visualizations: 24h clock + category breakdown -->
 		<div class="viz-row">
 			<!-- 24-Hour Clock -->
@@ -355,6 +432,49 @@
 		flex-direction: column;
 		height: 100%;
 		gap: 6px;
+	}
+
+	/* Time range selector */
+	.range-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+	}
+
+	.range-selector {
+		display: flex;
+		gap: 3px;
+	}
+
+	.range-pill {
+		padding: 2px 8px;
+		font-size: 0.6875rem;
+		font-weight: 500;
+		border: 1px solid var(--border-primary);
+		border-radius: 10px;
+		background: transparent;
+		color: var(--text-tertiary);
+		cursor: pointer;
+		transition: all 0.15s;
+		line-height: 1.4;
+	}
+
+	.range-pill:hover {
+		background: var(--bg-surface-hover);
+		color: var(--text-secondary);
+	}
+
+	.range-pill.selected {
+		background: var(--accent-primary);
+		color: var(--text-inverse);
+		border-color: var(--accent-primary);
+	}
+
+	.range-label {
+		font-size: 0.6875rem;
+		color: var(--text-tertiary);
+		white-space: nowrap;
 	}
 
 	.all-clear {

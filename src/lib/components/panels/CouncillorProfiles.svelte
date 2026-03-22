@@ -6,6 +6,7 @@
 		searchCouncillors
 	} from '$lib/config/councillors';
 	import { getMunicipality } from '$lib/config/municipalities';
+	import { mapFocusStore } from '$lib/stores/map-focus.svelte';
 	import { fetchNews } from '$lib/api/news';
 	import { fetchSocialPosts } from '$lib/api/social';
 	import { fetchMeetings } from '$lib/api/council';
@@ -19,10 +20,13 @@
 		date: string;
 	}
 
+	type ActivityFilter = 'all' | 'council' | 'social' | 'news';
+
 	let searchQuery = $state('');
 	let selectedCouncillor = $state<Councillor | null>(null);
 	let activityItems = $state<ActivityItem[]>([]);
 	let activityLoading = $state(false);
+	let activeFilter = $state<ActivityFilter>('all');
 
 	const filteredCouncillors = $derived.by(() => {
 		let list: Councillor[];
@@ -42,6 +46,11 @@
 		});
 	});
 
+	const filteredActivityItems = $derived.by(() => {
+		if (activeFilter === 'all') return activityItems;
+		return activityItems.filter((item) => item.type === activeFilter);
+	});
+
 	function getMunicipalityColor(slug: string): string {
 		return getMunicipality(slug)?.color || 'var(--accent-primary)';
 	}
@@ -52,6 +61,35 @@
 
 	function selectCouncillor(c: Councillor) {
 		selectedCouncillor = selectedCouncillor?.id === c.id ? null : c;
+		activeFilter = 'all';
+	}
+
+	function socialProfileCount(councillor: Councillor): number {
+		if (!councillor.social) return 0;
+		const s = councillor.social;
+		let count = 0;
+		if (s.twitter) count++;
+		if (s.facebook) count++;
+		if (s.instagram) count++;
+		if (s.bluesky) count++;
+		if (s.website) count++;
+		return count;
+	}
+
+	function showMunicipalityOnMap(councillor: Councillor) {
+		const muni = getMunicipality(councillor.municipality);
+		if (!muni) return;
+		const bbox = muni.bbox;
+		const lng = (bbox[0] + bbox[2]) / 2;
+		const lat = (bbox[1] + bbox[3]) / 2;
+		const roleName = councillor.role === 'mayor' ? 'Mayor' : 'Councillor';
+		mapFocusStore.focus({
+			coordinates: [lng, lat],
+			title: muni.name,
+			description: `${roleName} ${councillor.name}`,
+			color: muni.color,
+			zoom: 13
+		});
 	}
 
 	async function loadActivity(councillor: Councillor) {
@@ -183,14 +221,85 @@
 				</div>
 			</div>
 
-			{#if selectedCouncillor.email}
-				<div class="profile-detail">
-					<span class="detail-label">Email</span>
+			{#if selectedCouncillor.social}
+				<div class="social-links">
+					{#if selectedCouncillor.social.twitter}
+						<a
+							href="https://twitter.com/{selectedCouncillor.social.twitter}"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="social-link twitter"
+							title="Twitter/X">X</a
+						>
+					{/if}
+					{#if selectedCouncillor.social.facebook}
+						<a
+							href="https://facebook.com/{selectedCouncillor.social.facebook}"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="social-link facebook"
+							title="Facebook">FB</a
+						>
+					{/if}
+					{#if selectedCouncillor.social.instagram}
+						<a
+							href="https://instagram.com/{selectedCouncillor.social.instagram}"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="social-link instagram"
+							title="Instagram">IG</a
+						>
+					{/if}
+					{#if selectedCouncillor.social.bluesky}
+						<a
+							href="https://bsky.app/profile/{selectedCouncillor.social.bluesky}"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="social-link bluesky"
+							title="Bluesky">BS</a
+						>
+					{/if}
+					{#if selectedCouncillor.social.website}
+						<a
+							href={selectedCouncillor.social.website}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="social-link website"
+							title="Website">WEB</a
+						>
+					{/if}
+				</div>
+			{/if}
+
+			<div class="profile-actions">
+				{#if selectedCouncillor.email}
 					<a href="mailto:{selectedCouncillor.email}" class="detail-value"
 						>{selectedCouncillor.email}</a
 					>
-				</div>
-			{/if}
+				{/if}
+				<button
+					class="map-btn"
+					onclick={() => showMunicipalityOnMap(selectedCouncillor!)}
+					title="Show on map"
+					aria-label="Show {getMunicipality(selectedCouncillor.municipality)?.name ||
+						selectedCouncillor.municipality} on map"
+				>
+					<svg
+						width="12"
+						height="12"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+						<circle cx="12" cy="10" r="3" />
+					</svg>
+					Map
+				</button>
+			</div>
 
 			{#if selectedCouncillor.committees && selectedCouncillor.committees.length > 0}
 				<div class="profile-detail">
@@ -205,13 +314,44 @@
 
 			<div class="activity-section">
 				<div class="section-label">Activity Timeline</div>
+				<div class="filter-chips">
+					<button
+						class="filter-chip"
+						class:active={activeFilter === 'all'}
+						onclick={() => (activeFilter = 'all')}>All</button
+					>
+					<button
+						class="filter-chip"
+						class:active={activeFilter === 'council'}
+						style="--chip-color: {activityTypeColor('council')}"
+						onclick={() => (activeFilter = 'council')}>Council</button
+					>
+					<button
+						class="filter-chip"
+						class:active={activeFilter === 'social'}
+						style="--chip-color: {activityTypeColor('social')}"
+						onclick={() => (activeFilter = 'social')}>Social</button
+					>
+					<button
+						class="filter-chip"
+						class:active={activeFilter === 'news'}
+						style="--chip-color: {activityTypeColor('news')}"
+						onclick={() => (activeFilter = 'news')}>News</button
+					>
+				</div>
 				{#if activityLoading}
 					<div class="activity-loading">Scanning news, social, and council data...</div>
-				{:else if activityItems.length === 0}
-					<div class="activity-empty">No recent activity found</div>
+				{:else if filteredActivityItems.length === 0}
+					<div class="activity-empty">
+						{#if activeFilter !== 'all' && activityItems.length > 0}
+							No {activeFilter} activity found
+						{:else}
+							No recent activity found
+						{/if}
+					</div>
 				{:else}
 					<div class="activity-timeline">
-						{#each activityItems as item, i (i)}
+						{#each filteredActivityItems as item, i (i)}
 							<div class="timeline-item">
 								<span class="timeline-badge" style="background: {activityTypeColor(item.type)}"
 									>{activityTypeLabel(item.type)}</span
@@ -250,9 +390,35 @@
 						{councillor.firstName.charAt(0)}{councillor.lastName.charAt(0)}
 					</div>
 					<div class="councillor-info">
-						<span class="councillor-name">{councillor.name}</span>
+						<span class="councillor-name">
+							{councillor.name}
+							{#if socialProfileCount(councillor) > 0}
+								<span
+									class="social-indicator"
+									title="{socialProfileCount(councillor)} social {socialProfileCount(councillor) ===
+									1
+										? 'profile'
+										: 'profiles'}"
+								>
+									<svg
+										width="10"
+										height="10"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2.5"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									>
+										<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+										<path d="M13.73 21a2 2 0 0 1-3.46 0" />
+									</svg>
+									{socialProfileCount(councillor)}
+								</span>
+							{/if}
+						</span>
 						<span class="councillor-role">
-							{councillor.role === 'mayor' ? 'Mayor' : 'Cllr'} —
+							{councillor.role === 'mayor' ? 'Mayor' : 'Cllr'},
 							{getMunicipalityName(councillor.municipality)}
 						</span>
 					</div>
@@ -354,6 +520,19 @@
 		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text-primary);
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.social-indicator {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		font-size: 0.5625rem;
+		font-weight: 500;
+		color: var(--text-tertiary);
+		opacity: 0.7;
 	}
 
 	.councillor-role {
@@ -422,6 +601,82 @@
 		color: var(--text-secondary);
 	}
 
+	/* === Social Links === */
+	.social-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	.social-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2px 8px;
+		border-radius: 10px;
+		font-size: 0.625rem;
+		font-weight: 700;
+		text-decoration: none;
+		letter-spacing: 0.03em;
+		color: #fff;
+		transition: opacity 0.15s;
+	}
+
+	.social-link:hover {
+		opacity: 0.85;
+	}
+
+	.social-link.twitter {
+		background: #1da1f2;
+	}
+
+	.social-link.facebook {
+		background: #1877f2;
+	}
+
+	.social-link.instagram {
+		background: #e4405f;
+	}
+
+	.social-link.bluesky {
+		background: #0085ff;
+	}
+
+	.social-link.website {
+		background: var(--text-secondary);
+	}
+
+	/* === Profile Actions (email + map) === */
+	.profile-actions {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 4px 0;
+		border-bottom: 1px solid var(--border-primary);
+	}
+
+	.map-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 3px 8px;
+		border-radius: 5px;
+		border: 1px solid var(--border-primary);
+		background: transparent;
+		color: var(--text-secondary);
+		font-size: 0.6875rem;
+		font-weight: 500;
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: all 0.15s;
+		margin-left: auto;
+	}
+
+	.map-btn:hover {
+		color: var(--accent-primary);
+		border-color: var(--accent-primary);
+	}
+
 	.profile-detail {
 		padding: 6px 0;
 		border-bottom: 1px solid var(--border-primary);
@@ -476,6 +731,35 @@
 		letter-spacing: 0.5px;
 		color: var(--text-tertiary);
 		margin-bottom: 6px;
+	}
+
+	/* === Filter Chips === */
+	.filter-chips {
+		display: flex;
+		gap: 4px;
+		margin-bottom: 8px;
+	}
+
+	.filter-chip {
+		padding: 2px 8px;
+		border-radius: 10px;
+		font-size: 0.625rem;
+		font-weight: 600;
+		border: 1px solid var(--border-primary);
+		background: transparent;
+		color: var(--text-secondary);
+		cursor: pointer;
+		transition: all 0.15s;
+	}
+
+	.filter-chip:hover {
+		background: var(--bg-surface-hover);
+	}
+
+	.filter-chip.active {
+		background: var(--chip-color, var(--text-secondary));
+		color: #fff;
+		border-color: var(--chip-color, var(--text-secondary));
 	}
 
 	.activity-loading,

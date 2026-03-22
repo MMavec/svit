@@ -1,12 +1,16 @@
 import { municipalities } from '$lib/config/municipalities';
 
 /** Attribute a municipality based on coordinates (lng/lat) falling within a municipality bbox */
-export function attributeMunicipality(lng: number, lat: number): string | undefined {
+export function attributeMunicipality(
+	lng: number,
+	lat: number,
+	fallback?: string
+): string | undefined {
 	for (const m of municipalities) {
 		const [w, s, e, n] = m.bbox;
 		if (lng >= w && lng <= e && lat >= s && lat <= n) return m.slug;
 	}
-	return undefined;
+	return fallback ?? undefined;
 }
 
 /** Attribute a municipality based on text content matching known place names and keywords */

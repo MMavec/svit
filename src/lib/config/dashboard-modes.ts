@@ -56,6 +56,8 @@ export const dashboardModes: ModeConfig[] = [
 			'nature-environment',
 			'weather-tides',
 			'safety-emergency',
+			'crime-incidents',
+			'parks-recreation',
 			'pulse'
 		])
 	},
@@ -67,7 +69,9 @@ export const dashboardModes: ModeConfig[] = [
 			'events',
 			'voices',
 			'local-wire',
+			'crime-incidents',
 			'councillor-profiles',
+			'community-board',
 			'housing',
 			'pulse'
 		])
@@ -109,6 +113,7 @@ export const dashboardModes: ModeConfig[] = [
 			// Events and community
 			'events',
 			'safety-emergency',
+			'crime-incidents',
 			'weather-tides',
 			// Nature & outdoor (family outings)
 			'wildlife-marine',
