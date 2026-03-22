@@ -187,11 +187,11 @@ export const panels: PanelConfig[] = [
 		minHeight: 4
 	},
 
-	// Tier 4 — Campaign Tools (requires account)
+	// Tier 3 — Topic Watch (public, localStorage-backed)
 	{
 		id: 'my-monitors',
-		title: 'My Monitors',
-		tier: 4,
+		title: 'Topic Watch',
+		tier: 3,
 		icon: '🔔',
 		defaultPosition: { x: 4, y: 36, w: 4, h: 6 },
 		minWidth: 3,
@@ -200,7 +200,7 @@ export const panels: PanelConfig[] = [
 	{
 		id: 'connections',
 		title: 'Connections',
-		tier: 4,
+		tier: 3,
 		icon: '🔗',
 		defaultPosition: { x: 8, y: 36, w: 4, h: 6 },
 		minWidth: 3,
@@ -209,7 +209,7 @@ export const panels: PanelConfig[] = [
 	{
 		id: 'threads',
 		title: 'Threads',
-		tier: 4,
+		tier: 3,
 		icon: '🧵',
 		defaultPosition: { x: 0, y: 42, w: 4, h: 6 },
 		minWidth: 3,

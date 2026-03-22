@@ -1,76 +1,148 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
-	import { supabase } from '$lib/supabase';
 	import { apiFetch } from '$lib/api/fetcher';
 	import { matchMonitors, type MonitorMatch } from '$lib/utils/monitor-matcher';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
-	import PanelError from '$lib/components/ui/PanelError.svelte';
+
+	const STORAGE_KEY = 'svit-monitors';
 
 	interface Monitor {
 		id: string;
 		keyword: string;
 		sources: string[];
 		municipality: string | null;
-		created_at: string;
-		matches: number;
+		createdAt: string;
 	}
 
-	let monitors = $state<Monitor[]>([]);
-	let loading = $state(false);
-	let error = $state<string | null>(null);
-	let showAdd = $state(false);
-	let newKeyword = $state('');
-	let newSources = $state<string[]>(['council', 'news', 'development']);
-	let matchesByMonitor = $state<Record<string, MonitorMatch[]>>({});
-	let scanning = $state(false);
-	let expandedMonitor = $state<string | null>(null);
+	interface SuggestedTopic {
+		keyword: string;
+		sources: string[];
+	}
+
+	const SUGGESTED_TOPICS: SuggestedTopic[] = [
+		{ keyword: 'housing policy', sources: ['council', 'news', 'development'] },
+		{ keyword: 'bike lanes', sources: ['council', 'news', 'development'] },
+		{ keyword: 'short-term rentals', sources: ['news', 'council'] },
+		{ keyword: 'transit changes', sources: ['transit', 'council', 'news'] },
+		{ keyword: 'climate action', sources: ['council', 'news'] },
+		{ keyword: 'property taxes', sources: ['council', 'budget'] }
+	];
+
+	const DEFAULT_ACTIVATED = ['housing policy', 'bike lanes', 'transit changes'];
 
 	const SOURCE_OPTIONS = [
 		{ id: 'council', label: 'Council' },
 		{ id: 'news', label: 'News' },
 		{ id: 'development', label: 'Development' },
 		{ id: 'social', label: 'Social' },
-		{ id: 'safety', label: 'Safety' }
+		{ id: 'safety', label: 'Safety' },
+		{ id: 'transit', label: 'Transit' },
+		{ id: 'budget', label: 'Budget' }
 	];
 
-	async function loadMonitors() {
-		if (!supabase || !authStore.isAuthenticated) return;
-		loading = true;
-		error = null;
-		const { data, error: dbError } = await supabase
-			.from('monitors')
-			.select('*')
-			.eq('user_id', authStore.user!.id)
-			.order('created_at', { ascending: false });
-		if (dbError) {
-			error = dbError.message;
+	let monitors = $state<Monitor[]>([]);
+	let scanning = $state(false);
+	let initialLoad = $state(true);
+	let showAdd = $state(false);
+	let newKeyword = $state('');
+	let newSources = $state<string[]>(['council', 'news', 'development']);
+	let matchesByMonitor = $state<Record<string, MonitorMatch[]>>({});
+	let expandedMonitor = $state<string | null>(null);
+
+	// Derived: which suggested keywords are already active monitors
+	let activeKeywords = $derived(new Set(monitors.map((m) => m.keyword.toLowerCase())));
+
+	function loadFromStorage(): Monitor[] {
+		try {
+			const raw = localStorage.getItem(STORAGE_KEY);
+			if (raw) {
+				return JSON.parse(raw) as Monitor[];
+			}
+		} catch {
+			// Corrupted data, start fresh
+		}
+		return [];
+	}
+
+	function saveToStorage() {
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(monitors));
+		} catch {
+			// Storage full or unavailable
+		}
+	}
+
+	function generateId(): string {
+		if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+			return crypto.randomUUID();
+		}
+		return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+	}
+
+	function initMonitors() {
+		const stored = loadFromStorage();
+		if (stored.length > 0) {
+			monitors = stored;
 		} else {
-			monitors = (data || []) as Monitor[];
-			scanForMatches();
+			// First visit: pre-activate default topics
+			monitors = DEFAULT_ACTIVATED.map((keyword) => {
+				const suggested = SUGGESTED_TOPICS.find((s) => s.keyword === keyword);
+				return {
+					id: generateId(),
+					keyword,
+					sources: suggested?.sources || ['council', 'news'],
+					municipality: null,
+					createdAt: new Date().toISOString()
+				};
+			});
+			saveToStorage();
 		}
-		loading = false;
+		initialLoad = false;
+		scanForMatches();
 	}
 
-	async function addMonitor() {
-		if (!supabase || !authStore.isAuthenticated || !newKeyword.trim()) return;
-		const { error } = await supabase.from('monitors').insert({
-			user_id: authStore.user!.id,
-			keyword: newKeyword.trim(),
-			sources: newSources,
-			municipality: municipalityStore.slug
-		});
-		if (!error) {
-			newKeyword = '';
-			showAdd = false;
-			await loadMonitors();
+	function toggleSuggested(topic: SuggestedTopic) {
+		const existing = monitors.find((m) => m.keyword.toLowerCase() === topic.keyword.toLowerCase());
+		if (existing) {
+			monitors = monitors.filter((m) => m.id !== existing.id);
+		} else {
+			monitors = [
+				...monitors,
+				{
+					id: generateId(),
+					keyword: topic.keyword,
+					sources: [...topic.sources],
+					municipality: null,
+					createdAt: new Date().toISOString()
+				}
+			];
 		}
+		saveToStorage();
+		scanForMatches();
 	}
 
-	async function deleteMonitor(id: string) {
-		if (!supabase) return;
-		await supabase.from('monitors').delete().eq('id', id);
+	function addMonitor() {
+		if (!newKeyword.trim()) return;
+		monitors = [
+			...monitors,
+			{
+				id: generateId(),
+				keyword: newKeyword.trim(),
+				sources: [...newSources],
+				municipality: municipalityStore.slug,
+				createdAt: new Date().toISOString()
+			}
+		];
+		newKeyword = '';
+		showAdd = false;
+		saveToStorage();
+		scanForMatches();
+	}
+
+	function deleteMonitor(id: string) {
 		monitors = monitors.filter((m) => m.id !== id);
+		saveToStorage();
 	}
 
 	function toggleSource(src: string) {
@@ -82,7 +154,10 @@
 	}
 
 	async function scanForMatches() {
-		if (monitors.length === 0) return;
+		if (monitors.length === 0) {
+			matchesByMonitor = {};
+			return;
+		}
 		scanning = true;
 
 		const sources: { path: string; source: string }[] = [
@@ -123,57 +198,49 @@
 		scanning = false;
 	}
 
+	// Initialize on mount
 	$effect(() => {
-		if (authStore.isAuthenticated) {
-			loadMonitors();
-		}
+		initMonitors();
 	});
 </script>
 
-<div class="my-monitors">
-	{#if !authStore.isAuthenticated}
-		<div class="locked-preview">
-			<div class="preview-content" aria-hidden="true">
-				<div class="preview-card has-matches">
-					<div class="preview-keyword">housing policy</div>
-					<div class="preview-meta">council, news, development</div>
-					<div class="preview-footer"><span class="preview-matches">3 matches</span></div>
-				</div>
-				<div class="preview-card">
-					<div class="preview-keyword">bike lanes</div>
-					<div class="preview-meta">council, development</div>
-					<div class="preview-footer"><span class="preview-matches">1 match</span></div>
-				</div>
-				<div class="preview-card has-matches">
-					<div class="preview-keyword">short-term rentals</div>
-					<div class="preview-meta">news, council</div>
-					<div class="preview-footer"><span class="preview-matches">5 matches</span></div>
-				</div>
-			</div>
-			<div class="locked-overlay">
-				<div class="lock-icon">&#128274;</div>
-				<div class="lock-title">Keyword Monitors</div>
-				<p class="lock-desc">
-					Track topics across council meetings, news, and development applications. Get notified
-					when your keywords are mentioned.
-				</p>
-				<button class="lock-btn" onclick={() => (authStore.showAuthModal = true)}
-					>Sign In to Monitor</button
-				>
-			</div>
-		</div>
-	{:else if loading}
+<div class="topic-watch">
+	{#if initialLoad}
 		<PanelSkeleton variant="list" />
-	{:else if error}
-		<PanelError message={error} onRetry={loadMonitors} />
 	{:else}
+		<!-- Suggested topics -->
+		<div class="section-label">Trending topics</div>
+		<div class="suggested-topics">
+			{#each SUGGESTED_TOPICS as topic (topic.keyword)}
+				<button
+					class="topic-chip"
+					class:active={activeKeywords.has(topic.keyword.toLowerCase())}
+					onclick={() => toggleSuggested(topic)}
+					title={activeKeywords.has(topic.keyword.toLowerCase())
+						? `Remove "${topic.keyword}"`
+						: `Watch "${topic.keyword}"`}
+				>
+					{#if activeKeywords.has(topic.keyword.toLowerCase())}
+						<span class="chip-icon" aria-hidden="true">&#10003;</span>
+					{:else}
+						<span class="chip-icon" aria-hidden="true">+</span>
+					{/if}
+					{topic.keyword}
+				</button>
+			{/each}
+		</div>
+
+		<!-- Active monitors header -->
 		<div class="monitors-header">
-			<span class="monitor-count">{monitors.length} monitor{monitors.length !== 1 ? 's' : ''}</span>
+			<span class="monitor-count">
+				{monitors.length} active watch{monitors.length !== 1 ? 'es' : ''}
+			</span>
 			<button class="add-btn" onclick={() => (showAdd = !showAdd)}>
-				{showAdd ? 'Cancel' : '+ Add'}
+				{showAdd ? 'Cancel' : '+ Custom'}
 			</button>
 		</div>
 
+		<!-- Add custom monitor form -->
 		{#if showAdd}
 			<div class="add-form">
 				<input
@@ -181,6 +248,9 @@
 					bind:value={newKeyword}
 					placeholder="Keyword or phrase..."
 					class="keyword-input"
+					onkeydown={(e) => {
+						if (e.key === 'Enter') addMonitor();
+					}}
 				/>
 				<div class="source-toggles">
 					{#each SOURCE_OPTIONS as src (src.id)}
@@ -198,19 +268,21 @@
 						Scope: {municipalityStore.label}
 					</span>
 					<button class="save-btn" onclick={addMonitor} disabled={!newKeyword.trim()}>
-						Create Monitor
+						Create Watch
 					</button>
 				</div>
 			</div>
 		{/if}
 
+		<!-- Monitor list -->
 		<div class="monitor-list">
 			{#each monitors as monitor (monitor.id)}
 				{@const monitorMatches = matchesByMonitor[monitor.id] || []}
 				<div class="monitor-card" class:has-matches={monitorMatches.length > 0}>
 					<button
 						class="monitor-header-btn"
-						onclick={() => (expandedMonitor = expandedMonitor === monitor.id ? null : monitor.id)}
+						onclick={() =>
+							(expandedMonitor = expandedMonitor === monitor.id ? null : monitor.id)}
 					>
 						<div class="monitor-keyword">{monitor.keyword}</div>
 						{#if monitorMatches.length > 0}
@@ -251,122 +323,88 @@
 				</div>
 			{:else}
 				<div class="empty" role="status">
-					{showAdd
-						? 'Create your first monitor above'
-						: 'No monitors yet — tap + Add to create one'}
+					Tap a topic above or use + Custom to start watching
 				</div>
 			{/each}
 		</div>
+
+		<!-- Sync banner for unauthenticated users -->
+		{#if !authStore.isAuthenticated}
+			<button class="sync-banner" onclick={() => (authStore.showAuthModal = true)}>
+				<span class="sync-icon" aria-hidden="true">&#128274;</span>
+				Sign in to sync across devices
+			</button>
+		{/if}
 	{/if}
 </div>
 
 <style>
-	.my-monitors {
+	.topic-watch {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
 		height: 100%;
 	}
 
-	.locked-preview {
-		position: relative;
-		flex: 1;
-		overflow: hidden;
-	}
-
-	.preview-content {
-		filter: blur(3px);
-		opacity: 0.45;
-		pointer-events: none;
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.preview-card {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-	}
-
-	.preview-card.has-matches {
-		border-left: 3px solid var(--accent-primary);
-	}
-
-	.preview-keyword {
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--text-primary);
-	}
-
-	.preview-meta {
-		font-size: 0.75rem;
-		color: var(--text-tertiary);
-		margin-top: 2px;
-	}
-
-	.preview-footer {
-		margin-top: 4px;
-	}
-
-	.preview-matches {
-		font-size: 0.75rem;
-		color: var(--accent-primary);
-		font-family: 'Geist Mono', monospace;
-	}
-
-	.locked-overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		text-align: center;
-		padding: 16px;
-	}
-
-	.lock-icon {
-		font-size: 1.5rem;
-		opacity: 0.7;
-	}
-
-	.lock-title {
-		font-size: 0.9375rem;
+	.section-label {
+		font-size: 0.625rem;
 		font-weight: 700;
-		color: var(--text-primary);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-tertiary);
 	}
 
-	.lock-desc {
-		font-size: 0.8125rem;
+	.suggested-topics {
+		display: flex;
+		gap: 6px;
+		flex-wrap: wrap;
+	}
+
+	.topic-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 0.6875rem;
+		padding: 4px 10px;
+		border-radius: 14px;
+		border: 1px solid var(--border-primary);
+		background: transparent;
 		color: var(--text-secondary);
-		line-height: 1.4;
-		max-width: 240px;
-		margin: 0;
-	}
-
-	.lock-btn {
-		margin-top: 4px;
-		padding: 8px 20px;
-		border-radius: 8px;
-		border: none;
-		background: var(--accent-primary);
-		color: var(--text-inverse);
-		font-size: 0.8125rem;
-		font-weight: 600;
 		cursor: pointer;
-		transition: opacity 0.15s;
+		transition:
+			background 0.15s,
+			border-color 0.15s,
+			color 0.15s;
+		white-space: nowrap;
 	}
 
-	.lock-btn:hover {
+	.topic-chip:hover {
+		border-color: var(--accent-primary);
+		color: var(--accent-primary);
+	}
+
+	.topic-chip.active {
+		background: var(--accent-primary);
+		border-color: var(--accent-primary);
+		color: var(--text-inverse);
+	}
+
+	.topic-chip.active:hover {
 		opacity: 0.85;
+		color: var(--text-inverse);
+	}
+
+	.chip-icon {
+		font-size: 0.625rem;
+		font-weight: 700;
+		line-height: 1;
 	}
 
 	.monitors-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		padding-top: 4px;
 		padding-bottom: 6px;
 		border-bottom: 1px solid var(--border-primary);
 	}
@@ -385,6 +423,11 @@
 		background: transparent;
 		color: var(--accent-primary);
 		cursor: pointer;
+		transition: opacity 0.15s;
+	}
+
+	.add-btn:hover {
+		opacity: 0.85;
 	}
 
 	.add-form {
@@ -424,6 +467,10 @@
 		background: transparent;
 		color: var(--text-tertiary);
 		cursor: pointer;
+		transition:
+			background 0.15s,
+			border-color 0.15s,
+			color 0.15s;
 	}
 
 	.source-chip.active {
@@ -588,5 +635,33 @@
 		color: var(--text-tertiary);
 		font-style: italic;
 		text-align: center;
+		padding: 16px 0;
+	}
+
+	.sync-banner {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		padding: 8px 12px;
+		border-radius: 8px;
+		border: 1px dashed var(--border-primary);
+		background: transparent;
+		color: var(--text-tertiary);
+		font-size: 0.6875rem;
+		cursor: pointer;
+		transition:
+			border-color 0.15s,
+			color 0.15s;
+		flex-shrink: 0;
+	}
+
+	.sync-banner:hover {
+		border-color: var(--accent-primary);
+		color: var(--accent-primary);
+	}
+
+	.sync-icon {
+		font-size: 0.75rem;
 	}
 </style>

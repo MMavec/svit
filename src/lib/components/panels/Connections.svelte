@@ -2,75 +2,114 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { supabase } from '$lib/supabase';
-	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
-	import PanelError from '$lib/components/ui/PanelError.svelte';
+	import { councillors } from '$lib/config/councillors';
 	import { municipalities } from '$lib/config/municipalities';
+	import type { Councillor } from '$lib/types/index';
 
-	interface Connection {
-		id: string;
-		councillor_name: string;
-		municipality: string;
-		relationship: 'constituent' | 'met' | 'working-with' | 'following';
-		notes: string;
-		last_contact: string | null;
+	const STORAGE_KEY = 'svit-followed-councillors';
+
+	type FilterMode = 'all' | 'followed';
+
+	let filterMode = $state<FilterMode>('all');
+	let followedIds = $state<string[]>(loadFollowed());
+	let syncing = $state(false);
+
+	function loadFollowed(): string[] {
+		try {
+			const raw = localStorage.getItem(STORAGE_KEY);
+			if (raw) {
+				const parsed = JSON.parse(raw);
+				if (Array.isArray(parsed)) return parsed;
+			}
+		} catch {
+			// ignore
+		}
+		return [];
 	}
 
-	const RELATIONSHIP_LABELS: Record<string, string> = {
-		constituent: 'Constituent',
-		met: 'Met',
-		'working-with': 'Working with',
-		following: 'Following'
-	};
+	function saveFollowed(ids: string[]) {
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+		} catch {
+			// ignore
+		}
+	}
 
-	let connections = $state<Connection[]>([]);
-	let loading = $state(false);
-	let error = $state<string | null>(null);
-	let showAdd = $state(false);
-	let newName = $state('');
-	let newMunicipality = $state<string>(municipalityStore.slug || 'victoria');
-	let newRelationship = $state<Connection['relationship']>('following');
-	let newNotes = $state('');
+	function isFollowed(id: string): boolean {
+		return followedIds.includes(id);
+	}
 
-	async function loadConnections() {
-		if (!supabase || !authStore.isAuthenticated) return;
-		loading = true;
-		error = null;
-		const { data, error: dbError } = await supabase
-			.from('connections')
-			.select('*')
-			.eq('user_id', authStore.user!.id)
-			.order('last_contact', { ascending: false });
-		if (dbError) {
-			error = dbError.message;
+	function toggleFollow(id: string) {
+		if (isFollowed(id)) {
+			followedIds = followedIds.filter((fid) => fid !== id);
 		} else {
-			connections = (data || []) as Connection[];
+			followedIds = [...followedIds, id];
 		}
-		loading = false;
-	}
-
-	async function addConnection() {
-		if (!supabase || !authStore.isAuthenticated || !newName.trim()) return;
-		const { error } = await supabase.from('connections').insert({
-			user_id: authStore.user!.id,
-			councillor_name: newName.trim(),
-			municipality: newMunicipality,
-			relationship: newRelationship,
-			notes: newNotes.trim(),
-			last_contact: new Date().toISOString()
-		});
-		if (!error) {
-			newName = '';
-			newNotes = '';
-			showAdd = false;
-			await loadConnections();
+		saveFollowed(followedIds);
+		if (authStore.isAuthenticated) {
+			syncToSupabase();
 		}
 	}
 
-	async function deleteConnection(id: string) {
-		if (!supabase) return;
-		await supabase.from('connections').delete().eq('id', id);
-		connections = connections.filter((c) => c.id !== id);
+	async function syncToSupabase() {
+		if (!supabase || !authStore.isAuthenticated || !authStore.user) return;
+		syncing = true;
+		try {
+			// Delete existing connections for this user
+			await supabase.from('connections').delete().eq('user_id', authStore.user.id);
+			// Insert current follows
+			if (followedIds.length > 0) {
+				const rows = followedIds.map((cid) => {
+					const c = councillors.find((cc) => cc.id === cid);
+					return {
+						user_id: authStore.user!.id,
+						councillor_name: c?.name ?? cid,
+						municipality: c?.municipality ?? 'victoria',
+						relationship: 'following',
+						notes: '',
+						last_contact: new Date().toISOString()
+					};
+				});
+				await supabase.from('connections').insert(rows);
+			}
+		} catch {
+			// silent failure for sync
+		}
+		syncing = false;
 	}
+
+	async function loadFromSupabase() {
+		if (!supabase || !authStore.isAuthenticated || !authStore.user) return;
+		try {
+			const { data } = await supabase
+				.from('connections')
+				.select('councillor_name')
+				.eq('user_id', authStore.user.id);
+			if (data && data.length > 0) {
+				// Match Supabase names back to councillor IDs
+				const ids: string[] = [];
+				for (const row of data) {
+					const match = councillors.find(
+						(c) => c.name === row.councillor_name
+					);
+					if (match) ids.push(match.id);
+				}
+				if (ids.length > 0) {
+					followedIds = ids;
+					saveFollowed(followedIds);
+				}
+			}
+		} catch {
+			// silent
+		}
+	}
+
+	// On auth change, load from Supabase
+	$effect(() => {
+		if (authStore.isAuthenticated) {
+			loadFromSupabase();
+		}
+	});
 
 	function municipalityName(slug: string): string {
 		return municipalities.find((m) => m.slug === slug)?.name || slug;
@@ -80,365 +119,553 @@
 		return municipalities.find((m) => m.slug === slug)?.color || 'var(--accent-primary)';
 	}
 
-	const filteredConnections = $derived(
-		municipalityStore.slug
-			? connections.filter((c) => c.municipality === municipalityStore.slug)
-			: connections
+	function roleLabel(role: Councillor['role']): string {
+		switch (role) {
+			case 'mayor':
+				return 'Mayor';
+			case 'councillor':
+				return 'Councillor';
+			case 'director':
+				return 'Director';
+			case 'chair':
+				return 'Chair';
+			default:
+				return role;
+		}
+	}
+
+	function socialUrl(platform: string, handle: string): string {
+		switch (platform) {
+			case 'twitter':
+				return `https://x.com/${handle}`;
+			case 'bluesky':
+				return `https://bsky.app/profile/${handle}`;
+			case 'facebook':
+				return `https://facebook.com/${handle}`;
+			case 'instagram':
+				return `https://instagram.com/${handle}`;
+			case 'website':
+				return handle.startsWith('http') ? handle : `https://${handle}`;
+			default:
+				return '#';
+		}
+	}
+
+	function socialLabel(platform: string): string {
+		switch (platform) {
+			case 'twitter':
+				return 'X';
+			case 'bluesky':
+				return 'BS';
+			case 'facebook':
+				return 'FB';
+			case 'instagram':
+				return 'IG';
+			case 'website':
+				return 'WEB';
+			default:
+				return platform;
+		}
+	}
+
+	function socialTitle(platform: string): string {
+		switch (platform) {
+			case 'twitter':
+				return 'X (Twitter)';
+			case 'bluesky':
+				return 'Bluesky';
+			case 'facebook':
+				return 'Facebook';
+			case 'instagram':
+				return 'Instagram';
+			case 'website':
+				return 'Website';
+			default:
+				return platform;
+		}
+	}
+
+	// Get unique municipality slugs present in the councillor list (for filter buttons in All CRD view)
+	const municipalitySlugs = $derived(
+		[...new Set(councillors.filter((c) => c.active).map((c) => c.municipality))]
 	);
 
-	$effect(() => {
-		if (authStore.isAuthenticated) {
-			loadConnections();
+	let municipalityFilter = $state<string | null>(null);
+
+	const filteredCouncillors = $derived.by(() => {
+		let list = councillors.filter((c) => c.active);
+
+		// Filter by selected municipality from the global selector
+		if (municipalityStore.slug) {
+			list = list.filter((c) => c.municipality === municipalityStore.slug);
+		} else if (municipalityFilter) {
+			// In All CRD view, allow sub-filtering by municipality
+			list = list.filter((c) => c.municipality === municipalityFilter);
 		}
+
+		// Filter by follow status
+		if (filterMode === 'followed') {
+			list = list.filter((c) => followedIds.includes(c.id));
+		}
+
+		// Sort: followed first, then mayors first, then alphabetical
+		list = [...list].sort((a, b) => {
+			const aFollowed = followedIds.includes(a.id) ? 0 : 1;
+			const bFollowed = followedIds.includes(b.id) ? 0 : 1;
+			if (aFollowed !== bFollowed) return aFollowed - bFollowed;
+			const aRole = a.role === 'mayor' ? 0 : 1;
+			const bRole = b.role === 'mayor' ? 0 : 1;
+			if (aRole !== bRole) return aRole - bRole;
+			return a.lastName.localeCompare(b.lastName);
+		});
+
+		return list;
 	});
+
+	const followedCount = $derived(followedIds.length);
+	const totalShown = $derived(filteredCouncillors.length);
 </script>
 
 <div class="connections">
 	{#if !authStore.isAuthenticated}
-		<div class="locked-preview">
-			<div class="preview-content" aria-hidden="true">
-				<div class="preview-card">
-					<div class="preview-name">Marianne Alto</div>
-					<div class="preview-meta">
-						<span style="color: var(--accent-primary)">Victoria</span>
-						<span>Following</span>
-					</div>
-				</div>
-				<div class="preview-card">
-					<div class="preview-name">Ben Isitt</div>
-					<div class="preview-meta">
-						<span style="color: var(--accent-primary)">Victoria</span>
-						<span>Constituent</span>
-					</div>
-				</div>
-				<div class="preview-card">
-					<div class="preview-name">Ryan Windsor</div>
-					<div class="preview-meta">
-						<span style="color: #e8a87c">Saanich</span>
-						<span>Met</span>
-					</div>
-				</div>
-			</div>
-			<div class="locked-overlay">
-				<div class="lock-icon">&#128279;</div>
-				<div class="lock-title">Civic Connections</div>
-				<p class="lock-desc">
-					Track your relationships with local councillors and civic officials. Note meetings, follow
-					their activity, and stay connected.
-				</p>
-				<button class="lock-btn" onclick={() => (authStore.showAuthModal = true)}
-					>Sign In to Connect</button
-				>
-			</div>
-		</div>
-	{:else if loading}
-		<PanelSkeleton variant="list" />
-	{:else if error}
-		<PanelError message={error} onRetry={loadConnections} />
-	{:else}
-		<div class="conn-header">
-			<span class="conn-count"
-				>{filteredConnections.length} connection{filteredConnections.length !== 1 ? 's' : ''}</span
-			>
-			<button class="add-btn" onclick={() => (showAdd = !showAdd)}>
-				{showAdd ? 'Cancel' : '+ Add'}
+		<div class="sync-banner" role="status">
+			<span class="sync-icon">&#9729;</span>
+			<span>Sign in to sync follows across devices</span>
+			<button class="sync-sign-in" onclick={() => (authStore.showAuthModal = true)}>
+				Sign in
 			</button>
 		</div>
+	{/if}
 
-		{#if showAdd}
-			<div class="add-form">
-				<input
-					type="text"
-					bind:value={newName}
-					placeholder="Name (councillor, staff, etc.)"
-					class="name-input"
-				/>
-				<div class="form-row">
-					<select bind:value={newMunicipality} class="select-field">
-						{#each municipalities as m (m.slug)}
-							<option value={m.slug}>{m.name}</option>
-						{/each}
-					</select>
-					<select bind:value={newRelationship} class="select-field">
-						<option value="following">Following</option>
-						<option value="constituent">Constituent</option>
-						<option value="met">Met</option>
-						<option value="working-with">Working with</option>
-					</select>
-				</div>
-				<textarea bind:value={newNotes} placeholder="Notes..." class="notes-input" rows="2"
-				></textarea>
-				<button class="save-btn" onclick={addConnection} disabled={!newName.trim()}>
-					Add Connection
+	<div class="filter-bar">
+		<div class="filter-tabs">
+			<button
+				class="filter-tab"
+				class:active={filterMode === 'all'}
+				onclick={() => (filterMode = 'all')}
+			>
+				All
+			</button>
+			<button
+				class="filter-tab"
+				class:active={filterMode === 'followed'}
+				onclick={() => (filterMode = 'followed')}
+			>
+				Followed
+				{#if followedCount > 0}
+					<span class="follow-badge">{followedCount}</span>
+				{/if}
+			</button>
+		</div>
+		{#if !municipalityStore.slug}
+			<div class="municipality-filters">
+				<button
+					class="muni-chip"
+					class:active={municipalityFilter === null}
+					onclick={() => (municipalityFilter = null)}
+				>
+					All CRD
 				</button>
+				{#each municipalitySlugs as slug (slug)}
+					<button
+						class="muni-chip"
+						class:active={municipalityFilter === slug}
+						style="--chip-color: {municipalityColor(slug)}"
+						onclick={() => (municipalityFilter = municipalityFilter === slug ? null : slug)}
+					>
+						{municipalities.find((m) => m.slug === slug)?.abbreviation ?? slug}
+					</button>
+				{/each}
 			</div>
 		{/if}
+	</div>
 
-		<div class="conn-list">
-			{#each filteredConnections as conn (conn.id)}
-				<div class="conn-card">
-					<div class="conn-name">{conn.councillor_name}</div>
-					<div class="conn-meta">
-						<span class="conn-municipality" style="color: {municipalityColor(conn.municipality)}">
-							{municipalityName(conn.municipality)}
-						</span>
-						<span class="conn-relationship"
-							>{RELATIONSHIP_LABELS[conn.relationship] || conn.relationship}</span
-						>
-					</div>
-					{#if conn.notes}
-						<div class="conn-notes">{conn.notes}</div>
-					{/if}
-					<div class="conn-footer">
-						{#if conn.last_contact}
-							<span class="last-contact">
-								Last contact: {new Date(conn.last_contact).toLocaleDateString('en-CA', {
-									month: 'short',
-									day: 'numeric'
-								})}
+	<div class="conn-count" role="status">
+		{totalShown} councillor{totalShown !== 1 ? 's' : ''}
+		{#if syncing}
+			<span class="sync-status">syncing...</span>
+		{/if}
+	</div>
+
+	<div class="councillor-list">
+		{#each filteredCouncillors as councillor (councillor.id)}
+			<div class="councillor-card" class:is-followed={isFollowed(councillor.id)}>
+				<div class="card-main">
+					<div class="card-left">
+						<div class="card-name-row">
+							<span class="card-name">{councillor.name}</span>
+							{#if councillor.role === 'mayor'}
+								<span class="mayor-badge">Mayor</span>
+							{/if}
+						</div>
+						<div class="card-meta">
+							<span
+								class="card-municipality"
+								style="color: {municipalityColor(councillor.municipality)}"
+							>
+								{municipalityName(councillor.municipality)}
 							</span>
-						{/if}
-						<button class="delete-btn" onclick={() => deleteConnection(conn.id)}>Remove</button>
+							{#if councillor.role !== 'mayor'}
+								<span class="card-role">{roleLabel(councillor.role)}</span>
+							{/if}
+						</div>
+						<div class="card-links">
+							{#if councillor.social}
+								{#each Object.entries(councillor.social) as [platform, handle]}
+									{#if handle}
+										<a
+											href={socialUrl(platform, handle)}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="social-link"
+											class:social-twitter={platform === 'twitter'}
+											class:social-bluesky={platform === 'bluesky'}
+											class:social-facebook={platform === 'facebook'}
+											class:social-instagram={platform === 'instagram'}
+											class:social-website={platform === 'website'}
+											title={socialTitle(platform)}
+										>
+											{socialLabel(platform)}
+										</a>
+									{/if}
+								{/each}
+							{/if}
+							{#if councillor.email}
+								<a
+									href="mailto:{councillor.email}"
+									class="social-link social-email"
+									title="Email {councillor.name}"
+								>
+									@
+								</a>
+							{/if}
+						</div>
 					</div>
+					<button
+						class="follow-btn"
+						class:following={isFollowed(councillor.id)}
+						onclick={() => toggleFollow(councillor.id)}
+						aria-label={isFollowed(councillor.id)
+							? `Unfollow ${councillor.name}`
+							: `Follow ${councillor.name}`}
+						title={isFollowed(councillor.id) ? 'Unfollow' : 'Follow'}
+					>
+						{isFollowed(councillor.id) ? '\u2605' : '\u2606'}
+					</button>
 				</div>
-			{:else}
-				<div class="empty" role="status">No connections yet</div>
-			{/each}
-		</div>
-	{/if}
+			</div>
+		{:else}
+			<div class="empty" role="status">
+				{#if filterMode === 'followed'}
+					No followed councillors yet. Star councillors to follow them.
+				{:else}
+					No councillors found.
+				{/if}
+			</div>
+		{/each}
+	</div>
 </div>
 
 <style>
 	.connections {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 6px;
 		height: 100%;
 	}
 
-	.locked-preview {
-		position: relative;
-		flex: 1;
-		overflow: hidden;
-	}
-
-	.preview-content {
-		filter: blur(3px);
-		opacity: 0.45;
-		pointer-events: none;
+	.sync-banner {
 		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.preview-card {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-	}
-
-	.preview-name {
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--text-primary);
-	}
-
-	.preview-meta {
-		display: flex;
-		gap: 8px;
-		margin-top: 2px;
-		font-size: 0.75rem;
-		color: var(--text-tertiary);
-	}
-
-	.locked-overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		flex-direction: column;
 		align-items: center;
-		justify-content: center;
 		gap: 6px;
-		text-align: center;
-		padding: 16px;
-	}
-
-	.lock-icon {
-		font-size: 1.5rem;
-		opacity: 0.7;
-	}
-
-	.lock-title {
-		font-size: 0.9375rem;
-		font-weight: 700;
-		color: var(--text-primary);
-	}
-
-	.lock-desc {
-		font-size: 0.8125rem;
-		color: var(--text-secondary);
-		line-height: 1.4;
-		max-width: 240px;
-		margin: 0;
-	}
-
-	.lock-btn {
-		margin-top: 4px;
-		padding: 8px 20px;
-		border-radius: 8px;
-		border: none;
-		background: var(--accent-primary);
-		color: var(--text-inverse);
-		font-size: 0.8125rem;
-		font-weight: 600;
-		cursor: pointer;
-		transition: opacity 0.15s;
-	}
-
-	.lock-btn:hover {
-		opacity: 0.85;
-	}
-
-	.conn-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding-bottom: 6px;
-		border-bottom: 1px solid var(--border-primary);
-	}
-
-	.conn-count {
-		font-size: 0.75rem;
-		color: var(--text-tertiary);
-	}
-
-	.add-btn {
-		font-size: 0.6875rem;
-		font-weight: 600;
-		padding: 3px 10px;
+		padding: 6px 10px;
 		border-radius: 6px;
+		background: var(--bg-surface-hover);
+		font-size: 0.6875rem;
+		color: var(--text-tertiary);
+	}
+
+	.sync-icon {
+		font-size: 0.875rem;
+		opacity: 0.6;
+	}
+
+	.sync-sign-in {
+		margin-left: auto;
+		padding: 2px 8px;
+		border-radius: 4px;
 		border: 1px solid var(--accent-primary);
 		background: transparent;
 		color: var(--accent-primary);
+		font-size: 0.625rem;
+		font-weight: 600;
 		cursor: pointer;
+		white-space: nowrap;
 	}
 
-	.add-form {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
+	.sync-sign-in:hover {
+		background: var(--accent-primary);
+		color: var(--text-inverse);
+	}
+
+	.filter-bar {
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
 	}
 
-	.name-input,
-	.notes-input {
-		padding: 6px 10px;
-		border-radius: 6px;
-		border: 1px solid var(--border-primary);
-		background: var(--bg-surface);
-		color: var(--text-primary);
-		font-size: 0.75rem;
-		font-family: inherit;
-		outline: none;
-		resize: none;
+	.filter-tabs {
+		display: flex;
+		gap: 4px;
 	}
 
-	.name-input:focus,
-	.notes-input:focus {
+	.filter-tab {
+		padding: 4px 12px;
+		border-radius: 6px;
+		border: 1px solid var(--border-primary);
+		background: transparent;
+		color: var(--text-secondary);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		transition:
+			background 0.15s,
+			color 0.15s;
+	}
+
+	.filter-tab.active {
+		background: var(--accent-primary);
+		color: var(--text-inverse);
 		border-color: var(--accent-primary);
 	}
 
-	.form-row {
+	.follow-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 16px;
+		height: 16px;
+		padding: 0 4px;
+		border-radius: 8px;
+		background: var(--accent-warning);
+		color: #000;
+		font-size: 0.5625rem;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.municipality-filters {
 		display: flex;
+		flex-wrap: wrap;
+		gap: 3px;
+	}
+
+	.muni-chip {
+		padding: 2px 6px;
+		border-radius: 4px;
+		border: 1px solid var(--border-primary);
+		background: transparent;
+		color: var(--text-tertiary);
+		font-size: 0.5625rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			background 0.15s,
+			color 0.15s,
+			border-color 0.15s;
+	}
+
+	.muni-chip.active {
+		background: var(--chip-color, var(--accent-primary));
+		color: #fff;
+		border-color: var(--chip-color, var(--accent-primary));
+	}
+
+	.muni-chip:hover:not(.active) {
+		border-color: var(--chip-color, var(--accent-primary));
+		color: var(--chip-color, var(--accent-primary));
+	}
+
+	.conn-count {
+		font-size: 0.6875rem;
+		color: var(--text-tertiary);
+		display: flex;
+		align-items: center;
 		gap: 6px;
 	}
 
-	.select-field {
-		flex: 1;
-		padding: 6px 8px;
-		border-radius: 6px;
-		border: 1px solid var(--border-primary);
-		background: var(--bg-surface);
-		color: var(--text-primary);
-		font-size: 0.6875rem;
+	.sync-status {
+		font-size: 0.5625rem;
+		color: var(--accent-primary);
+		font-style: italic;
 	}
 
-	.save-btn {
-		font-size: 0.6875rem;
-		font-weight: 600;
-		padding: 6px;
-		border-radius: 6px;
-		border: none;
-		background: var(--accent-primary);
-		color: var(--text-inverse);
-		cursor: pointer;
-	}
-
-	.save-btn:disabled {
-		opacity: 0.5;
-	}
-
-	.conn-list {
+	.councillor-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: 4px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
-	.conn-card {
+	.councillor-card {
 		padding: 8px;
 		border-radius: 8px;
 		background: var(--bg-surface-hover);
+		border-left: 3px solid transparent;
+		transition:
+			border-color 0.15s,
+			background 0.15s;
 	}
 
-	.conn-name {
+	.councillor-card.is-followed {
+		border-left-color: var(--accent-warning);
+	}
+
+	.councillor-card:hover {
+		background: var(--bg-surface);
+	}
+
+	.card-main {
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.card-left {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.card-name-row {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.card-name {
 		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text-primary);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	.conn-meta {
+	.mayor-badge {
+		font-size: 0.5625rem;
+		font-weight: 700;
+		padding: 1px 5px;
+		border-radius: 3px;
+		background: var(--accent-primary);
+		color: var(--text-inverse);
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		flex-shrink: 0;
+	}
+
+	.card-meta {
 		display: flex;
 		gap: 8px;
 		margin-top: 2px;
 		font-size: 0.625rem;
 	}
 
-	.conn-relationship {
+	.card-role {
 		color: var(--text-tertiary);
-		font-style: italic;
 	}
 
-	.conn-notes {
-		font-size: 0.6875rem;
-		color: var(--text-secondary);
-		margin-top: 4px;
-		line-height: 1.3;
-	}
-
-	.conn-footer {
+	.card-links {
 		display: flex;
-		justify-content: space-between;
+		gap: 4px;
+		margin-top: 4px;
+		flex-wrap: wrap;
+	}
+
+	.social-link {
+		display: inline-flex;
 		align-items: center;
-		margin-top: 6px;
-	}
-
-	.last-contact {
-		font-size: 0.625rem;
-		color: var(--text-tertiary);
-	}
-
-	.delete-btn {
-		font-size: 0.625rem;
-		padding: 2px 8px;
+		justify-content: center;
+		padding: 2px 6px;
 		border-radius: 4px;
-		border: 1px solid var(--accent-danger);
+		font-size: 0.5625rem;
+		font-weight: 700;
+		text-decoration: none;
+		border: 1px solid var(--border-primary);
+		color: var(--text-secondary);
+		transition:
+			background 0.15s,
+			color 0.15s,
+			border-color 0.15s;
+		line-height: 1.2;
+	}
+
+	.social-link:hover {
+		background: var(--bg-surface);
+	}
+
+	.social-twitter:hover {
+		color: #1da1f2;
+		border-color: #1da1f2;
+	}
+
+	.social-bluesky:hover {
+		color: #0085ff;
+		border-color: #0085ff;
+	}
+
+	.social-facebook:hover {
+		color: #1877f2;
+		border-color: #1877f2;
+	}
+
+	.social-instagram:hover {
+		color: #e4405f;
+		border-color: #e4405f;
+	}
+
+	.social-website:hover {
+		color: var(--accent-secondary);
+		border-color: var(--accent-secondary);
+	}
+
+	.social-email:hover {
+		color: var(--accent-primary);
+		border-color: var(--accent-primary);
+	}
+
+	.follow-btn {
+		flex-shrink: 0;
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 6px;
+		border: 1px solid var(--border-primary);
 		background: transparent;
-		color: var(--accent-danger);
+		color: var(--text-tertiary);
+		font-size: 1rem;
 		cursor: pointer;
+		transition:
+			color 0.15s,
+			border-color 0.15s,
+			background 0.15s;
+		line-height: 1;
+	}
+
+	.follow-btn:hover {
+		color: var(--accent-warning);
+		border-color: var(--accent-warning);
+	}
+
+	.follow-btn.following {
+		color: var(--accent-warning);
+		border-color: var(--accent-warning);
+		background: color-mix(in srgb, var(--accent-warning) 10%, transparent);
 	}
 
 	.empty {
@@ -449,5 +676,7 @@
 		font-size: 0.8125rem;
 		color: var(--text-tertiary);
 		font-style: italic;
+		text-align: center;
+		padding: 16px;
 	}
 </style>

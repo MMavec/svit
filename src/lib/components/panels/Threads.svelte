@@ -1,129 +1,41 @@
 <script lang="ts">
+	// TODO: Add admin toggle for auth-required mode
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { supabase } from '$lib/supabase';
-	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
-	import PanelError from '$lib/components/ui/PanelError.svelte';
-	import type { ThreadMessage } from '$lib/types/index';
+	import { threadStore } from '$lib/stores/threads.svelte';
+	import { municipalityStore } from '$lib/stores/municipality.svelte';
+	import type { Thread } from '$lib/stores/threads.svelte';
 
-	interface Thread {
-		id: string;
-		title: string;
-		item_type: string;
-		item_id: string;
-		message_count: number;
-		last_message: string;
-		last_message_at: string;
-		created_at: string;
-		messages?: ThreadMessage[];
-	}
-
-	let threads = $state<Thread[]>([]);
-	let loading = $state(false);
-	let error = $state<string | null>(null);
 	let showNew = $state(false);
 	let newTitle = $state('');
-	let newMessage = $state('');
+	let newMunicipality = $state('');
 	let selectedThread = $state<string | null>(null);
 	let replyContent = $state('');
-	let sending = $state(false);
 
-	const activeThread = $derived(threads.find((t) => t.id === selectedThread));
+	const activeThread = $derived(threadStore.threads.find((t: Thread) => t.id === selectedThread));
 
-	async function loadThreads() {
-		if (!supabase || !authStore.isAuthenticated) return;
-		loading = true;
-		error = null;
-		const { data, error: dbError } = await supabase
-			.from('threads')
-			.select('*')
-			.eq('user_id', authStore.user!.id)
-			.order('last_message_at', { ascending: false });
-		if (dbError) {
-			error = dbError.message;
-		} else {
-			threads = (data || []) as Thread[];
-		}
-		loading = false;
+	const filteredThreads = $derived(
+		municipalityStore.slug
+			? threadStore.getThreads(municipalityStore.slug)
+			: threadStore.threads
+	);
+
+	function createThread() {
+		if (!newTitle.trim()) return;
+		threadStore.addThread(newTitle.trim(), newMunicipality || null);
+		newTitle = '';
+		newMunicipality = '';
+		showNew = false;
 	}
 
-	async function createThread() {
-		if (!supabase || !authStore.isAuthenticated || !newTitle.trim()) return;
-		const messages: ThreadMessage[] = [];
-		if (newMessage.trim()) {
-			messages.push({
-				id: crypto.randomUUID(),
-				content: newMessage.trim(),
-				authorId: authStore.user!.id,
-				createdAt: new Date(Date.now()).toISOString()
-			});
-		}
-		const { error } = await supabase.from('threads').insert({
-			user_id: authStore.user!.id,
-			title: newTitle.trim(),
-			item_type: 'note',
-			item_id: crypto.randomUUID(),
-			last_message: newMessage.trim() || newTitle.trim(),
-			last_message_at: new Date(Date.now()).toISOString(),
-			message_count: messages.length,
-			messages
-		});
-		if (!error) {
-			newTitle = '';
-			newMessage = '';
-			showNew = false;
-			await loadThreads();
-		}
+	function sendReply() {
+		if (!activeThread || !replyContent.trim()) return;
+		threadStore.addMessage(activeThread.id, replyContent.trim());
+		replyContent = '';
 	}
 
-	async function sendReply() {
-		if (!supabase || !activeThread || !replyContent.trim()) return;
-		sending = true;
-		const msg: ThreadMessage = {
-			id: crypto.randomUUID(),
-			content: replyContent.trim(),
-			authorId: authStore.user!.id,
-			createdAt: new Date(Date.now()).toISOString()
-		};
-		const existingMessages = activeThread.messages || [];
-		const updatedMessages = [...existingMessages, msg];
-		const { error } = await supabase
-			.from('threads')
-			.update({
-				messages: updatedMessages,
-				message_count: updatedMessages.length,
-				last_message: msg.content,
-				last_message_at: msg.createdAt
-			})
-			.eq('id', activeThread.id);
-		if (!error) {
-			const thread = threads.find((t) => t.id === activeThread.id);
-			if (thread) {
-				thread.messages = updatedMessages;
-				thread.message_count = updatedMessages.length;
-				thread.last_message = msg.content;
-				thread.last_message_at = msg.createdAt;
-			}
-			replyContent = '';
-		}
-		sending = false;
-	}
-
-	async function deleteThread(id: string) {
-		if (!supabase) return;
-		await supabase.from('threads').delete().eq('id', id);
-		threads = threads.filter((t) => t.id !== id);
+	function deleteThread(id: string) {
+		threadStore.deleteThread(id);
 		if (selectedThread === id) selectedThread = null;
-	}
-
-	function typeLabel(type: string): string {
-		const labels: Record<string, string> = {
-			council: 'Council',
-			bylaw: 'Bylaw',
-			development: 'Development',
-			hearing: 'Hearing',
-			note: 'Note'
-		};
-		return labels[type] || 'Thread';
 	}
 
 	function timeAgo(iso: string): string {
@@ -135,75 +47,35 @@
 		const days = Math.floor(hours / 24);
 		return `${days}d ago`;
 	}
-
-	$effect(() => {
-		if (authStore.isAuthenticated) {
-			loadThreads();
-		}
-	});
 </script>
 
 <div class="threads-panel">
 	{#if !authStore.isAuthenticated}
-		<div class="locked-preview">
-			<div class="preview-content" aria-hidden="true">
-				<div class="preview-card">
-					<div class="preview-header">
-						<span class="preview-type">Council</span>
-						<span class="preview-time">2h ago</span>
-					</div>
-					<div class="preview-title">Johnson St Bridge maintenance schedule</div>
-					<div class="preview-snippet">Has anyone heard when the next closure is planned?</div>
-				</div>
-				<div class="preview-card">
-					<div class="preview-header">
-						<span class="preview-type">Development</span>
-						<span class="preview-time">1d ago</span>
-					</div>
-					<div class="preview-title">New condo proposal on Pandora Ave</div>
-					<div class="preview-snippet">
-						The 12-storey plan seems out of character for that block...
-					</div>
-				</div>
-				<div class="preview-card">
-					<div class="preview-header">
-						<span class="preview-type">Bylaw</span>
-						<span class="preview-time">3d ago</span>
-					</div>
-					<div class="preview-title">Short-term rental regulation changes</div>
-					<div class="preview-snippet">Good to see enforcement getting teeth finally</div>
-				</div>
-			</div>
-			<div class="locked-overlay">
-				<div class="lock-icon">&#128172;</div>
-				<div class="lock-title">Discussion Threads</div>
-				<p class="lock-desc">
-					Start conversations about council decisions, bylaws, and development proposals. Annotate
-					civic items with your own notes and thoughts.
-				</p>
-				<button class="lock-btn" onclick={() => (authStore.showAuthModal = true)}
-					>Sign In to Discuss</button
-				>
-			</div>
+		<div class="sync-banner" role="status">
+			<span class="sync-icon">&#9729;</span>
+			Sign in to save threads across devices
 		</div>
-	{:else if loading}
-		<PanelSkeleton variant="list" />
-	{:else if error}
-		<PanelError message={error} onRetry={loadThreads} />
-	{:else if selectedThread && activeThread}
+	{/if}
+
+	{#if selectedThread && activeThread}
 		<!-- Detail view -->
 		<div class="thread-detail">
 			<div class="detail-header">
 				<button class="back-btn" onclick={() => (selectedThread = null)}>&larr; Back</button>
-				<span class="detail-type">{typeLabel(activeThread.item_type)}</span>
+				{#if activeThread.municipality}
+					<span class="detail-municipality">{activeThread.municipality}</span>
+				{/if}
 			</div>
 			<div class="detail-title">{activeThread.title}</div>
 			<div class="message-list">
 				{#if activeThread.messages && activeThread.messages.length > 0}
 					{#each activeThread.messages as msg (msg.id)}
 						<div class="message-bubble">
-							<div class="message-content">{msg.content}</div>
-							<div class="message-time">{timeAgo(msg.createdAt)}</div>
+							<div class="message-meta">
+								<span class="message-author">{msg.author}</span>
+								<span class="message-time">{timeAgo(msg.timestamp)}</span>
+							</div>
+							<div class="message-content">{msg.text}</div>
 						</div>
 					{/each}
 				{:else}
@@ -223,15 +95,17 @@
 						}
 					}}
 				/>
-				<button class="send-btn" onclick={sendReply} disabled={!replyContent.trim() || sending}>
-					{sending ? '...' : 'Send'}
+				<button class="send-btn" onclick={sendReply} disabled={!replyContent.trim()}>
+					Send
 				</button>
 			</div>
 		</div>
 	{:else}
 		<!-- List view -->
 		<div class="threads-header">
-			<span class="thread-count">{threads.length} thread{threads.length !== 1 ? 's' : ''}</span>
+			<span class="thread-count"
+				>{filteredThreads.length} thread{filteredThreads.length !== 1 ? 's' : ''}</span
+			>
 			<button class="add-btn" onclick={() => (showNew = !showNew)}>
 				{showNew ? 'Cancel' : '+ New'}
 			</button>
@@ -245,12 +119,12 @@
 					placeholder="Thread title..."
 					class="title-input"
 				/>
-				<textarea
-					bind:value={newMessage}
-					placeholder="First message (optional)..."
-					class="message-input"
-					rows="3"
-				></textarea>
+				<input
+					type="text"
+					bind:value={newMunicipality}
+					placeholder="Municipality (optional)..."
+					class="municipality-input"
+				/>
 				<button class="save-btn" onclick={createThread} disabled={!newTitle.trim()}>
 					Create Thread
 				</button>
@@ -258,21 +132,25 @@
 		{/if}
 
 		<div class="thread-list">
-			{#each threads as thread (thread.id)}
+			{#each filteredThreads as thread (thread.id)}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div class="thread-card" onclick={() => (selectedThread = thread.id)}>
 					<div class="thread-header">
-						<span class="thread-type">{typeLabel(thread.item_type)}</span>
-						<span class="thread-time">{timeAgo(thread.last_message_at || thread.created_at)}</span>
+						{#if thread.municipality}
+							<span class="thread-municipality">{thread.municipality}</span>
+						{/if}
+						<span class="thread-time">{timeAgo(thread.createdAt)}</span>
 					</div>
 					<div class="thread-title">{thread.title}</div>
-					{#if thread.last_message}
-						<div class="thread-preview">{thread.last_message}</div>
+					{#if thread.messages.length > 0}
+						<div class="thread-preview">
+							{thread.messages[thread.messages.length - 1].text}
+						</div>
 					{/if}
 					<div class="thread-footer">
 						<span class="message-count"
-							>{thread.message_count || 0} message{(thread.message_count || 0) !== 1
+							>{thread.messages.length} message{thread.messages.length !== 1
 								? 's'
 								: ''}</span
 						>
@@ -287,7 +165,7 @@
 				</div>
 			{:else}
 				<div class="empty" role="status">
-					No threads yet — start a discussion about council items, bylaws, or anything civic
+					No threads yet. Start a discussion about council items, bylaws, or anything civic.
 				</div>
 			{/each}
 		</div>
@@ -302,106 +180,21 @@
 		height: 100%;
 	}
 
-	.locked-preview {
-		position: relative;
-		flex: 1;
-		overflow: hidden;
-	}
-
-	.preview-content {
-		filter: blur(3px);
-		opacity: 0.45;
-		pointer-events: none;
+	.sync-banner {
 		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.preview-card {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-	}
-
-	.preview-header {
-		display: flex;
-		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 2px;
-	}
-
-	.preview-type {
+		gap: 6px;
+		padding: 6px 10px;
+		border-radius: 6px;
+		background: var(--bg-surface-hover);
 		font-size: 0.6875rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		color: var(--accent-primary);
-		letter-spacing: 0.05em;
-	}
-
-	.preview-time {
-		font-size: 0.75rem;
 		color: var(--text-tertiary);
-	}
-
-	.preview-title {
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--text-primary);
-	}
-
-	.preview-snippet {
-		font-size: 0.8125rem;
-		color: var(--text-secondary);
-		margin-top: 2px;
 		line-height: 1.3;
 	}
 
-	.locked-overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		text-align: center;
-		padding: 16px;
-	}
-
-	.lock-icon {
-		font-size: 1.5rem;
-		opacity: 0.7;
-	}
-
-	.lock-title {
-		font-size: 0.9375rem;
-		font-weight: 700;
-		color: var(--text-primary);
-	}
-
-	.lock-desc {
-		font-size: 0.8125rem;
-		color: var(--text-secondary);
-		line-height: 1.4;
-		max-width: 240px;
-		margin: 0;
-	}
-
-	.lock-btn {
-		margin-top: 4px;
-		padding: 8px 20px;
-		border-radius: 8px;
-		border: none;
-		background: var(--accent-primary);
-		color: var(--text-inverse);
-		font-size: 0.8125rem;
-		font-weight: 600;
-		cursor: pointer;
-		transition: opacity 0.15s;
-	}
-
-	.lock-btn:hover {
-		opacity: 0.85;
+	.sync-icon {
+		font-size: 0.875rem;
+		opacity: 0.6;
 	}
 
 	.threads-header {
@@ -438,7 +231,7 @@
 	}
 
 	.title-input,
-	.message-input {
+	.municipality-input {
 		padding: 6px 10px;
 		border-radius: 6px;
 		border: 1px solid var(--border-primary);
@@ -447,11 +240,10 @@
 		font-size: 0.75rem;
 		font-family: inherit;
 		outline: none;
-		resize: none;
 	}
 
 	.title-input:focus,
-	.message-input:focus {
+	.municipality-input:focus {
 		border-color: var(--accent-primary);
 	}
 
@@ -501,7 +293,7 @@
 		margin-bottom: 2px;
 	}
 
-	.thread-type {
+	.thread-municipality {
 		font-size: 0.5625rem;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -585,7 +377,7 @@
 		border-color: var(--border-hover);
 	}
 
-	.detail-type {
+	.detail-municipality {
 		font-size: 0.5625rem;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -614,6 +406,19 @@
 		background: var(--bg-surface-hover);
 	}
 
+	.message-meta {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2px;
+	}
+
+	.message-author {
+		font-size: 0.625rem;
+		font-weight: 600;
+		color: var(--accent-secondary);
+	}
+
 	.message-content {
 		font-size: 0.75rem;
 		color: var(--text-primary);
@@ -623,7 +428,6 @@
 	.message-time {
 		font-size: 0.5625rem;
 		color: var(--text-tertiary);
-		margin-top: 4px;
 	}
 
 	.no-messages {

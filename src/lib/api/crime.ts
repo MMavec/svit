@@ -5,10 +5,12 @@ export async function fetchCrimeIncidents(params?: {
 	municipality?: string | null;
 	limit?: number;
 	type?: string | null;
+	hours?: number;
 }) {
 	return apiFetch<CrimeIncident[]>('/crime', {
 		municipality: params?.municipality,
 		limit: params?.limit || 50,
-		type: params?.type
+		type: params?.type,
+		hours: params?.hours
 	});
 }

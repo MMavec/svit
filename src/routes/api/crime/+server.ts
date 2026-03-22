@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import type { CrimeIncident } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality, parseHours, isJsonResponse } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 
@@ -11,11 +11,11 @@ const CACHE_MAX_AGE = 300; // 5 minutes
  * Fetch crime incidents from Victoria Open Data ArcGIS Hub.
  * Dataset: VicPD crime reports (publicly available).
  */
-async function fetchVicPDIncidents(): Promise<CrimeIncident[]> {
+async function fetchVicPDIncidents(hours: number): Promise<CrimeIncident[]> {
 	try {
-		const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+		const cutoffDate = new Date(Date.now() - hours * 60 * 60 * 1000);
 		const params = new URLSearchParams({
-			where: `reported_date >= '${thirtyDaysAgo.toISOString().split('T')[0]}'`,
+			where: `reported_date >= '${cutoffDate.toISOString().split('T')[0]}'`,
 			outFields:
 				'incident_id,parent_incident_type,incident_type_primary,reported_date,hundred_block,neighbourhood,latitude,longitude',
 			outSR: '4326',
@@ -59,7 +59,7 @@ async function fetchVicPDIncidents(): Promise<CrimeIncident[]> {
 				coordinates: lat && lng ? ([lng, lat] as [number, number]) : undefined,
 				status: 'reported' as const,
 				sourceAgency: 'VicPD',
-				municipality: lat && lng ? attributeMunicipality(lng, lat) : 'victoria',
+				municipality: lat && lng ? attributeMunicipality(lng, lat, 'victoria') : 'victoria',
 				source: 'vicpd'
 			};
 		});
@@ -460,10 +460,11 @@ function getSeedIncidents(): CrimeIncident[] {
 export const GET: RequestHandler = async ({ url }) => {
 	const municipality = parseMunicipality(url.searchParams.get('municipality'));
 	const limit = parseLimit(url.searchParams.get('limit'), 50, 200);
+	const hours = parseHours(url.searchParams.get('hours'), 168, 6, 720);
 	const typeFilter = url.searchParams.get('type') || null;
 
 	// Fetch live sources in parallel
-	const [vicpdResult] = await Promise.allSettled([fetchVicPDIncidents()]);
+	const [vicpdResult] = await Promise.allSettled([fetchVicPDIncidents(hours)]);
 
 	let incidents: CrimeIncident[] = [
 		...(vicpdResult.status === 'fulfilled' ? vicpdResult.value : [])
@@ -473,6 +474,10 @@ export const GET: RequestHandler = async ({ url }) => {
 	if (incidents.length === 0) {
 		incidents = getSeedIncidents();
 	}
+
+	// Filter by time window (hours)
+	const cutoff = Date.now() - hours * 60 * 60 * 1000;
+	incidents = incidents.filter((i) => new Date(i.reportedAt).getTime() >= cutoff);
 
 	// Filter by municipality
 	if (municipality) {

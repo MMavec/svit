@@ -4,6 +4,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { refreshStore, REFRESH_INTERVALS } from '$lib/stores/refresh.svelte';
 	import { isValidHttpUrl } from '$lib/utils/sanitize';
+	import { deduplicateNews } from '$lib/utils/deduplicate';
 	import { newsSources } from '$lib/config/news-sources';
 	import type { NewsItem } from '$lib/types/index';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
@@ -19,15 +20,18 @@
 	async function loadNews() {
 		loading = true;
 		error = null;
+		const slug = municipalityStore.slug;
 		const result = await fetchNews({
-			municipality: municipalityStore.slug,
+			municipality: slug,
 			source: activeSource ?? undefined,
 			limit: 50
 		});
 		if (result.error) {
 			error = result.error;
 		} else {
-			articles = result.data || [];
+			const raw = result.data || [];
+			// Deduplicate when showing all sources; single-source view has no cross-source duplicates
+			articles = activeSource ? raw : deduplicateNews(raw, slug);
 		}
 		loading = false;
 	}

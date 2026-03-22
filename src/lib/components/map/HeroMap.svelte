@@ -38,6 +38,18 @@
 	let features = $state<MapFeature[]>([]);
 	let loading = $state(true);
 	let abortController: AbortController | undefined;
+	let marineMarkers: maplibregl.Marker[] = [];
+	let mlModule: typeof maplibregl | undefined;
+
+	interface MarineSighting {
+		commonName: string;
+		species: string;
+		location?: string;
+		observer?: string;
+		observedAt: string;
+		coordinates: [number, number];
+	}
+	let marineSightings = $state<MarineSighting[]>([]);
 	let activeCategories = new SvelteSet<Category>([
 		'development',
 		'construction',
@@ -151,6 +163,7 @@
 			}
 		}
 
+		const newMarineSightings: MarineSighting[] = [];
 		if (wildRes.status === 'fulfilled' && wildRes.value.data) {
 			for (const w of wildRes.value.data) {
 				if (!w.coordinates) continue;
@@ -164,8 +177,19 @@
 					color: CATEGORIES.wildlife.color,
 					icon: 'W'
 				});
+				if (w.category === 'marine-mammal') {
+					newMarineSightings.push({
+						commonName: w.commonName,
+						species: w.species,
+						location: w.location,
+						observer: w.observer,
+						observedAt: w.observedAt,
+						coordinates: w.coordinates
+					});
+				}
 			}
 		}
+		marineSightings = newMarineSightings;
 
 		if (treeRes.status === 'fulfilled' && treeRes.value.data) {
 			for (const t of treeRes.value.data) {
@@ -356,6 +380,7 @@
 		let ml: typeof maplibregl;
 		try {
 			ml = (await import('maplibre-gl')).default;
+			mlModule = ml;
 			await import('maplibre-gl/dist/maplibre-gl.css');
 		} catch {
 			loading = false;
@@ -390,6 +415,7 @@
 		map.on('style.load', () => {
 			mapReady = true;
 			addLayers();
+			addMarineMarkers();
 		});
 
 		map.on('click', 'feature-circles', (e) => {
@@ -448,7 +474,79 @@
 		});
 	});
 
+	function marineTimeAgo(iso: string): string {
+		const diff = Date.now() - new Date(iso).getTime();
+		const mins = Math.floor(diff / 60000);
+		if (mins < 60) return `${mins}m ago`;
+		const hours = Math.floor(mins / 60);
+		if (hours < 24) return `${hours}h ago`;
+		const days = Math.floor(hours / 24);
+		return `${days}d ago`;
+	}
+
+	function clearMarineMarkers() {
+		for (const m of marineMarkers) {
+			m.remove();
+		}
+		marineMarkers = [];
+	}
+
+	function addMarineMarkers() {
+		if (!map || !mapReady || !mlModule) return;
+		clearMarineMarkers();
+
+		// Limit to 8 pulsating markers for performance
+		const limited = marineSightings.slice(0, 8);
+
+		for (const s of limited) {
+			const el = document.createElement('div');
+			el.className = 'marine-pulse-marker';
+			el.innerHTML = `<div class="pulse-ring"></div><div class="pulse-ring delay"></div><div class="pulse-dot"></div>`;
+
+			const markerPopup = new mlModule.Popup({
+				closeButton: true,
+				maxWidth: '280px',
+				offset: 12
+			});
+
+			const locationLine = s.location
+				? `<div style="font-size:0.75rem;margin-top:3px;color:#805ad5;font-weight:600">${escapeHtml(s.location)}</div>`
+				: '';
+			const observerLine = s.observer
+				? `<div style="font-size:0.6875rem;margin-top:4px;opacity:0.65">Observer: @${escapeHtml(s.observer)}</div>`
+				: '';
+
+			markerPopup.setHTML(
+				`<div style="font-size:0.875rem;line-height:1.4">
+					<div style="margin-bottom:6px">
+						<span style="display:inline-block;font-size:0.6875rem;font-weight:700;padding:2px 7px;border-radius:4px;background:#805ad5;color:#fff;text-transform:uppercase;letter-spacing:0.03em">Marine Sighting</span>
+						<span style="margin-left:6px;font-size:0.75rem;color:var(--text-tertiary)">${escapeHtml(marineTimeAgo(s.observedAt))}</span>
+					</div>
+					<strong style="font-size:0.9375rem">\u{1F40B} ${escapeHtml(s.commonName)}</strong>
+					<div style="font-size:0.75rem;font-style:italic;opacity:0.7">${escapeHtml(s.species)}</div>
+					${locationLine}
+					${observerLine}
+				</div>`
+			);
+
+			const marker = new mlModule.Marker({ element: el })
+				.setLngLat(s.coordinates)
+				.setPopup(markerPopup)
+				.addTo(map);
+
+			marineMarkers.push(marker);
+		}
+	}
+
+	// React to marine sightings changes
+	$effect(() => {
+		const _s = marineSightings;
+		if (!mapReady || !map) return;
+		addMarineMarkers();
+	});
+
 	onDestroy(() => {
+		clearMarineMarkers();
 		abortController?.abort();
 		popup?.remove();
 		map?.remove();
@@ -576,7 +674,6 @@
 		height: 55vh;
 		min-height: 360px;
 		max-height: 600px;
-		border-radius: 16px;
 		overflow: hidden;
 		border: 1px solid var(--border-primary);
 		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
@@ -756,7 +853,6 @@
 		.hero-map {
 			height: 40vh;
 			min-height: 260px;
-			border-radius: 10px;
 		}
 
 		.legend {

@@ -21,6 +21,13 @@ export function parseEnum<T extends string>(raw: string | null, allowed: Set<T>)
 	return allowed.has(raw as T) ? (raw as T) : null;
 }
 
+/** Parse and clamp an hours parameter to [min, max] */
+export function parseHours(raw: string | null, defaultVal = 168, min = 6, max = 720): number {
+	const n = parseInt(raw || String(defaultVal));
+	if (isNaN(n) || n < min) return defaultVal;
+	return Math.min(n, max);
+}
+
 /** Check that a fetch response has a JSON-compatible content-type */
 export function isJsonResponse(response: Response): boolean {
 	const ct = response.headers.get('content-type') || '';

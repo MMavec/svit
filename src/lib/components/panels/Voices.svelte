@@ -4,6 +4,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { SocialPost, NewsItem } from '$lib/types/index';
 	import { isValidHttpUrl } from '$lib/utils/sanitize';
+	import { deduplicateNews } from '$lib/utils/deduplicate';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 
@@ -31,7 +32,11 @@
 				type: 'social' as const,
 				data: p
 			}));
-			const newsItems: VoiceItem[] = (newsResult.data || []).map((n) => ({
+
+			// Deduplicate news headlines before merging with social posts
+			const rawNews = newsResult.data || [];
+			const dedupedNews = deduplicateNews(rawNews, slug);
+			const newsItems: VoiceItem[] = dedupedNews.map((n) => ({
 				type: 'news' as const,
 				data: n
 			}));

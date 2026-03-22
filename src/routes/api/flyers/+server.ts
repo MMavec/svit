@@ -224,6 +224,16 @@ const STORE_META: Record<number, StoreMeta> = {
 /** Grocery merchant IDs we care about from the Flipp API */
 const GROCERY_MERCHANT_IDS = new Set(Object.keys(STORE_META).map(Number));
 
+/** Multi-category merchants that also sell non-grocery items (e.g. electronics, home).
+ *  For these, we still require a grocery category tag to avoid including irrelevant flyers. */
+const MULTI_CATEGORY_MERCHANTS = new Set([234, 2596]); // Walmart, Costco
+
+/** Shared headers for Flipp API requests to avoid bot blocking */
+const FLIPP_HEADERS: HeadersInit = {
+	Accept: 'application/json',
+	'User-Agent': 'SVIT/1.0 (South Vancouver Island Tracker; civic dashboard)'
+};
+
 interface FlippFlyer {
 	id: number;
 	merchant: string;
@@ -245,18 +255,23 @@ interface FlippItem {
 async function fetchFlippFlyers(): Promise<GroceryFlyer[]> {
 	try {
 		const res = await fetch(`${FLIPP_BASE}/flyers?locale=en-ca&postal_code=${FLIPP_POSTAL}`, {
-			headers: { Accept: 'application/json' },
+			headers: FLIPP_HEADERS,
 			signal: AbortSignal.timeout(8000)
 		});
 		if (!res.ok) return [];
 		const data = await res.json();
 		const flyers: FlippFlyer[] = data.flyers || [];
 
-		// Filter to grocery flyers from our known stores
+		// Filter to grocery flyers from our known stores.
+		// Grocery-only merchants (Thrifty, Save-On, Fairway, etc.) are included directly.
+		// Multi-category merchants (Walmart, Costco) also require a grocery category tag
+		// to avoid including their electronics, home, or clothing flyers.
+		const hasGroceryCategory = (f: FlippFlyer) =>
+			f.categories?.some((c: string) => c.toLowerCase().includes('grocer'));
 		const groceryFlyers = flyers.filter(
 			(f) =>
 				GROCERY_MERCHANT_IDS.has(f.merchant_id) &&
-				f.categories?.some((c: string) => c.toLowerCase().includes('grocer'))
+				(!MULTI_CATEGORY_MERCHANTS.has(f.merchant_id) || hasGroceryCategory(f))
 		);
 
 		// Fetch top highlights for each flyer in parallel (max 9)
@@ -301,7 +316,7 @@ async function fetchFlyerHighlights(
 		const res = await fetch(
 			`${FLIPP_BASE}/flyers/${flyerId}?locale=en-ca&postal_code=${FLIPP_POSTAL}`,
 			{
-				headers: { Accept: 'application/json' },
+				headers: FLIPP_HEADERS,
 				signal: AbortSignal.timeout(6000)
 			}
 		);
