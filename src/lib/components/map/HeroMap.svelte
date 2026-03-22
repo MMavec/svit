@@ -686,11 +686,7 @@
 		<span class="opacity-value">{Math.round(mapOpacity * 100)}%</span>
 	</label>
 
-	<button
-		class="hide-map-btn"
-		onclick={() => onHide?.()}
-		aria-label="Hide map"
-	>
+	<button class="hide-map-btn" onclick={() => onHide?.()} aria-label="Hide map">
 		<span class="chevron">&#9650;</span>
 		Hide
 	</button>

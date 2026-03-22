@@ -89,9 +89,7 @@
 				// Match Supabase names back to councillor IDs
 				const ids: string[] = [];
 				for (const row of data) {
-					const match = councillors.find(
-						(c) => c.name === row.councillor_name
-					);
+					const match = councillors.find((c) => c.name === row.councillor_name);
 					if (match) ids.push(match.id);
 				}
 				if (ids.length > 0) {
@@ -186,9 +184,9 @@
 	}
 
 	// Get unique municipality slugs present in the councillor list (for filter buttons in All CRD view)
-	const municipalitySlugs = $derived(
-		[...new Set(councillors.filter((c) => c.active).map((c) => c.municipality))]
-	);
+	const municipalitySlugs = $derived([
+		...new Set(councillors.filter((c) => c.active).map((c) => c.municipality))
+	]);
 
 	let municipalityFilter = $state<string | null>(null);
 
@@ -311,7 +309,7 @@
 						</div>
 						<div class="card-links">
 							{#if councillor.social}
-								{#each Object.entries(councillor.social) as [platform, handle]}
+								{#each Object.entries(councillor.social) as [platform, handle] (platform)}
 									{#if handle}
 										<a
 											href={socialUrl(platform, handle)}

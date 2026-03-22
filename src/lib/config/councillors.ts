@@ -52,8 +52,7 @@ export const councillors: Councillor[] = [
 		municipality: 'victoria',
 		active: true,
 		social: {
-			website:
-				'https://www.victoria.ca/city-government/mayor-council/council-member-chris-coleman'
+			website: 'https://www.victoria.ca/city-government/mayor-council/council-member-chris-coleman'
 		}
 	},
 	{
@@ -77,8 +76,7 @@ export const councillors: Councillor[] = [
 		municipality: 'victoria',
 		active: true,
 		social: {
-			website:
-				'https://www.victoria.ca/city-government/mayor-council/council-member-marg-gardiner'
+			website: 'https://www.victoria.ca/city-government/mayor-council/council-member-marg-gardiner'
 		}
 	},
 	{
@@ -128,8 +126,7 @@ export const councillors: Councillor[] = [
 		municipality: 'victoria',
 		active: true,
 		social: {
-			website:
-				'https://www.victoria.ca/city-government/mayor-council/council-member-dave-thompson'
+			website: 'https://www.victoria.ca/city-government/mayor-council/council-member-dave-thompson'
 		}
 	},
 

@@ -3,7 +3,12 @@ import type { RequestHandler } from './$types';
 import type { CrimeIncident } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
 import { attributeMunicipality } from '$lib/utils/geo-attribution';
-import { parseLimit, parseMunicipality, parseHours, isJsonResponse } from '$lib/utils/api-validation';
+import {
+	parseLimit,
+	parseMunicipality,
+	parseHours,
+	isJsonResponse
+} from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 300; // 5 minutes
 

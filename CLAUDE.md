@@ -192,6 +192,7 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 ### localStorage-First Pattern
 
 Several panels use localStorage for anonymous access with optional Supabase sync for authenticated users:
+
 - **Topic Watch** (`svit-monitors`): keyword monitors with suggested topics
 - **Threads** (`svit-threads`): discussion threads via `threads.svelte.ts` store
 - **Connections** (`svit-followed-councillors`): followed councillor IDs
@@ -209,6 +210,7 @@ Registry of all elected officials across 13 CRD municipalities (2022-2026 term).
 See `ADDITIONAL-DATA-SOURCES.md` for a full research document with 18 potential sources, feasibility ratings, and integration notes.
 
 Top candidates:
+
 - BC Ferries API (`bcferriesapi.ca/v2/`) — free, MIT-licensed, Swartz Bay routes
 - BC Hydro outage RSS feeds — per-municipality, 15-min updates
 - UVic Events JSON API (`events.uvic.ca/live/json/events/`)
@@ -231,6 +233,7 @@ All colors are CSS custom properties in `src/app.css`. Panel corners are sharp (
 The animated background is data-driven via `skyPulseStore`, which aggregates 10 API sources into normalized signals that modulate the sky animations in real time. Initialized in `+layout.svelte` `onMount()`.
 
 **Dark mode (`StarrySky.svelte`):**
+
 - Star density scales with `civicActivity` (0-1): base stars always visible, bonus stars fade in as civic data volume increases (2x pool)
 - Twinkle speed increases with activity (up to 1.8x)
 - Aurora color palette shifts by `dominantCategory` (political=green, safety=amber/red, nature=blue/purple, community=teal)
@@ -239,6 +242,7 @@ The animated background is data-driven via `skyPulseStore`, which aggregates 10 
 - Tide line at bottom edge: height driven by `tideHeight`, gentle wave undulation
 
 **Light mode (`CloudySky.svelte`):**
+
 - Cloud count increases with `transitDisruptions` (5 base to 9 max)
 - Cloud speed increases with disruptions (wind effect, up to 1.6x)
 - Cloud opacity increases with poor `airQuality` (haze effect, up to 1.3x)
@@ -246,6 +250,7 @@ The animated background is data-driven via `skyPulseStore`, which aggregates 10 
 - Rain overlay appears during `warning`/`emergency` alert severity
 
 **Wildlife silhouettes (`WildlifeSilhouettes.svelte`):**
+
 - SVG silhouettes (bird, marine-mammal, mammal) drift across screen based on `recentSightings` from iNaturalist/eBird
 - Category determines vertical position (birds near top, marine mammals lower, land mammals near bottom)
 - Max 3 concurrent, staggered 8-12s apart, 18-40s transit duration

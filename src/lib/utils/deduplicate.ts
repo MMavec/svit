@@ -121,7 +121,7 @@ export function deduplicateNews<T extends Deduplicatable>(
 		if (itemGroup[i] !== -1) continue; // already grouped
 
 		const priority = getSourcePriority(items[i].sourceSlug ?? '', municipality);
-		let groupIndex = groups.length;
+		const groupIndex = groups.length;
 		groups.push({ bestItem: items[i], bestPriority: priority, bestIndex: i });
 		itemGroup[i] = groupIndex;
 
