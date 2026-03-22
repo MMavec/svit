@@ -90,7 +90,10 @@
 	function startRefreshTimer() {
 		stopRefreshTimer();
 		if (refreshStore.enabled) {
-			refreshTimer = setInterval(() => loadIncidents(selectedRange), REFRESH_INTERVALS['crime-incidents']);
+			refreshTimer = setInterval(
+				() => loadIncidents(selectedRange),
+				REFRESH_INTERVALS['crime-incidents']
+			);
 		}
 	}
 

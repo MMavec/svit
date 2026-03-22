@@ -322,7 +322,7 @@
 
 						<g transform="translate({margin.left}, {margin.top})">
 							<!-- Height axis grid lines -->
-							{#each tideChart.heightTicks as tick}
+							{#each tideChart.heightTicks as tick (tick.label)}
 								<line x1="0" x2={innerWidth} y1={tick.y} y2={tick.y} class="grid-line" />
 								<text
 									x="-4"
@@ -357,7 +357,7 @@
 							{/if}
 
 							<!-- High/low point markers and labels -->
-							{#each tideChart.labels as label}
+							{#each tideChart.labels as label (label.timeLabel)}
 								<circle
 									cx={label.x}
 									cy={label.y}
@@ -377,7 +377,7 @@
 							{/each}
 
 							<!-- Time axis labels -->
-							{#each tideChart.timeTicks as tick}
+							{#each tideChart.timeTicks as tick (tick.label)}
 								<text
 									x={tick.x}
 									y={innerHeight + 14}

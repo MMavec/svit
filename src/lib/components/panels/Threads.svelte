@@ -14,9 +14,7 @@
 	const activeThread = $derived(threadStore.threads.find((t: Thread) => t.id === selectedThread));
 
 	const filteredThreads = $derived(
-		municipalityStore.slug
-			? threadStore.getThreads(municipalityStore.slug)
-			: threadStore.threads
+		municipalityStore.slug ? threadStore.getThreads(municipalityStore.slug) : threadStore.threads
 	);
 
 	function createThread() {
@@ -95,9 +93,7 @@
 						}
 					}}
 				/>
-				<button class="send-btn" onclick={sendReply} disabled={!replyContent.trim()}>
-					Send
-				</button>
+				<button class="send-btn" onclick={sendReply} disabled={!replyContent.trim()}> Send </button>
 			</div>
 		</div>
 	{:else}
@@ -150,9 +146,7 @@
 					{/if}
 					<div class="thread-footer">
 						<span class="message-count"
-							>{thread.messages.length} message{thread.messages.length !== 1
-								? 's'
-								: ''}</span
+							>{thread.messages.length} message{thread.messages.length !== 1 ? 's' : ''}</span
 						>
 						<button
 							class="delete-btn"

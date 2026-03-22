@@ -63,7 +63,9 @@
 			<div class="map-wrapper" style="opacity: {mapOpacity}">
 				<HeroMap
 					{mapOpacity}
-					onOpacityChange={(v) => { mapOpacity = v; }}
+					onOpacityChange={(v) => {
+						mapOpacity = v;
+					}}
 					onHide={toggleMap}
 				/>
 			</div>

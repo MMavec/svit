@@ -281,8 +281,7 @@
 				<div class="monitor-card" class:has-matches={monitorMatches.length > 0}>
 					<button
 						class="monitor-header-btn"
-						onclick={() =>
-							(expandedMonitor = expandedMonitor === monitor.id ? null : monitor.id)}
+						onclick={() => (expandedMonitor = expandedMonitor === monitor.id ? null : monitor.id)}
 					>
 						<div class="monitor-keyword">{monitor.keyword}</div>
 						{#if monitorMatches.length > 0}
@@ -322,9 +321,7 @@
 					</div>
 				</div>
 			{:else}
-				<div class="empty" role="status">
-					Tap a topic above or use + Custom to start watching
-				</div>
+				<div class="empty" role="status">Tap a topic above or use + Custom to start watching</div>
 			{/each}
 		</div>
 
