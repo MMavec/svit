@@ -108,16 +108,16 @@ export const panels: PanelConfig[] = [
 		title: 'Crime & Incidents',
 		tier: 2,
 		icon: '🔍',
-		defaultPosition: { x: 0, y: 24, w: 4, h: 8 },
+		defaultPosition: { x: 8, y: 18, w: 4, h: 6 },
 		minWidth: 3,
-		minHeight: 5
+		minHeight: 4
 	},
 	{
 		id: 'weather-tides',
 		title: 'Weather & Tides',
 		tier: 2,
 		icon: '🌊',
-		defaultPosition: { x: 8, y: 18, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 24, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -128,7 +128,7 @@ export const panels: PanelConfig[] = [
 		title: 'Housing & Development',
 		tier: 3,
 		icon: '🏠',
-		defaultPosition: { x: 0, y: 24, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 24, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -137,7 +137,7 @@ export const panels: PanelConfig[] = [
 		title: 'Community Events',
 		tier: 3,
 		icon: '🎉',
-		defaultPosition: { x: 4, y: 24, w: 4, h: 6 },
+		defaultPosition: { x: 8, y: 24, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -146,7 +146,7 @@ export const panels: PanelConfig[] = [
 		title: 'Budget & Finance',
 		tier: 3,
 		icon: '💰',
-		defaultPosition: { x: 8, y: 24, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 30, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -155,7 +155,7 @@ export const panels: PanelConfig[] = [
 		title: 'Wildlife & Marine',
 		tier: 3,
 		icon: '🐋',
-		defaultPosition: { x: 0, y: 30, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 30, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -164,7 +164,7 @@ export const panels: PanelConfig[] = [
 		title: 'Trees & Urban Forest',
 		tier: 3,
 		icon: '🌳',
-		defaultPosition: { x: 4, y: 30, w: 4, h: 6 },
+		defaultPosition: { x: 8, y: 30, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -173,7 +173,7 @@ export const panels: PanelConfig[] = [
 		title: 'Nature & Environment',
 		tier: 3,
 		icon: '🌿',
-		defaultPosition: { x: 8, y: 30, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 36, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -182,7 +182,7 @@ export const panels: PanelConfig[] = [
 		title: 'Demographics',
 		tier: 3,
 		icon: '📈',
-		defaultPosition: { x: 0, y: 36, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 36, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -193,7 +193,7 @@ export const panels: PanelConfig[] = [
 		title: 'Topic Watch',
 		tier: 3,
 		icon: '🔔',
-		defaultPosition: { x: 4, y: 36, w: 4, h: 6 },
+		defaultPosition: { x: 8, y: 36, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -202,7 +202,7 @@ export const panels: PanelConfig[] = [
 		title: 'Connections',
 		tier: 3,
 		icon: '🔗',
-		defaultPosition: { x: 8, y: 36, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 42, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -211,7 +211,7 @@ export const panels: PanelConfig[] = [
 		title: 'Threads',
 		tier: 3,
 		icon: '🧵',
-		defaultPosition: { x: 0, y: 42, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 42, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -222,7 +222,7 @@ export const panels: PanelConfig[] = [
 		title: 'Grocery Flyers',
 		tier: 3,
 		icon: '🛒',
-		defaultPosition: { x: 4, y: 42, w: 4, h: 6 },
+		defaultPosition: { x: 8, y: 42, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -231,7 +231,7 @@ export const panels: PanelConfig[] = [
 		title: 'Local Food & Drink',
 		tier: 3,
 		icon: '🍷',
-		defaultPosition: { x: 8, y: 42, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 48, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -240,7 +240,7 @@ export const panels: PanelConfig[] = [
 		title: 'Real Estate Market',
 		tier: 3,
 		icon: '🏡',
-		defaultPosition: { x: 0, y: 48, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 48, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -249,7 +249,7 @@ export const panels: PanelConfig[] = [
 		title: 'Community Board',
 		tier: 3,
 		icon: '📌',
-		defaultPosition: { x: 4, y: 48, w: 4, h: 6 },
+		defaultPosition: { x: 8, y: 48, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -260,7 +260,7 @@ export const panels: PanelConfig[] = [
 		title: 'Family Activities',
 		tier: 3,
 		icon: '👨‍👩‍👧‍👦',
-		defaultPosition: { x: 8, y: 48, w: 4, h: 6 },
+		defaultPosition: { x: 0, y: 54, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -269,7 +269,7 @@ export const panels: PanelConfig[] = [
 		title: 'Parks & Recreation',
 		tier: 3,
 		icon: '🏊',
-		defaultPosition: { x: 0, y: 54, w: 4, h: 6 },
+		defaultPosition: { x: 4, y: 54, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	},
@@ -278,7 +278,7 @@ export const panels: PanelConfig[] = [
 		title: 'Schools & Libraries',
 		tier: 3,
 		icon: '📚',
-		defaultPosition: { x: 4, y: 54, w: 4, h: 6 },
+		defaultPosition: { x: 8, y: 54, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
 	}

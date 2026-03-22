@@ -2,12 +2,127 @@
 	import { fetchWeatherTides } from '$lib/api/weather-tides';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import type { WeatherTidesData } from '$lib/types/index';
+	import { line, area, curveNatural, scaleLinear, scaleTime } from 'd3';
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 
 	let data = $state<WeatherTidesData | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+
+	// Chart dimensions
+	const chartWidth = 400;
+	const chartHeight = 130;
+	const margin = { top: 16, right: 8, bottom: 22, left: 30 };
+	const innerWidth = chartWidth - margin.left - margin.right;
+	const innerHeight = chartHeight - margin.top - margin.bottom;
+
+	interface TidePoint {
+		time: Date;
+		height: number;
+		type?: 'high' | 'low' | 'current';
+	}
+
+	/** Build a sorted array of tide points from current observation + predictions */
+	function buildTidePoints(tideData: WeatherTidesData['tides']): TidePoint[] {
+		const points: TidePoint[] = [];
+
+		if (tideData.current) {
+			points.push({
+				time: new Date(tideData.current.time),
+				height: tideData.current.height,
+				type: 'current'
+			});
+		}
+
+		for (const pred of tideData.predictions) {
+			points.push({
+				time: new Date(pred.time),
+				height: pred.height,
+				type: pred.type
+			});
+		}
+
+		points.sort((a, b) => a.time.getTime() - b.time.getTime());
+		return points;
+	}
+
+	/** Compute D3 scales, paths, and label data for the tide chart */
+	let tideChart = $derived.by(() => {
+		if (!data || data.tides.predictions.length === 0) return null;
+
+		const points = buildTidePoints(data.tides);
+		if (points.length < 2) return null;
+
+		const timeExtent = [points[0].time, points[points.length - 1].time] as [Date, Date];
+		const heights = points.map((p) => p.height);
+		const minH = Math.min(...heights);
+		const maxH = Math.max(...heights);
+		const hPad = (maxH - minH) * 0.15 || 0.3;
+
+		const xScale = scaleTime().domain(timeExtent).range([0, innerWidth]);
+		const yScale = scaleLinear()
+			.domain([minH - hPad, maxH + hPad])
+			.range([innerHeight, 0]);
+
+		const linePath = line<TidePoint>()
+			.x((d) => xScale(d.time))
+			.y((d) => yScale(d.height))
+			.curve(curveNatural)(points);
+
+		const areaPath = area<TidePoint>()
+			.x((d) => xScale(d.time))
+			.y0(innerHeight)
+			.y1((d) => yScale(d.height))
+			.curve(curveNatural)(points);
+
+		// High/low labels
+		const labels = points
+			.filter((p) => p.type === 'high' || p.type === 'low')
+			.map((p) => ({
+				x: xScale(p.time),
+				y: yScale(p.height),
+				height: p.height,
+				type: p.type as 'high' | 'low',
+				timeLabel: formatTimeShort(p.time)
+			}));
+
+		// Current time marker
+		const now = new Date();
+		let nowX: number | null = null;
+		if (now >= timeExtent[0] && now <= timeExtent[1]) {
+			nowX = xScale(now);
+		}
+
+		// Time axis ticks (every ~6 hours)
+		const totalMs = timeExtent[1].getTime() - timeExtent[0].getTime();
+		const tickCount = Math.max(2, Math.min(6, Math.floor(totalMs / (6 * 3600000)) + 1));
+		const timeTicks = xScale.ticks(tickCount).map((t) => ({
+			x: xScale(t),
+			label: formatTimeShort(t)
+		}));
+
+		// Height axis ticks
+		const heightTicks = yScale.ticks(4).map((h) => ({
+			y: yScale(h),
+			label: `${h.toFixed(1)}m`
+		}));
+
+		return { linePath, areaPath, labels, nowX, timeTicks, heightTicks };
+	});
+
+	function formatTimeShort(d: Date): string {
+		try {
+			return d.toLocaleTimeString('en-CA', {
+				hour: 'numeric',
+				minute: '2-digit',
+				hour12: true,
+				timeZone: 'America/Vancouver'
+			});
+		} catch {
+			return '';
+		}
+	}
 
 	async function loadData() {
 		loading = true;
@@ -188,6 +303,93 @@
 				</div>
 			{:else}
 				<div class="no-tides">Tide data unavailable</div>
+			{/if}
+
+			<!-- Tide Graph -->
+			{#if tideChart}
+				<div class="tide-graph">
+					<svg
+						viewBox="0 0 {chartWidth} {chartHeight}"
+						preserveAspectRatio="xMidYMid meet"
+						class="tide-svg"
+					>
+						<defs>
+							<linearGradient id="tide-fill-gradient" x1="0" x2="0" y1="0" y2="1">
+								<stop offset="0%" stop-color="var(--palette-cyan)" stop-opacity="0.35" />
+								<stop offset="100%" stop-color="var(--palette-cyan)" stop-opacity="0.03" />
+							</linearGradient>
+						</defs>
+
+						<g transform="translate({margin.left}, {margin.top})">
+							<!-- Height axis grid lines -->
+							{#each tideChart.heightTicks as tick}
+								<line x1="0" x2={innerWidth} y1={tick.y} y2={tick.y} class="grid-line" />
+								<text
+									x="-4"
+									y={tick.y}
+									class="axis-label axis-label-y"
+									text-anchor="end"
+									dominant-baseline="middle"
+								>
+									{tick.label}
+								</text>
+							{/each}
+
+							<!-- Filled area under the curve -->
+							{#if tideChart.areaPath}
+								<path d={tideChart.areaPath} class="tide-area" />
+							{/if}
+
+							<!-- Tide curve line -->
+							{#if tideChart.linePath}
+								<path d={tideChart.linePath} class="tide-line" />
+							{/if}
+
+							<!-- Current time marker -->
+							{#if tideChart.nowX !== null}
+								<line
+									x1={tideChart.nowX}
+									x2={tideChart.nowX}
+									y1="0"
+									y2={innerHeight}
+									class="now-line"
+								/>
+							{/if}
+
+							<!-- High/low point markers and labels -->
+							{#each tideChart.labels as label}
+								<circle
+									cx={label.x}
+									cy={label.y}
+									r="3"
+									class="tide-point"
+									class:tide-point-high={label.type === 'high'}
+									class:tide-point-low={label.type === 'low'}
+								/>
+								<text
+									x={label.x}
+									y={label.type === 'high' ? label.y - 7 : label.y + 12}
+									class="tide-point-label"
+									text-anchor="middle"
+								>
+									{label.height.toFixed(1)}m
+								</text>
+							{/each}
+
+							<!-- Time axis labels -->
+							{#each tideChart.timeTicks as tick}
+								<text
+									x={tick.x}
+									y={innerHeight + 14}
+									class="axis-label axis-label-x"
+									text-anchor="middle"
+								>
+									{tick.label}
+								</text>
+							{/each}
+						</g>
+					</svg>
+				</div>
 			{/if}
 		</div>
 	{/if}
@@ -413,6 +615,79 @@
 		font-style: italic;
 		text-align: center;
 		padding: 8px 0;
+	}
+
+	/* Tide Graph */
+	.tide-graph {
+		margin-top: 6px;
+		border-top: 1px solid var(--border-primary);
+		padding-top: 4px;
+	}
+
+	.tide-svg {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	.tide-svg .grid-line {
+		stroke: var(--border-primary);
+		stroke-width: 0.5;
+		stroke-dasharray: 2 3;
+	}
+
+	.tide-svg .tide-area {
+		fill: url(#tide-fill-gradient);
+	}
+
+	.tide-svg .tide-line {
+		fill: none;
+		stroke: var(--palette-cyan);
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.tide-svg .now-line {
+		stroke: var(--accent-primary);
+		stroke-width: 1;
+		stroke-dasharray: 4 3;
+		opacity: 0.7;
+	}
+
+	.tide-svg .tide-point {
+		stroke-width: 1.5;
+	}
+
+	.tide-svg .tide-point-high {
+		fill: var(--accent-primary);
+		stroke: var(--accent-primary);
+	}
+
+	.tide-svg .tide-point-low {
+		fill: var(--accent-warning);
+		stroke: var(--accent-warning);
+	}
+
+	.tide-svg .tide-point-label {
+		font-size: 8px;
+		font-family: 'Geist Mono', monospace;
+		fill: var(--text-secondary);
+		font-weight: 600;
+	}
+
+	.tide-svg .axis-label {
+		font-size: 7px;
+		font-family: 'Geist Mono', monospace;
+		fill: var(--text-tertiary);
+	}
+
+	.tide-svg .axis-label-y {
+		font-size: 7px;
+	}
+
+	.tide-svg .axis-label-x {
+		font-size: 7px;
 	}
 
 	.loading {

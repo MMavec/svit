@@ -99,12 +99,14 @@
 		const fullName = councillor.name.toLowerCase();
 		const items: ActivityItem[] = [];
 
+		// Fetch Local Wire (news) + Voices (social) data, plus council meetings
 		const [newsRes, socialRes, meetingsRes] = await Promise.allSettled([
-			fetchNews({ municipality: councillor.municipality, limit: 50 }),
-			fetchSocialPosts({ municipality: councillor.municipality, limit: 50 }),
+			fetchNews({ municipality: councillor.municipality, limit: 100 }),
+			fetchSocialPosts({ municipality: councillor.municipality, limit: 100 }),
 			fetchMeetings({ municipality: councillor.municipality, limit: 30 })
 		]);
 
+		// Filter news articles for councillor name mentions
 		if (newsRes.status === 'fulfilled' && newsRes.value.data) {
 			for (const article of newsRes.value.data) {
 				const text = `${article.title} ${article.description || ''}`.toLowerCase();
@@ -120,6 +122,7 @@
 			}
 		}
 
+		// Filter social posts for councillor name mentions
 		if (socialRes.status === 'fulfilled' && socialRes.value.data) {
 			for (const post of socialRes.value.data) {
 				const text = `${post.content} ${post.author || ''}`.toLowerCase();
@@ -135,6 +138,7 @@
 			}
 		}
 
+		// Council meetings: show all for this municipality (councillor attends all)
 		if (meetingsRes.status === 'fulfilled' && meetingsRes.value.data) {
 			for (const meeting of meetingsRes.value.data) {
 				items.push({
@@ -148,7 +152,7 @@
 		}
 
 		items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-		activityItems = items.slice(0, 10);
+		activityItems = items.slice(0, 15);
 		activityLoading = false;
 	}
 
@@ -314,6 +318,7 @@
 
 			<div class="activity-section">
 				<div class="section-label">Activity Timeline</div>
+				<div class="section-subtitle">From Local Wire & Voices feeds</div>
 				<div class="filter-chips">
 					<button
 						class="filter-chip"
@@ -340,7 +345,7 @@
 					>
 				</div>
 				{#if activityLoading}
-					<div class="activity-loading">Scanning news, social, and council data...</div>
+					<div class="activity-loading">Scanning Local Wire & Voices feeds...</div>
 				{:else if filteredActivityItems.length === 0}
 					<div class="activity-empty">
 						{#if activeFilter !== 'all' && activityItems.length > 0}
@@ -730,6 +735,13 @@
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 		color: var(--text-tertiary);
+		margin-bottom: 2px;
+	}
+
+	.section-subtitle {
+		font-size: 0.625rem;
+		color: var(--text-tertiary);
+		opacity: 0.7;
 		margin-bottom: 6px;
 	}
 
