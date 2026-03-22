@@ -16,6 +16,16 @@
 	import { mapFocusStore } from '$lib/stores/map-focus.svelte';
 	import type { MapFeature } from '$lib/types/index';
 
+	let {
+		mapOpacity = 1.0,
+		onOpacityChange,
+		onHide
+	}: {
+		mapOpacity?: number;
+		onOpacityChange?: (value: number) => void;
+		onHide?: () => void;
+	} = $props();
+
 	const DARK_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 	const LIGHT_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
 
@@ -662,6 +672,29 @@
 		</svg>
 	</button>
 
+	<label class="opacity-overlay">
+		<input
+			type="range"
+			min="0"
+			max="1"
+			step="0.05"
+			value={mapOpacity}
+			oninput={(e) => onOpacityChange?.(parseFloat(e.currentTarget.value))}
+			class="opacity-slider"
+			aria-label="Map opacity"
+		/>
+		<span class="opacity-value">{Math.round(mapOpacity * 100)}%</span>
+	</label>
+
+	<button
+		class="hide-map-btn"
+		onclick={() => onHide?.()}
+		aria-label="Hide map"
+	>
+		<span class="chevron">&#9650;</span>
+		Hide
+	</button>
+
 	<div class="feature-count">
 		{filteredFeatures.length} live item{filteredFeatures.length !== 1 ? 's' : ''}
 	</div>
@@ -737,7 +770,7 @@
 	.loading-indicator {
 		position: absolute;
 		top: 14px;
-		left: 54px;
+		left: 196px;
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -849,6 +882,94 @@
 		padding: 4px 8px;
 	}
 
+	.opacity-overlay {
+		position: absolute;
+		top: 14px;
+		left: 54px;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 10px;
+		border-radius: 8px;
+		background: var(--bg-surface);
+		border: 1px solid var(--border-primary);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		cursor: default;
+	}
+
+	.opacity-slider {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 72px;
+		height: 4px;
+		border-radius: 2px;
+		background: var(--border-primary);
+		outline: none;
+		cursor: pointer;
+	}
+
+	.opacity-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--accent-primary);
+		border: 2px solid var(--bg-surface);
+		cursor: pointer;
+	}
+
+	.opacity-slider::-moz-range-thumb {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--accent-primary);
+		border: 2px solid var(--bg-surface);
+		cursor: pointer;
+	}
+
+	.opacity-value {
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.6875rem;
+		min-width: 28px;
+		text-align: right;
+		color: var(--text-tertiary);
+		user-select: none;
+	}
+
+	.hide-map-btn {
+		position: absolute;
+		bottom: 80px;
+		right: 10px;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		padding: 4px 10px;
+		border-radius: 8px;
+		border: 1px solid var(--border-primary);
+		background: var(--bg-surface);
+		color: var(--text-secondary);
+		font-size: 0.6875rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.15s;
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+	}
+
+	.hide-map-btn:hover {
+		color: var(--text-primary);
+		border-color: var(--border-hover);
+	}
+
+	.hide-map-btn .chevron {
+		font-size: 0.5625rem;
+		line-height: 1;
+	}
+
 	@media (max-width: 768px) {
 		.hero-map {
 			height: 40vh;
@@ -870,6 +991,10 @@
 		.legend-dot {
 			width: 8px;
 			height: 8px;
+		}
+
+		.opacity-slider {
+			width: 48px;
 		}
 	}
 </style>

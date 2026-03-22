@@ -61,14 +61,13 @@ Municipality selector → municipalityStore (reactive) → panels read store.slu
 
 Single-page dashboard with a 12-column draggable grid (60px rows, 12px gap). Panels are absolutely positioned via `layoutStore` and draggable from their headers via pointer events. Layout persists to localStorage.
 
-29 panels across 4 priority tiers:
+30 panels across 3 priority tiers:
 
 - **Tier 1** (eagerly loaded): Council Watch, Bylaw Tracker, Voices, Public Hearings, Development Watch, Councillors & Mayors
-- **Tier 2** (eagerly loaded): Local Wire, Pulse (D3), Construction & Roads, Transit, Safety & Emergency, Weather & Tides
-- **Tier 3** (lazily loaded): Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment, Demographics, Grocery Flyers, Local Food & Drink, Real Estate Market, Community Board, Family Activities, Parks & Recreation, Schools & Libraries
-- **Tier 4** (auth-gated, lazily loaded): My Monitors, Connections, Threads
+- **Tier 2** (eagerly loaded): Local Wire, Pulse (D3), Construction & Roads, Transit, Safety & Emergency, Weather & Tides, Crime & Incidents
+- **Tier 3** (lazily loaded): Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment, Demographics, Topic Watch (formerly My Monitors), Connections, Threads, Grocery Flyers, Local Food & Drink, Real Estate Market, Community Board, Family Activities, Parks & Recreation, Schools & Libraries
 
-Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components. Tier 1+2 are eagerly loaded via `panelComponents: Record<string, Component>`. Tier 3+4 are lazily loaded via `lazyPanels: Record<string, () => Promise<...>>` using dynamic `import()` and `LazyPanel.svelte` wrapper — new panels in Tier 3/4 only need a `lazyPanels` entry. All panels are wrapped in `<svelte:boundary>` for error isolation — a crashing panel shows a retry button instead of breaking the dashboard.
+Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components. Tier 1+2 are eagerly loaded via `panelComponents: Record<string, Component>`. Tier 3 are lazily loaded via `lazyPanels: Record<string, () => Promise<...>>` using dynamic `import()` and `LazyPanel.svelte` wrapper — new panels in Tier 3 only need a `lazyPanels` entry. All panels are wrapped in `<svelte:boundary>` for error isolation — a crashing panel shows a retry button instead of breaking the dashboard.
 
 ### Panel Component Pattern
 
@@ -76,7 +75,7 @@ Every panel follows the same structure: local `$state` for data/loading, `$effec
 
 ### Reactive State (Svelte 5 Runes)
 
-Eleven stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
+Twelve stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStorage persistence:
 
 - **`municipality.svelte.ts`** — Selected municipality slug (null = All CRD). Derived getters: `current`, `bbox`, `center`, `color`, `label`, `isAllCRD`. Every panel watches `municipalityStore.slug` via `$effect` to refetch data.
 - **`theme.svelte.ts`** — Dark/light theme (exported as `theme`, not `themeStore`). Sets `data-theme` attribute on `<html>`. Init reads localStorage → system preference → default dark. Methods: `toggle()`, `init()`.
@@ -88,7 +87,9 @@ Eleven stores in `src/lib/stores/*.svelte.ts`, all using `$state` with localStor
 - **`url-state.svelte.ts`** — URL param synchronization (`?m=`, `?panel=`, `?q=`, `?mode=`). Methods: `initialize()`, `setMunicipality()`, `focusPanel()`, `setSearchQuery()`, `setMode()`, `getShareUrl()`. Municipality uses `replaceState`, panel focus uses `pushState` (enables Back button).
 - **`leads.svelte.ts`** — Lead capture state (submitted/dismissed) with localStorage persistence (`svit-lead-capture`). Methods: `shouldShowPrompt()`, `submitLead()`, `dismiss()`, `openModal()`, `markSubmitted()`.
 - **`dashboard-mode.svelte.ts`** — Dashboard mode state (generalist/political/nature/social/active-senior/family). Persisted to localStorage (`svit-mode`). Methods: `setMode()`. Recomputes panel positions from mode-specific panel ordering and calls `layoutStore.updateAll()`.
-- **`map-focus.svelte.ts`** — Cross-panel map focus requests. Any panel can call `mapFocusStore.focus({ coordinates, title, description, color, zoom })` to fly HeroMap to a location with a popup. Used by Grocery Flyers and Local Food & Drink panels.
+- **`map-focus.svelte.ts`** — Cross-panel map focus requests. Any panel can call `mapFocusStore.focus({ coordinates, title, description, color, zoom })` to fly HeroMap to a location with a popup. Used by Grocery Flyers, Local Food & Drink, Wildlife & Marine, and Councillors & Mayors panels.
+- **`threads.svelte.ts`** — localStorage-backed discussion threads for anonymous users. Methods: `addThread()`, `addMessage()`, `getThreads()`, `deleteThread()`. Persists to `svit-threads` key.
+- **`sky-pulse.svelte.ts`** — Aggregates 10 API sources into normalized signals that drive the Living Sky animated background. Fetches on init + every 5min via IndexedDB cache (no redundant network calls). Signals: `civicActivity` (0-1), `alertLevel`/`alertSeverity`, `airQuality` (0-1), `tideHeight` (0-1), `temperature`, `transitDisruptions` (0-1), `dominantCategory`, `recentSightings[]`. Methods: `init()`, `destroy()`.
 
 ### API Proxy Pattern
 
@@ -104,14 +105,14 @@ Client-side fetch via thin wrappers in `src/lib/api/*.ts` → generic `apiFetch<
 
 ### IndexedDB Cache Layer (`src/lib/cache/idb-cache.ts`)
 
-Transparent caching at the `apiFetch` level — all 20 API clients and 29 panels benefit automatically with zero changes:
+Transparent caching at the `apiFetch` level — all API clients and panels benefit automatically with zero changes:
 
 1. **Fresh cache** (within TTL): Return immediately, skip network
 2. **Network success**: Store result in cache, return fresh data
 3. **Network error**: Return stale cache (if <24h old) with `meta._cached: true` and `meta._cachedAt`
 4. AbortError re-thrown (preserves panel cancellation)
 
-Per-endpoint TTL: 2min (safety, transit), 5min (news, social, construction), 15min (council, development, weather-tides, environment), 30min (events, wildlife, trees), 60min (housing, budget). Auto-cleanup of entries >24h old on first load.
+Per-endpoint TTL: 2min (safety, transit), 5min (news, social, construction, crime), 15min (council, development, weather-tides, environment), 30min (events, wildlife, trees), 60min (housing, budget). Auto-cleanup of entries >24h old on first load.
 
 Vercel edge cache tiers: 5min (news, social, transit, safety), 15min (council, development, construction, weather-tides), future: 6hrs (tides-only), 24hrs (GIS).
 
@@ -140,8 +141,9 @@ Vercel edge cache tiers: 5min (news, social, transit, safety), 15min (council, d
 | `GET /api/family-activities` | Tourism Victoria events + Saanich events RSS (family-filtered)                                                     | 10 activities (swim, library, nature, sports, arts)                  |
 | `GET /api/parks`             | Static directory                                                                                                   | 15 facilities (parks, pools, playgrounds, trails, beaches)           |
 | `GET /api/schools-libraries` | Static directory                                                                                                   | 12 items (GVPL branches, programs, school districts)                 |
+| `GET /api/crime`             | VicPD Open Data (ArcGIS Hub) — crime incidents with type, severity, coordinates, block-level address               | 20 incidents across 5 municipalities                                 |
 
-All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`. Development accepts `?flagged=true`. Construction accepts `?event_type=CONSTRUCTION|INCIDENT`. Events accepts `?category=`. Budget accepts `?type=revenue|expenditure`. Wildlife accepts `?category=`. Trees accepts `?heritage=true`.
+All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`. Development accepts `?flagged=true`. Construction accepts `?event_type=CONSTRUCTION|INCIDENT`. Events accepts `?category=`. Budget accepts `?type=revenue|expenditure`. Wildlife accepts `?category=`. Trees accepts `?heritage=true`. Crime accepts `?type=`, `?severity=`, and `?hours=` (6-720, default 168/7 days).
 
 **Non-panel API routes**:
 
@@ -153,7 +155,11 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 - `src/routes/share/+page.server.ts` — Generates dynamic OG meta tags from `?m=` and `?panel=` params
 - `src/routes/share/+page.svelte` — Renders `<svelte:head>` OG tags + `<meta http-equiv="refresh">` redirect to main SPA
 
-**Panels without API routes**: Bylaw Tracker, Public Hearings, and Demographics use local seed data only (no external API). Voices combines social + news API data.
+**Panels without API routes**: Bylaw Tracker, Public Hearings, and Demographics use local seed data only (no external API). Voices combines social + news API data (with cross-source headline deduplication via `deduplicateNews()`). Local Wire also deduplicates when showing all sources.
+
+**Flyers API**: Uses `User-Agent` header (`SVIT/1.0`) for Flipp API requests. Known grocery-only merchants pass by merchant ID alone; multi-category merchants (Walmart, Costco) require a grocery category tag to filter non-food flyers.
+
+**Crime & Incidents panel**: Tier 2, eagerly loaded. Features a time range selector (6h to 7d, default 7d, persisted to localStorage `svit-crime-range`), a radial 24-hour SVG clock (arc segments scaled by hourly incident density), a stacked category bar, severity-colored filter chips, and scrollable incident cards. The API route accepts `?hours=` param, computes `hourlyDistribution[0-23]` and `typeCounts` server-side, and returns them in `meta`. Uses `crimeTypeColor` from color-maps. VicPD data uses `attributeMunicipality(lng, lat, 'victoria')` fallback to prevent data loss from tight bbox mismatches.
 
 ### HeroMap & MapLibre
 
@@ -164,7 +170,9 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 - On `setStyle()` (theme toggle), all sources/layers are destroyed — the `style.load` event callback must re-add them
 - Municipality boundaries are static GeoJSON at `static/data/crd-municipalities.geojson` (real CRD polygons from BC WFS, Douglas-Peucker simplified)
 - **Clustering**: Features source has `cluster: true, clusterMaxZoom: 13, clusterRadius: 40`. Three layers: `feature-clusters` (circles), `feature-cluster-count` (labels), `feature-circles` (unclustered). Click on cluster zooms in via `getClusterExpansionZoom()`.
-- **Cross-panel focus**: Subscribes to `mapFocusStore` — any panel can trigger `flyTo()` with a popup via `mapFocusStore.focus()`. Used by Grocery Flyers (show store location) and Local Food & Drink (show venue location).
+- **Cross-panel focus**: Subscribes to `mapFocusStore` — any panel can trigger `flyTo()` with a popup via `mapFocusStore.focus()`. Used by Grocery Flyers, Local Food & Drink, Wildlife & Marine, and Councillors & Mayors panels.
+- **Pulsating marine markers**: CSS-animated HTML markers (`maplibregl.Marker`) for marine mammal sightings (max 8). Uses `@keyframes pulse-ring` in `app.css`. Separate from the clustered WebGL layer. Re-added on `style.load` (theme toggle) and cleaned up in `onDestroy`.
+- **Collapsible map**: `+page.svelte` has a `mapCollapsed` toggle (persisted to `svit-map-collapsed`) and a `mapOpacity` slider (0.2-1.0, persisted to `svit-map-opacity`).
 - **Reset view button**: Home icon button (top-left) calls `map.fitBounds()` with current municipality bbox. Respects `prefers-reduced-motion`.
 - **Keyboard nav**: Map container has `tabindex="0"`, `role="application"`. Escape closes popup. MapLibre's built-in arrow keys/+/- work once focused.
 - **WebGL limitation**: MapLibre paint properties cannot use CSS custom properties — use hex color values for cluster/circle paint
@@ -179,13 +187,35 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 
 ### Auth System
 
-`src/lib/supabase.ts` creates Supabase client using `$env/dynamic/public` (returns null if env vars unconfigured). **Must use `$env/dynamic/public`** — `$env/static/public` fails CI when vars aren't set, and `import.meta.env` doesn't get picked up on Vercel. `src/lib/stores/auth.svelte.ts` manages session/user state with sign-in/sign-up/sign-out/reset flows. `AuthModal.svelte` provides login/signup/reset UI. All Tier 4 panels show auth-gate when unauthenticated.
+`src/lib/supabase.ts` creates Supabase client using `$env/dynamic/public` (returns null if env vars unconfigured). **Must use `$env/dynamic/public`** — `$env/static/public` fails CI when vars aren't set, and `import.meta.env` doesn't get picked up on Vercel. `src/lib/stores/auth.svelte.ts` manages session/user state with sign-in/sign-up/sign-out/reset flows. `AuthModal.svelte` provides login/signup/reset UI. Branded email templates in `src/lib/config/email-templates.ts` (confirmation, password reset, magic link, invite).
+
+### localStorage-First Pattern
+
+Several panels use localStorage for anonymous access with optional Supabase sync for authenticated users:
+- **Topic Watch** (`svit-monitors`): keyword monitors with suggested topics
+- **Threads** (`svit-threads`): discussion threads via `threads.svelte.ts` store
+- **Connections** (`svit-followed-councillors`): followed councillor IDs
+- **Crime range** (`svit-crime-range`): selected time interval
+- **Map state** (`svit-map-collapsed`, `svit-map-opacity`): map UI preferences
+
+These panels show a subtle "Sign in to sync across devices" banner when unauthenticated.
+
+### Councillor Data (`src/lib/config/councillors.ts`)
+
+Registry of all elected officials across 13 CRD municipalities (2022-2026 term). Includes `social` field with known Twitter, Facebook, Bluesky, Instagram handles and official email addresses. The `Councillor` interface supports `social.instagram` in addition to the original platforms.
 
 ### Key Data Sources (Planned but Not Yet Implemented)
 
+See `ADDITIONAL-DATA-SOURCES.md` for a full research document with 18 potential sources, feasibility ratings, and integration notes.
+
+Top candidates:
+- BC Ferries API (`bcferriesapi.ca/v2/`) — free, MIT-licensed, Swartz Bay routes
+- BC Hydro outage RSS feeds — per-municipality, 15-min updates
+- UVic Events JSON API (`events.uvic.ca/live/json/events/`)
 - Legistar REST API for CRD/Esquimalt — API returns setup error, needs Granicus contact
 - CRD ArcGIS REST (`mapservices.crd.bc.ca/arcgis/rest/services/`) — environment, parks
 - OBIS — additional marine/ocean biodiversity observations
+- Acartia.io — whale sighting reports for the Salish Sea
 
 ### Theme System
 
@@ -194,7 +224,32 @@ Two PNW-themed modes controlled by `[data-theme="dark"]` / `[data-theme="light"]
 - **Dark (Starry Night)**: Canvas-animated stars + shooting star + aurora borealis. Frosted dark glass panels. Accents: teal `#63B3ED`, green `#68D391`, amber `#F6AD55`.
 - **Light (Sunny Skies)**: SVG animated clouds + sun glow. Frosted white glass panels. Accents: ocean `#2B6CB0`, forest `#2F855A`, gold `#D69E2E`.
 
-All colors are CSS custom properties in `src/app.css`. Core accents: `--accent-primary`, `--accent-secondary`, `--accent-warning`, `--accent-danger`. Status severity: `--status-critical`, `--status-high`, `--status-hazardous`. Data viz palette: `--palette-purple`, `--palette-blue`, `--palette-cyan`, `--palette-green`, `--palette-lilac`, `--palette-pink`, `--palette-sky`, `--palette-muted`. All panel color functions use CSS vars — no hardcoded hex colors in panel components.
+All colors are CSS custom properties in `src/app.css`. Panel corners are sharp (`--panel-radius: 0` in both themes). Core accents: `--accent-primary`, `--accent-secondary`, `--accent-warning`, `--accent-danger`. Status severity: `--status-critical`, `--status-high`, `--status-hazardous`. Data viz palette: `--palette-purple`, `--palette-blue`, `--palette-cyan`, `--palette-green`, `--palette-lilac`, `--palette-pink`, `--palette-sky`, `--palette-muted`. All panel color functions use CSS vars — no hardcoded hex colors in panel components.
+
+### Living Sky (`sky-pulse.svelte.ts` + theme components)
+
+The animated background is data-driven via `skyPulseStore`, which aggregates 10 API sources into normalized signals that modulate the sky animations in real time. Initialized in `+layout.svelte` `onMount()`.
+
+**Dark mode (`StarrySky.svelte`):**
+- Star density scales with `civicActivity` (0-1): base stars always visible, bonus stars fade in as civic data volume increases (2x pool)
+- Twinkle speed increases with activity (up to 1.8x)
+- Aurora color palette shifts by `dominantCategory` (political=green, safety=amber/red, nature=blue/purple, community=teal)
+- Aurora brightness boosted by civic activity (1.5x base to 5x at full activity)
+- Shooting star frequency increases with `alertLevel` (20s calm to 4s high-alert), color reflects `alertSeverity` (white=none, amber=watch, red=emergency)
+- Tide line at bottom edge: height driven by `tideHeight`, gentle wave undulation
+
+**Light mode (`CloudySky.svelte`):**
+- Cloud count increases with `transitDisruptions` (5 base to 9 max)
+- Cloud speed increases with disruptions (wind effect, up to 1.6x)
+- Cloud opacity increases with poor `airQuality` (haze effect, up to 1.3x)
+- Sun size scales with `temperature` (60px at 0C to 120px at 25C+)
+- Rain overlay appears during `warning`/`emergency` alert severity
+
+**Wildlife silhouettes (`WildlifeSilhouettes.svelte`):**
+- SVG silhouettes (bird, marine-mammal, mammal) drift across screen based on `recentSightings` from iNaturalist/eBird
+- Category determines vertical position (birds near top, marine mammals lower, land mammals near bottom)
+- Max 3 concurrent, staggered 8-12s apart, 18-40s transit duration
+- Works in both dark and light themes with appropriate opacity
 
 ### Development Flagging
 
@@ -215,10 +270,11 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 ### Shared Utilities (`src/lib/utils/`)
 
 - **`hash.ts`** — `hashCode(str)` for deterministic ID generation from strings (used in 7+ API routes)
-- **`geo-attribution.ts`** — `attributeMunicipality(lng, lat)` (coordinate-based) and `attributeMunicipalityByText(text)` (keyword-based) for tagging data items with municipality slugs
-- **`api-validation.ts`** — `parseLimit(raw, default, max)` and `parseMunicipality(raw)` for API route input validation
-- **`monitor-matcher.ts`** — `matchMonitors(monitors, items, source)` for keyword matching in MyMonitors panel
-- **`color-maps.ts`** — `colorMap<T>(map, fallback)` factory + 8 typed exports (`safetyAlertColor`, `constructionSeverityColor`, `transitSeverityColor`, `devStatusColor`, `envStatusColor`, `wildlifeCategoryColor`, `eventCategoryColor`, `searchCategoryColor`). All panel color functions live here — never define inline color maps in panel components.
+- **`geo-attribution.ts`** — `attributeMunicipality(lng, lat, fallback?)` (coordinate-based, optional fallback municipality) and `attributeMunicipalityByText(text)` (keyword-based) for tagging data items with municipality slugs
+- **`api-validation.ts`** — `parseLimit(raw, default, max)`, `parseMunicipality(raw)`, and `parseHours(raw, default, min, max)` for API route input validation
+- **`deduplicate.ts`** — `deduplicateNews(items, municipality)` removes duplicate headlines across news sources using Jaccard word similarity (80% threshold). Per-municipality source authority mapping (e.g., SaanichNews preferred for Saanich, VicNews for All CRD). Used in Voices and Local Wire panels.
+- **`monitor-matcher.ts`** — `matchMonitors(monitors, items, source)` for keyword matching in Topic Watch panel
+- **`color-maps.ts`** — `colorMap<T>(map, fallback)` factory + 9 typed exports (`safetyAlertColor`, `constructionSeverityColor`, `transitSeverityColor`, `devStatusColor`, `envStatusColor`, `wildlifeCategoryColor`, `eventCategoryColor`, `searchCategoryColor`, `crimeTypeColor`). All panel color functions live here — never define inline color maps in panel components.
 
 ### CRD Geographic Constants
 

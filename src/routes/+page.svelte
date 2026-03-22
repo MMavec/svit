@@ -23,7 +23,7 @@
 		const savedOpacity = localStorage.getItem('svit-map-opacity');
 		if (savedOpacity !== null) {
 			const parsed = parseFloat(savedOpacity);
-			if (!isNaN(parsed) && parsed >= 0.2 && parsed <= 1.0) {
+			if (!isNaN(parsed) && parsed >= 0 && parsed <= 1.0) {
 				mapOpacity = parsed;
 			}
 		}
@@ -60,29 +60,12 @@
 				</button>
 			</div>
 		{:else}
-			<div class="map-controls">
-				<div class="control-strip">
-					<label class="opacity-control">
-						<span class="opacity-label">Opacity</span>
-						<input
-							type="range"
-							min="0.2"
-							max="1"
-							step="0.05"
-							bind:value={mapOpacity}
-							class="opacity-slider"
-							aria-label="Map opacity"
-						/>
-						<span class="opacity-value">{Math.round(mapOpacity * 100)}%</span>
-					</label>
-					<button class="map-toggle-btn" onclick={toggleMap} aria-label="Hide map">
-						<span class="chevron">&#9650;</span>
-						Hide Map
-					</button>
-				</div>
-			</div>
 			<div class="map-wrapper" style="opacity: {mapOpacity}">
-				<HeroMap />
+				<HeroMap
+					{mapOpacity}
+					onOpacityChange={(v) => { mapOpacity = v; }}
+					onHide={toggleMap}
+				/>
 			</div>
 		{/if}
 	</div>
@@ -112,73 +95,6 @@
 		border: 1px solid var(--border-primary);
 	}
 
-	.map-controls {
-		margin-bottom: 6px;
-	}
-
-	.control-strip {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 6px 12px;
-		background: var(--bg-surface);
-		border: 1px solid var(--border-primary);
-		gap: 12px;
-	}
-
-	.opacity-control {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 0.75rem;
-		color: var(--text-secondary);
-		cursor: default;
-	}
-
-	.opacity-label {
-		font-weight: 500;
-		user-select: none;
-	}
-
-	.opacity-slider {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 100px;
-		height: 4px;
-		border-radius: 2px;
-		background: var(--border-primary);
-		outline: none;
-		cursor: pointer;
-	}
-
-	.opacity-slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: var(--accent-primary);
-		border: 2px solid var(--bg-surface);
-		cursor: pointer;
-	}
-
-	.opacity-slider::-moz-range-thumb {
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: var(--accent-primary);
-		border: 2px solid var(--bg-surface);
-		cursor: pointer;
-	}
-
-	.opacity-value {
-		font-family: 'Geist Mono', monospace;
-		font-size: 0.6875rem;
-		min-width: 32px;
-		text-align: right;
-		color: var(--text-tertiary);
-	}
-
 	.map-toggle-btn {
 		display: flex;
 		align-items: center;
@@ -205,15 +121,5 @@
 
 	.map-wrapper {
 		transition: opacity 0.2s ease;
-	}
-
-	@media (max-width: 768px) {
-		.opacity-slider {
-			width: 60px;
-		}
-
-		.opacity-label {
-			display: none;
-		}
 	}
 </style>

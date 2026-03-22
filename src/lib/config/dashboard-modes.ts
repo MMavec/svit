@@ -27,7 +27,21 @@ export const dashboardModes: ModeConfig[] = [
 		id: 'generalist',
 		label: 'Generalist',
 		icon: '👤',
-		panelOrder: allPanelIds
+		panelOrder: buildOrder([
+			'council-watch',
+			'bylaw-tracker',
+			'voices',
+			'public-hearings',
+			'development-watch',
+			'councillor-profiles',
+			'local-wire',
+			'pulse',
+			'construction-roads',
+			'transit',
+			'safety-emergency',
+			'crime-incidents',
+			'weather-tides'
+		])
 	},
 	{
 		id: 'political',
@@ -37,11 +51,11 @@ export const dashboardModes: ModeConfig[] = [
 			'council-watch',
 			'bylaw-tracker',
 			'councillor-profiles',
+			'crime-incidents',
 			'public-hearings',
 			'development-watch',
 			'voices',
 			'local-wire',
-			'crime-incidents',
 			'budget-finance',
 			'pulse'
 		])

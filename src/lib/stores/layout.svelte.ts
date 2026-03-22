@@ -11,15 +11,40 @@ function getDefaultLayout(): PanelLayout {
 	return layout;
 }
 
+function isValidPosition(pos: unknown): pos is GridPosition {
+	if (!pos || typeof pos !== 'object') return false;
+	const p = pos as Record<string, unknown>;
+	return (
+		typeof p.x === 'number' &&
+		typeof p.y === 'number' &&
+		typeof p.w === 'number' &&
+		typeof p.h === 'number' &&
+		p.x >= 0 &&
+		p.y >= 0 &&
+		p.w > 0 &&
+		p.h > 0
+	);
+}
+
 function loadLayout(): PanelLayout {
 	if (typeof window === 'undefined') return getDefaultLayout();
+	const defaults = getDefaultLayout();
 	try {
 		const stored = localStorage.getItem(STORAGE_KEY);
-		if (stored) return JSON.parse(stored) as PanelLayout;
+		if (stored) {
+			const parsed = JSON.parse(stored) as PanelLayout;
+			// Ensure every configured panel has a valid position entry
+			for (const panel of panels) {
+				if (!isValidPosition(parsed[panel.id])) {
+					parsed[panel.id] = { ...defaults[panel.id] };
+				}
+			}
+			return parsed;
+		}
 	} catch {
 		// ignore corrupt data
 	}
-	return getDefaultLayout();
+	return defaults;
 }
 
 let positions = $state<PanelLayout>(loadLayout());

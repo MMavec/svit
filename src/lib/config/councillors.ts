@@ -10,6 +10,10 @@ import type { Councillor } from '$lib/types/index';
  *   after Rotchford elected to BC Legislature Oct 2024).
  * - Sooke: Herb Haldane replaced Dana Lajeunesse (July 2025 by-election,
  *   after Lajeunesse elected MLA for Juan de Fuca-Malahat Nov 2024).
+ *
+ * Note: Social media handles (Twitter, Facebook, Bluesky) have been removed
+ * as they could not be verified. Only official municipal website URLs and
+ * mayor email addresses are included.
  */
 export const councillors: Councillor[] = [
 	// === Victoria (8 councillors + mayor) ===
@@ -23,8 +27,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@victoria.ca',
 		social: {
-			twitter: 'marianneyyj',
-			website: 'https://www.victoria.ca/mayor-council'
+			website: 'https://www.victoria.ca/city-government/mayor-council/mayor-marianne-alto'
 		}
 	},
 	{
@@ -35,9 +38,9 @@ export const councillors: Councillor[] = [
 		role: 'councillor',
 		municipality: 'victoria',
 		active: true,
-		email: 'jcaradonna@victoria.ca',
 		social: {
-			twitter: 'jcaradonna'
+			website:
+				'https://www.victoria.ca/city-government/mayor-council/council-member-jeremy-caradonna'
 		}
 	},
 	{
@@ -48,7 +51,10 @@ export const councillors: Councillor[] = [
 		role: 'councillor',
 		municipality: 'victoria',
 		active: true,
-		email: 'ccoleman@victoria.ca'
+		social: {
+			website:
+				'https://www.victoria.ca/city-government/mayor-council/council-member-chris-coleman'
+		}
 	},
 	{
 		id: 'vic-dell',
@@ -58,9 +64,8 @@ export const councillors: Councillor[] = [
 		role: 'councillor',
 		municipality: 'victoria',
 		active: true,
-		email: 'mdell@victoria.ca',
 		social: {
-			twitter: 'mattdellyyj'
+			website: 'https://www.victoria.ca/city-government/mayor-council/council-member-matt-dell'
 		}
 	},
 	{
@@ -71,7 +76,10 @@ export const councillors: Councillor[] = [
 		role: 'councillor',
 		municipality: 'victoria',
 		active: true,
-		email: 'mgardiner@victoria.ca'
+		social: {
+			website:
+				'https://www.victoria.ca/city-government/mayor-council/council-member-marg-gardiner'
+		}
 	},
 	{
 		id: 'vic-hammond',
@@ -81,7 +89,10 @@ export const councillors: Councillor[] = [
 		role: 'councillor',
 		municipality: 'victoria',
 		active: true,
-		email: 'shammond@victoria.ca'
+		social: {
+			website:
+				'https://www.victoria.ca/city-government/mayor-council/council-member-stephen-hammond'
+		}
 	},
 	{
 		id: 'vic-kim',
@@ -91,7 +102,9 @@ export const councillors: Councillor[] = [
 		role: 'councillor',
 		municipality: 'victoria',
 		active: true,
-		email: 'skim@victoria.ca'
+		social: {
+			website: 'https://www.victoria.ca/city-government/mayor-council/council-member-susan-kim'
+		}
 	},
 	{
 		id: 'vic-loughton',
@@ -101,7 +114,10 @@ export const councillors: Councillor[] = [
 		role: 'councillor',
 		municipality: 'victoria',
 		active: true,
-		email: 'kloughton@victoria.ca'
+		social: {
+			website:
+				'https://www.victoria.ca/city-government/mayor-council/council-member-krista-loughton'
+		}
 	},
 	{
 		id: 'vic-thompson',
@@ -111,7 +127,10 @@ export const councillors: Councillor[] = [
 		role: 'councillor',
 		municipality: 'victoria',
 		active: true,
-		email: 'dthompson@victoria.ca'
+		social: {
+			website:
+				'https://www.victoria.ca/city-government/mayor-council/council-member-dave-thompson'
+		}
 	},
 
 	// === Saanich (8 councillors + mayor) ===
@@ -125,8 +144,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@saanich.ca',
 		social: {
-			twitter: 'DeanMurdock',
-			website: 'https://www.saanich.ca/mayor-council'
+			website: 'https://www.saanich.ca/en/our-community/mayor-and-council.htm'
 		}
 	},
 	{
@@ -136,8 +154,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Brice',
 		role: 'councillor',
 		municipality: 'saanich',
-		active: true,
-		email: 'susan.brice@saanich.ca'
+		active: true
 	},
 	{
 		id: 'san-brownoff',
@@ -146,8 +163,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Brownoff',
 		role: 'councillor',
 		municipality: 'saanich',
-		active: true,
-		email: 'judy.brownoff@saanich.ca'
+		active: true
 	},
 	{
 		id: 'san-chambers',
@@ -156,8 +172,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Chambers',
 		role: 'councillor',
 		municipality: 'saanich',
-		active: true,
-		email: 'nathalie.chambers@saanich.ca'
+		active: true
 	},
 	{
 		id: 'san-devries',
@@ -166,11 +181,7 @@ export const councillors: Councillor[] = [
 		lastName: 'de Vries',
 		role: 'councillor',
 		municipality: 'saanich',
-		active: true,
-		email: 'zac.devries@saanich.ca',
-		social: {
-			twitter: 'zabordevries'
-		}
+		active: true
 	},
 	{
 		id: 'san-harper',
@@ -179,8 +190,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Harper',
 		role: 'councillor',
 		municipality: 'saanich',
-		active: true,
-		email: 'karen.harper@saanich.ca'
+		active: true
 	},
 	{
 		id: 'san-phelps-bondaroff',
@@ -189,12 +199,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Phelps Bondaroff',
 		role: 'councillor',
 		municipality: 'saanich',
-		active: true,
-		email: 'teale.phelpsbondaroff@saanich.ca',
-		social: {
-			twitter: 'TealePB',
-			bluesky: 'tealepb.bsky.social'
-		}
+		active: true
 	},
 	{
 		id: 'san-plant',
@@ -203,8 +208,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Plant',
 		role: 'councillor',
 		municipality: 'saanich',
-		active: true,
-		email: 'colin.plant@saanich.ca'
+		active: true
 	},
 	{
 		id: 'san-westhaver',
@@ -213,8 +217,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Westhaver',
 		role: 'councillor',
 		municipality: 'saanich',
-		active: true,
-		email: 'mena.westhaver@saanich.ca'
+		active: true
 	},
 
 	// === Esquimalt (6 councillors + mayor) ===
@@ -228,8 +231,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@esquimalt.ca',
 		social: {
-			facebook: 'MayorBarbaraDesjardins',
-			website: 'https://www.esquimalt.ca/mayor-council'
+			website: 'https://www.esquimalt.ca/municipal-hall/mayor-council'
 		}
 	},
 	{
@@ -239,8 +241,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Armour',
 		role: 'councillor',
 		municipality: 'esquimalt',
-		active: true,
-		email: 'karmour@esquimalt.ca'
+		active: true
 	},
 	{
 		id: 'esq-boardman',
@@ -249,8 +250,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Boardman',
 		role: 'councillor',
 		municipality: 'esquimalt',
-		active: true,
-		email: 'aboardman@esquimalt.ca'
+		active: true
 	},
 	{
 		id: 'esq-brame',
@@ -259,8 +259,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Brame',
 		role: 'councillor',
 		municipality: 'esquimalt',
-		active: true,
-		email: 'mbrame@esquimalt.ca'
+		active: true
 	},
 	{
 		id: 'esq-cavens',
@@ -269,8 +268,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Cavens',
 		role: 'councillor',
 		municipality: 'esquimalt',
-		active: true,
-		email: 'dcavens@esquimalt.ca'
+		active: true
 	},
 	{
 		id: 'esq-helliwell',
@@ -279,8 +277,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Helliwell',
 		role: 'councillor',
 		municipality: 'esquimalt',
-		active: true,
-		email: 'jhelliwell@esquimalt.ca'
+		active: true
 	},
 	{
 		id: 'esq-morrison',
@@ -289,8 +286,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Morrison',
 		role: 'councillor',
 		municipality: 'esquimalt',
-		active: true,
-		email: 'tmorrison@esquimalt.ca'
+		active: true
 	},
 
 	// === Oak Bay (6 councillors + mayor) ===
@@ -304,8 +300,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@oakbay.ca',
 		social: {
-			twitter: 'KevinMurdoch1',
-			website: 'https://www.oakbay.ca/mayor-council'
+			website: 'https://www.oakbay.ca/municipal-hall/mayor-council'
 		}
 	},
 	{
@@ -315,8 +310,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Appleton',
 		role: 'councillor',
 		municipality: 'oak-bay',
-		active: true,
-		email: 'aappleton@oakbay.ca'
+		active: true
 	},
 	{
 		id: 'oak-braithwaite',
@@ -325,8 +319,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Braithwaite',
 		role: 'councillor',
 		municipality: 'oak-bay',
-		active: true,
-		email: 'hbraithwaite@oakbay.ca'
+		active: true
 	},
 	{
 		id: 'oak-green',
@@ -335,8 +328,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Green',
 		role: 'councillor',
 		municipality: 'oak-bay',
-		active: true,
-		email: 'cgreen@oakbay.ca'
+		active: true
 	},
 	{
 		id: 'oak-paterson',
@@ -345,8 +337,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Paterson',
 		role: 'councillor',
 		municipality: 'oak-bay',
-		active: true,
-		email: 'epaterson@oakbay.ca'
+		active: true
 	},
 	{
 		id: 'oak-smart',
@@ -355,8 +346,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Smart',
 		role: 'councillor',
 		municipality: 'oak-bay',
-		active: true,
-		email: 'csmart@oakbay.ca'
+		active: true
 	},
 	{
 		id: 'oak-watson',
@@ -365,8 +355,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Watson',
 		role: 'councillor',
 		municipality: 'oak-bay',
-		active: true,
-		email: 'lwatson@oakbay.ca'
+		active: true
 	},
 
 	// === Langford (6 councillors + mayor) ===
@@ -380,8 +369,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@langford.ca',
 		social: {
-			facebook: 'CityOfLangford',
-			website: 'https://www.langford.ca/mayor-council'
+			website: 'https://www.langford.ca/city-hall/mayor-council/'
 		}
 	},
 	{
@@ -391,8 +379,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Guiry',
 		role: 'councillor',
 		municipality: 'langford',
-		active: true,
-		email: 'kguiry@langford.ca'
+		active: true
 	},
 	{
 		id: 'lan-harder',
@@ -401,8 +388,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Harder',
 		role: 'councillor',
 		municipality: 'langford',
-		active: true,
-		email: 'charder@langford.ca'
+		active: true
 	},
 	{
 		id: 'lan-morley',
@@ -411,8 +397,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Morley',
 		role: 'councillor',
 		municipality: 'langford',
-		active: true,
-		email: 'mmorley@langford.ca'
+		active: true
 	},
 	{
 		id: 'lan-szpak',
@@ -421,8 +406,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Szpak',
 		role: 'councillor',
 		municipality: 'langford',
-		active: true,
-		email: 'lszpak@langford.ca'
+		active: true
 	},
 	{
 		id: 'lan-wagner',
@@ -431,8 +415,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Wagner',
 		role: 'councillor',
 		municipality: 'langford',
-		active: true,
-		email: 'mwagner@langford.ca'
+		active: true
 	},
 	{
 		id: 'lan-yacucha',
@@ -441,8 +424,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Yacucha',
 		role: 'councillor',
 		municipality: 'langford',
-		active: true,
-		email: 'kyacucha@langford.ca'
+		active: true
 	},
 
 	// === Colwood (6 councillors + mayor) ===
@@ -456,7 +438,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@colwood.ca',
 		social: {
-			website: 'https://www.colwood.ca/mayor-council'
+			website: 'https://www.colwood.ca/government/mayor-council'
 		}
 	},
 	{
@@ -466,8 +448,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Day',
 		role: 'councillor',
 		municipality: 'colwood',
-		active: true,
-		email: 'cday@colwood.ca'
+		active: true
 	},
 	{
 		id: 'col-grove',
@@ -476,8 +457,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Grove',
 		role: 'councillor',
 		municipality: 'colwood',
-		active: true,
-		email: 'dgrove@colwood.ca'
+		active: true
 	},
 	{
 		id: 'col-jantzen',
@@ -486,8 +466,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Jantzen',
 		role: 'councillor',
 		municipality: 'colwood',
-		active: true,
-		email: 'djantzen@colwood.ca'
+		active: true
 	},
 	{
 		id: 'col-jordison',
@@ -496,8 +475,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Jordison',
 		role: 'councillor',
 		municipality: 'colwood',
-		active: true,
-		email: 'kjordison@colwood.ca'
+		active: true
 	},
 	{
 		id: 'col-olsen',
@@ -506,8 +484,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Olsen',
 		role: 'councillor',
 		municipality: 'colwood',
-		active: true,
-		email: 'molsen@colwood.ca'
+		active: true
 	},
 	{
 		id: 'col-ward',
@@ -516,8 +493,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Ward',
 		role: 'councillor',
 		municipality: 'colwood',
-		active: true,
-		email: 'iward@colwood.ca'
+		active: true
 	},
 
 	// === Sooke (6 councillors + mayor) ===
@@ -531,8 +507,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@sooke.ca',
 		social: {
-			twitter: 'MajaTait',
-			website: 'https://www.sooke.ca/mayor-council'
+			website: 'https://sooke.ca/district-government/mayor-council/'
 		}
 	},
 	{
@@ -542,8 +517,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Bateman',
 		role: 'councillor',
 		municipality: 'sooke',
-		active: true,
-		email: 'jbateman@sooke.ca'
+		active: true
 	},
 	{
 		id: 'soo-beddows',
@@ -552,8 +526,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Beddows',
 		role: 'councillor',
 		municipality: 'sooke',
-		active: true,
-		email: 'abeddows@sooke.ca'
+		active: true
 	},
 	{
 		id: 'soo-haldane',
@@ -562,8 +535,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Haldane',
 		role: 'councillor',
 		municipality: 'sooke',
-		active: true,
-		email: 'hhaldane@sooke.ca'
+		active: true
 	},
 	{
 		id: 'soo-mcmath',
@@ -572,8 +544,7 @@ export const councillors: Councillor[] = [
 		lastName: 'McMath',
 		role: 'councillor',
 		municipality: 'sooke',
-		active: true,
-		email: 'mmcmath@sooke.ca'
+		active: true
 	},
 	{
 		id: 'soo-pearson',
@@ -582,8 +553,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Pearson',
 		role: 'councillor',
 		municipality: 'sooke',
-		active: true,
-		email: 'kpearson@sooke.ca'
+		active: true
 	},
 	{
 		id: 'soo-stpierre',
@@ -592,8 +562,7 @@ export const councillors: Councillor[] = [
 		lastName: 'St. Pierre',
 		role: 'councillor',
 		municipality: 'sooke',
-		active: true,
-		email: 'tstpierre@sooke.ca'
+		active: true
 	},
 
 	// === Sidney (6 councillors + mayor) ===
@@ -607,7 +576,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@sidney.ca',
 		social: {
-			website: 'https://www.sidney.ca/mayor-council'
+			website: 'https://www.sidney.ca/municipal-hall/mayor-council'
 		}
 	},
 	{
@@ -617,8 +586,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Duck',
 		role: 'councillor',
 		municipality: 'sidney',
-		active: true,
-		email: 'sduck@sidney.ca'
+		active: true
 	},
 	{
 		id: 'sid-duncan',
@@ -627,8 +595,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Duncan',
 		role: 'councillor',
 		municipality: 'sidney',
-		active: true,
-		email: 'sduncan@sidney.ca'
+		active: true
 	},
 	{
 		id: 'sid-garnett',
@@ -637,8 +604,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Garnett',
 		role: 'councillor',
 		municipality: 'sidney',
-		active: true,
-		email: 'sgarnett@sidney.ca'
+		active: true
 	},
 	{
 		id: 'sid-novek',
@@ -647,8 +613,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Novek',
 		role: 'councillor',
 		municipality: 'sidney',
-		active: true,
-		email: 'rnovek@sidney.ca'
+		active: true
 	},
 	{
 		id: 'sid-okeeffe',
@@ -657,8 +622,7 @@ export const councillors: Councillor[] = [
 		lastName: "O'Keeffe",
 		role: 'councillor',
 		municipality: 'sidney',
-		active: true,
-		email: 'tokeeffe@sidney.ca'
+		active: true
 	},
 	{
 		id: 'sid-rintoul',
@@ -667,8 +631,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Rintoul',
 		role: 'councillor',
 		municipality: 'sidney',
-		active: true,
-		email: 'crintoul@sidney.ca'
+		active: true
 	},
 
 	// === North Saanich (6 councillors + mayor) ===
@@ -682,7 +645,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@northsaanich.ca',
 		social: {
-			website: 'https://www.northsaanich.ca/mayor-council'
+			website: 'https://www.northsaanich.ca/government/mayor-council'
 		}
 	},
 	{
@@ -692,8 +655,7 @@ export const councillors: Councillor[] = [
 		lastName: 'DiBattista',
 		role: 'councillor',
 		municipality: 'north-saanich',
-		active: true,
-		email: 'pdibattista@northsaanich.ca'
+		active: true
 	},
 	{
 		id: 'nsa-marshall',
@@ -702,8 +664,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Marshall',
 		role: 'councillor',
 		municipality: 'north-saanich',
-		active: true,
-		email: 'kmarshall@northsaanich.ca'
+		active: true
 	},
 	{
 		id: 'nsa-mcclintock',
@@ -712,8 +673,7 @@ export const councillors: Councillor[] = [
 		lastName: 'McClintock',
 		role: 'councillor',
 		municipality: 'north-saanich',
-		active: true,
-		email: 'jmcclintock@northsaanich.ca'
+		active: true
 	},
 	{
 		id: 'nsa-mcconkey',
@@ -722,8 +682,7 @@ export const councillors: Councillor[] = [
 		lastName: 'McConkey',
 		role: 'councillor',
 		municipality: 'north-saanich',
-		active: true,
-		email: 'imcconkey@northsaanich.ca'
+		active: true
 	},
 	{
 		id: 'nsa-shrivastava',
@@ -732,8 +691,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Shrivastava',
 		role: 'councillor',
 		municipality: 'north-saanich',
-		active: true,
-		email: 'sshrivastava@northsaanich.ca'
+		active: true
 	},
 	{
 		id: 'nsa-stock',
@@ -742,8 +700,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Stock',
 		role: 'councillor',
 		municipality: 'north-saanich',
-		active: true,
-		email: 'cstock@northsaanich.ca'
+		active: true
 	},
 
 	// === Central Saanich (6 councillors + mayor) ===
@@ -757,7 +714,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@csaanich.ca',
 		social: {
-			website: 'https://www.centralsaanich.ca/mayor-council'
+			website: 'https://www.centralsaanich.ca/government/mayor-council'
 		}
 	},
 	{
@@ -767,8 +724,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Graham',
 		role: 'councillor',
 		municipality: 'central-saanich',
-		active: true,
-		email: 'cgraham@csaanich.ca'
+		active: true
 	},
 	{
 		id: 'csa-king',
@@ -777,8 +733,7 @@ export const councillors: Councillor[] = [
 		lastName: 'King',
 		role: 'councillor',
 		municipality: 'central-saanich',
-		active: true,
-		email: 'zking@csaanich.ca'
+		active: true
 	},
 	{
 		id: 'csa-newton',
@@ -787,8 +742,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Newton',
 		role: 'councillor',
 		municipality: 'central-saanich',
-		active: true,
-		email: 'gnewton@csaanich.ca'
+		active: true
 	},
 	{
 		id: 'csa-paltiel',
@@ -797,8 +751,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Paltiel',
 		role: 'councillor',
 		municipality: 'central-saanich',
-		active: true,
-		email: 'npaltiel@csaanich.ca'
+		active: true
 	},
 	{
 		id: 'csa-riddell',
@@ -807,8 +760,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Riddell',
 		role: 'councillor',
 		municipality: 'central-saanich',
-		active: true,
-		email: 'sriddell@csaanich.ca'
+		active: true
 	},
 	{
 		id: 'csa-thompson',
@@ -817,8 +769,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Thompson',
 		role: 'councillor',
 		municipality: 'central-saanich',
-		active: true,
-		email: 'bthompson@csaanich.ca'
+		active: true
 	},
 
 	// === View Royal (6 councillors + mayor) ===
@@ -832,7 +783,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@viewroyal.ca',
 		social: {
-			website: 'https://www.viewroyal.ca/mayor-council'
+			website: 'https://www.viewroyal.ca/EN/main/government/mayor-council.html'
 		}
 	},
 	{
@@ -842,8 +793,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Brown',
 		role: 'councillor',
 		municipality: 'view-royal',
-		active: true,
-		email: 'dbrown@viewroyal.ca'
+		active: true
 	},
 	{
 		id: 'vro-kowalewich',
@@ -852,8 +802,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Kowalewich',
 		role: 'councillor',
 		municipality: 'view-royal',
-		active: true,
-		email: 'dkowalewich@viewroyal.ca'
+		active: true
 	},
 	{
 		id: 'vro-lemon',
@@ -862,8 +811,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Lemon',
 		role: 'councillor',
 		municipality: 'view-royal',
-		active: true,
-		email: 'glemon@viewroyal.ca'
+		active: true
 	},
 	{
 		id: 'vro-mackenzie',
@@ -872,8 +820,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Mackenzie',
 		role: 'councillor',
 		municipality: 'view-royal',
-		active: true,
-		email: 'amackenzie@viewroyal.ca'
+		active: true
 	},
 	{
 		id: 'vro-mattson',
@@ -882,8 +829,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Mattson',
 		role: 'councillor',
 		municipality: 'view-royal',
-		active: true,
-		email: 'rmattson@viewroyal.ca'
+		active: true
 	},
 	{
 		id: 'vro-rogers',
@@ -892,8 +838,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Rogers',
 		role: 'councillor',
 		municipality: 'view-royal',
-		active: true,
-		email: 'jrogers@viewroyal.ca'
+		active: true
 	},
 
 	// === Highlands (6 councillors + mayor) ===
@@ -907,7 +852,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@highlands.ca',
 		social: {
-			website: 'https://www.highlands.ca/mayor-council'
+			website: 'https://www.highlands.ca/government/mayor-council'
 		}
 	},
 	{
@@ -917,8 +862,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Anderson',
 		role: 'councillor',
 		municipality: 'highlands',
-		active: true,
-		email: 'landerson@highlands.ca'
+		active: true
 	},
 	{
 		id: 'hig-abaird',
@@ -927,8 +871,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Baird',
 		role: 'councillor',
 		municipality: 'highlands',
-		active: true,
-		email: 'abaird@highlands.ca'
+		active: true
 	},
 	{
 		id: 'hig-gbaird',
@@ -937,8 +880,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Baird',
 		role: 'councillor',
 		municipality: 'highlands',
-		active: true,
-		email: 'gbaird@highlands.ca'
+		active: true
 	},
 	{
 		id: 'hig-mclean',
@@ -947,8 +889,7 @@ export const councillors: Councillor[] = [
 		lastName: 'McLean',
 		role: 'councillor',
 		municipality: 'highlands',
-		active: true,
-		email: 'mmclean@highlands.ca'
+		active: true
 	},
 	{
 		id: 'hig-roessingh',
@@ -957,8 +898,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Roessingh',
 		role: 'councillor',
 		municipality: 'highlands',
-		active: true,
-		email: 'kroessingh@highlands.ca'
+		active: true
 	},
 	{
 		id: 'hig-stanton',
@@ -967,8 +907,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Stanton',
 		role: 'councillor',
 		municipality: 'highlands',
-		active: true,
-		email: 'rstanton@highlands.ca'
+		active: true
 	},
 
 	// === Metchosin (4 councillors + mayor) ===
@@ -982,7 +921,7 @@ export const councillors: Councillor[] = [
 		active: true,
 		email: 'mayor@metchosin.ca',
 		social: {
-			website: 'https://www.metchosin.ca/mayor-council'
+			website: 'https://www.metchosin.ca/government/mayor-council'
 		}
 	},
 	{
@@ -992,8 +931,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Donaldson',
 		role: 'councillor',
 		municipality: 'metchosin',
-		active: true,
-		email: 'sdonaldson@metchosin.ca'
+		active: true
 	},
 	{
 		id: 'met-epp',
@@ -1002,8 +940,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Epp',
 		role: 'councillor',
 		municipality: 'metchosin',
-		active: true,
-		email: 'sepp@metchosin.ca'
+		active: true
 	},
 	{
 		id: 'met-gray',
@@ -1012,8 +949,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Gray',
 		role: 'councillor',
 		municipality: 'metchosin',
-		active: true,
-		email: 'sgray@metchosin.ca'
+		active: true
 	},
 	{
 		id: 'met-shukin',
@@ -1022,8 +958,7 @@ export const councillors: Councillor[] = [
 		lastName: 'Shukin',
 		role: 'councillor',
 		municipality: 'metchosin',
-		active: true,
-		email: 'jshukin@metchosin.ca'
+		active: true
 	}
 ];
 
