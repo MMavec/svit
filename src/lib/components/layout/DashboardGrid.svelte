@@ -69,7 +69,11 @@
 		'family-activities': () => import('$lib/components/panels/FamilyActivities.svelte'),
 		'parks-recreation': () => import('$lib/components/panels/ParksRecreation.svelte'),
 		'schools-libraries': () => import('$lib/components/panels/SchoolsLibraries.svelte'),
-		'demolition-permits': () => import('$lib/components/panels/DemolitionPermits.svelte')
+		'demolition-permits': () => import('$lib/components/panels/DemolitionPermits.svelte'),
+		'permit-pulse': () => import('$lib/components/panels/PermitPulse.svelte'),
+		'business-licences': () => import('$lib/components/panels/BusinessLicences.svelte'),
+		'assessment-values': () => import('$lib/components/panels/AssessmentValues.svelte'),
+		'ev-charging': () => import('$lib/components/panels/EvCharging.svelte')
 	};
 
 	const COLS = 12;

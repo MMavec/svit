@@ -290,6 +290,42 @@ export const panels: PanelConfig[] = [
 		defaultPosition: { x: 0, y: 60, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
+	},
+	{
+		id: 'permit-pulse',
+		title: 'Building Activity',
+		tier: 3,
+		icon: '📈',
+		defaultPosition: { x: 4, y: 60, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'business-licences',
+		title: 'Business Licences',
+		tier: 3,
+		icon: '🏪',
+		defaultPosition: { x: 8, y: 60, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'assessment-values',
+		title: 'Assessment Values',
+		tier: 3,
+		icon: '🏷',
+		defaultPosition: { x: 0, y: 66, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'ev-charging',
+		title: 'EV Charging',
+		tier: 3,
+		icon: '⚡',
+		defaultPosition: { x: 4, y: 66, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
 	}
 ];
 

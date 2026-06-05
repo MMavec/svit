@@ -18,6 +18,7 @@ export interface SavedItem {
 		| 'news'
 		| 'development'
 		| 'demolition'
+		| 'business-licence'
 		| 'bylaw'
 		| 'event'
 		| 'wildlife'
@@ -205,6 +206,8 @@ export interface DevelopmentApplication {
 	units?: number;
 	zoningCurrent?: string;
 	zoningProposed?: string;
+	appType?: string; // raw municipal application type (e.g. "Rezoning", "Heritage Alteration Permit")
+	folderNumber?: string; // municipal file number, used for tracker deep-links + dedup
 	submittedDate?: string;
 	decisionDate?: string;
 	publicHearingDate?: string;
@@ -229,6 +232,84 @@ export interface DemolitionPermit {
 	coordinates?: [number, number]; // [lng, lat]
 	heritage?: boolean; // flagged when the record references heritage status
 	source: string; // 'victoria-opendata' | 'seed'
+}
+
+export interface BuildingPermit {
+	id: string;
+	permitNo?: string;
+	address: string;
+	discipline: 'building' | 'electrical' | 'plumbing' | 'sign';
+	activity:
+		| 'new-construction'
+		| 'renovation'
+		| 'demolition'
+		| 'electrical'
+		| 'plumbing'
+		| 'sign'
+		| 'other';
+	purpose: string;
+	status: string;
+	useGroup?: string; // AUC_Group: Residential / Commercial / Industrial / Civic ...
+	municipality: string;
+	neighbourhood?: string;
+	issuedDate?: string; // ISO 8601
+	value?: number; // declared construction value in CAD
+	coordinates?: [number, number]; // [lng, lat]
+	source: string;
+}
+
+export interface BusinessLicence {
+	id: string;
+	tradeName: string;
+	licenceType: string; // raw LICENCE_TYPE_NAME
+	category:
+		| 'retail'
+		| 'food-drink'
+		| 'professional'
+		| 'personal-services'
+		| 'accommodation'
+		| 'rental-housing'
+		| 'contractor'
+		| 'machines'
+		| 'other';
+	naics?: string;
+	municipality: string;
+	neighbourhood?: string;
+	issuedDate?: string; // ISO 8601
+	coversFrom?: string; // ISO 8601 — licence coverage start
+	newlyCommenced: boolean; // coverage starts after Jan 1 (proxy for "not just an annual renewal")
+	address?: string;
+	coordinates?: [number, number]; // [lng, lat]
+	source: string;
+}
+
+export interface AssessmentArea {
+	id: string;
+	neighbourhood: string;
+	municipality: string;
+	residentialMedian?: number; // median total (land + improvements) assessed value, residential
+	residentialAverage?: number;
+	businessMedian?: number;
+	landMedian?: number; // residential land-only median
+	improvementMedian?: number; // residential improvement-only median
+	coordinates?: [number, number]; // polygon centroid [lng, lat]
+	source: string;
+}
+
+export interface EvCharger {
+	id: string;
+	name: string;
+	address?: string;
+	chargerType?: string; // metered / non-metered
+	rate?: string; // free-text rate description
+	free: boolean;
+	maxTime?: string;
+	hours?: string;
+	network?: string; // FLO, etc., parsed from description
+	owner?: string;
+	municipality: string;
+	coordinates?: [number, number]; // [lng, lat]
+	source: string;
 }
 
 // --- Phase 2: Community Intelligence Types ---
@@ -302,6 +383,8 @@ export interface MapFeature {
 	type:
 		| 'development'
 		| 'demolition'
+		| 'business-licence'
+		| 'ev-charging'
 		| 'construction'
 		| 'fire'
 		| 'transit-alert'

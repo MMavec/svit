@@ -2,141 +2,131 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { DevelopmentApplication } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
-import { parseLimit, parseMunicipality, isJsonResponse } from '$lib/utils/api-validation';
+import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
-/** Victoria Open Data ArcGIS Hub — development permit applications */
-async function fetchVictoriaDevPermits(): Promise<DevelopmentApplication[]> {
+// City of Victoria self-hosted ArcGIS — "Development Applications" (active/in-progress planning files:
+// rezonings, development/variance/heritage/temporary-use/tax-incentive permits). One point per
+// "purpose"; dedupe on FOLDER_NUMBER for one row per application. This REPLACES two dead endpoints
+// the route previously used (an opendata.victoria.ca HTML page and a non-existent AGOL service).
+const VICTORIA_DEV_LAYER =
+	'https://maps.victoria.ca/server/rest/services/OpenData/OpenData_PlanningAndDevelopment/MapServer/3';
+
+// Public Development Tracker deep-link (guest access, no login needed).
+const TRACKER_BASE =
+	'https://tender.victoria.ca/webapps/ourcity/Prospero/Details.aspx?folderNumber=';
+
+interface ArcGisFeature {
+	attributes: Record<string, unknown>;
+	geometry?: { x: number; y: number };
+}
+
+/** Fetch live Victoria development applications. Returns [] on any failure (caller falls back to seed). */
+async function fetchVictoriaDevApplications(): Promise<DevelopmentApplication[]> {
 	try {
-		// Victoria Open Data ArcGIS REST service for development permits
 		const params = new URLSearchParams({
 			where: '1=1',
-			outFields: '*',
-			orderByFields: 'APPLICATION_DATE DESC',
-			resultRecordCount: '100',
+			outFields:
+				'FOLDER_NUMBER,AppType,STATUS,SUBJECT,HOUSE,STREET,Neighbourhood,PURPOSE,DevAppTracker,CREATED_DATE',
+			orderByFields: 'CREATED_DATE DESC',
+			returnGeometry: 'true',
+			outSR: '4326',
+			resultRecordCount: '500',
 			f: 'json'
 		});
 
-		const response = await fetch(
-			`https://opendata.victoria.ca/datasets/development-permit-applications/api?${params}`,
-			{
-				headers: { 'User-Agent': 'SVIT/1.0' },
-				signal: AbortSignal.timeout(10000)
-			}
-		);
-
-		if (!response.ok || !isJsonResponse(response)) {
-			// Try the ArcGIS Feature Server directly
-			return await fetchVictoriaArcGIS();
-		}
-
-		const data = await response.json();
-		if (!data.features) return await fetchVictoriaArcGIS();
-
-		return data.features.map(
-			(f: {
-				properties?: Record<string, unknown>;
-				attributes?: Record<string, unknown>;
-				geometry?: { coordinates?: [number, number] };
-			}) => {
-				const props: Record<string, unknown> = f.properties || f.attributes || {};
-				const geometry = f.geometry;
-
-				return mapToDevApplication(props, geometry, 'victoria');
-			}
-		);
-	} catch {
-		return await fetchVictoriaArcGIS();
-	}
-}
-
-/** Fallback: try Victoria's ArcGIS Feature Server */
-async function fetchVictoriaArcGIS(): Promise<DevelopmentApplication[]> {
-	try {
-		const params = new URLSearchParams({
-			where: '1=1',
-			outFields: '*',
-			orderByFields: 'EditDate DESC',
-			resultRecordCount: '50',
-			f: 'json',
-			returnGeometry: 'true'
+		const response = await fetch(`${VICTORIA_DEV_LAYER}/query?${params}`, {
+			headers: { 'User-Agent': 'SVIT/1.0' },
+			signal: AbortSignal.timeout(10000)
 		});
-
-		const response = await fetch(
-			`https://services1.arcgis.com/gqkHRGtUEhylIBOE/arcgis/rest/services/Development_Permit_Applications/FeatureServer/0/query?${params}`,
-			{
-				signal: AbortSignal.timeout(10000)
-			}
-		);
-
+		// Do not gate on content-type — Victoria's ArcGIS returns text/plain for some queries.
 		if (!response.ok) return [];
-		if (!isJsonResponse(response)) return [];
-		const data = await response.json();
-		if (!data.features) return [];
 
-		return data.features.map(
-			(f: { attributes: Record<string, unknown>; geometry?: { x: number; y: number } }) => {
-				const coords: [number, number] | undefined = f.geometry
-					? [f.geometry.x, f.geometry.y]
-					: undefined;
-				return mapToDevApplication(
-					f.attributes,
-					coords ? { coordinates: coords } : undefined,
-					'victoria'
-				);
-			}
-		);
+		const data = (await response.json()) as { features?: ArcGisFeature[]; error?: unknown };
+		if (data.error || !Array.isArray(data.features)) return [];
+
+		// One point per purpose row -> dedupe to one application per FOLDER_NUMBER (keep first/newest).
+		const seen = new Set<string>();
+		const out: DevelopmentApplication[] = [];
+		for (const f of data.features) {
+			const folder = String(f.attributes.FOLDER_NUMBER || '').trim();
+			const key = folder || `obj-${out.length}`;
+			if (seen.has(key)) continue;
+			seen.add(key);
+			out.push(mapToDevApplication(f.attributes, f.geometry, folder));
+		}
+		return out;
 	} catch (err) {
-		console.error('Failed to fetch development permits:', err);
+		console.error('Failed to fetch Victoria development applications:', err);
 		return [];
 	}
 }
 
 function mapToDevApplication(
 	props: Record<string, unknown>,
-	geometry: { coordinates?: [number, number] } | undefined,
-	municipality: string
+	geometry: { x: number; y: number } | undefined,
+	folder: string
 ): DevelopmentApplication {
-	const address = String(props.ADDRESS || props.address || props.CIVIC_ADDRESS || 'Unknown');
-	const desc = String(props.DESCRIPTION || props.description || props.PROJECT_DESCRIPTION || '');
-	const storeys = parseNumber(props.STOREYS || props.storeys || props.NUMBER_OF_STOREYS);
-	const units = parseNumber(props.UNITS || props.units || props.NUMBER_OF_UNITS);
-	const status = normalizeStatus(String(props.STATUS || props.status || ''));
-	const type = normalizeType(String(props.TYPE || props.type || props.USE_TYPE || ''));
+	const house = str(props.HOUSE);
+	const street = str(props.STREET);
+	const subject = str(props.SUBJECT);
+	const addr = [house, titleCase(street)].filter(Boolean).join(' ');
+	const address = `${addr || subject || 'Address withheld'}, Victoria`;
 
-	// Flag logic: 4+ storeys, 100+ units, or major rezoning
-	const flagReasons: string[] = [];
-	if (storeys && storeys >= 4) flagReasons.push(`${storeys} storeys`);
-	if (units && units >= 100) flagReasons.push(`${units} units`);
+	const appType = str(props.AppType);
+	const description = stripHtml(str(props.PURPOSE)) || subject || appType;
+	const rawStatus = str(props.STATUS).toUpperCase();
+	const onHold = rawStatus.includes('HOLD');
 
-	const zoningCurrent = String(props.ZONING_CURRENT || props.EXISTING_ZONING || '');
-	const zoningProposed = String(props.ZONING_PROPOSED || props.PROPOSED_ZONING || '');
-	if (zoningCurrent && zoningProposed && zoningCurrent !== zoningProposed) {
-		flagReasons.push(`Rezoning: ${zoningCurrent} → ${zoningProposed}`);
-	}
+	const type = guessType(`${appType} ${description} ${subject}`);
+
+	// Flag significant / Council-level applications (no storeys/units fields exist on this layer).
+	const text = `${description} ${subject}`.toUpperCase();
+	const modifiers: string[] = [];
+	if (/\b(OCP|OFFICIAL COMMUNITY PLAN)\b/.test(text)) modifiers.push('OCP amendment');
+	if (/TOWER|HIGH[- ]?RISE|MIXED[- ]?USE/.test(text) || /\d{2,}\s*(STOR|UNIT|DWELLING)/.test(text))
+		modifiers.push('Large project');
+	if (onHold) modifiers.push('On hold');
+	const significantType = /REZONING|HERITAGE DESIGNATION|TEMPORARY USE|TAX INCENTIVE/i.test(
+		appType
+	);
+	const significant = significantType || modifiers.length > 0;
+	const flagReasons = [...(significantType && appType ? [appType] : []), ...modifiers];
+
+	const coords: [number, number] | undefined =
+		geometry && isFinite(geometry.x) && isFinite(geometry.y) ? [geometry.x, geometry.y] : undefined;
 
 	return {
-		id: `vic-dev-${hashCode(address + desc)}`,
+		id: `vic-dev-${folder || hashCode(address + description)}`,
 		address,
-		description: desc,
-		applicant: props.APPLICANT ? String(props.APPLICANT) : undefined,
+		description,
 		type,
-		status,
-		municipality,
-		storeys: storeys || undefined,
-		units: units || undefined,
-		zoningCurrent: zoningCurrent || undefined,
-		zoningProposed: zoningProposed || undefined,
-		submittedDate: props.APPLICATION_DATE ? normalizeDate(props.APPLICATION_DATE) : undefined,
-		coordinates: geometry?.coordinates,
-		flagged: flagReasons.length > 0,
+		status: 'under-review',
+		municipality: 'victoria',
+		appType: appType || undefined,
+		folderNumber: folder || undefined,
+		submittedDate: parseEpoch(props.CREATED_DATE),
+		coordinates: coords,
+		flagged: significant,
 		flagReasons: flagReasons.length > 0 ? flagReasons : undefined,
+		documentUrl: folder ? `${TRACKER_BASE}${encodeURIComponent(folder)}` : undefined,
 		source: 'victoria-opendata'
 	};
 }
 
-/** Generate seed development data */
+function guessType(text: string): DevelopmentApplication['type'] {
+	const t = text.toUpperCase();
+	if (/MIXED[- ]?USE/.test(t)) return 'mixed-use';
+	if (/COMMERCIAL|RETAIL|OFFICE|RESTAURANT|HOTEL|SIGN|BUSINESS/.test(t)) return 'commercial';
+	if (/SCHOOL|CHURCH|HOSPITAL|INSTITUT|CIVIC|PLACE OF WORSHIP/.test(t)) return 'institutional';
+	if (/INDUSTRIAL|WAREHOUSE|MANUFACTUR/.test(t)) return 'industrial';
+	if (/RESIDENT|DWELLING|HOUSE|APARTMENT|TOWNHOUSE|DUPLEX|SUITE|UNIT|HOUSING/.test(t))
+		return 'residential';
+	return 'other';
+}
+
+/** Generate seed development data (only used if the live Victoria feed is unreachable). */
 function getSeedDevelopments(): DevelopmentApplication[] {
 	return [
 		{
@@ -146,130 +136,66 @@ function getSeedDevelopments(): DevelopmentApplication[] {
 			type: 'mixed-use',
 			status: 'under-review',
 			municipality: 'victoria',
-			storeys: 18,
-			units: 156,
-			zoningCurrent: 'C-1',
-			zoningProposed: 'CD-1',
+			appType: 'Rezoning',
 			flagged: true,
-			flagReasons: ['18 storeys', '156 units', 'Rezoning: C-1 → CD-1'],
+			flagReasons: ['Rezoning', 'Large project'],
 			coordinates: [-123.3615, 48.4284],
 			source: 'seed'
 		},
 		{
 			id: 'vic-dev-seed-2',
 			address: '900 Pandora Ave, Victoria',
-			description: 'Supportive housing with community amenity space',
-			type: 'residential',
-			status: 'approved',
-			municipality: 'victoria',
-			storeys: 6,
-			units: 45,
-			flagged: true,
-			flagReasons: ['6 storeys'],
-			coordinates: [-123.358, 48.4265],
-			source: 'seed'
-		},
-		{
-			id: 'vic-dev-seed-3',
-			address: '3300 Douglas St, Victoria',
-			description: 'Townhouse complex replacing single-family lots',
-			type: 'residential',
-			status: 'proposed',
-			municipality: 'victoria',
-			storeys: 3,
-			units: 24,
-			flagged: false,
-			coordinates: [-123.356, 48.438],
-			source: 'seed'
-		},
-		{
-			id: 'lan-dev-seed-1',
-			address: '2800 Goldstream Ave, Langford',
-			description: 'Large mixed-use development with commercial podium and two residential towers',
-			type: 'mixed-use',
+			description: 'Heritage alteration permit for facade restoration',
+			type: 'commercial',
 			status: 'under-review',
-			municipality: 'langford',
-			storeys: 12,
-			units: 180,
-			flagged: true,
-			flagReasons: ['12 storeys', '180 units'],
-			coordinates: [-123.4956, 48.4491],
+			municipality: 'victoria',
+			appType: 'Heritage Alteration Permit',
+			flagged: false,
+			coordinates: [-123.358, 48.4265],
 			source: 'seed'
 		},
 		{
 			id: 'san-dev-seed-1',
 			address: '3800 Shelbourne St, Saanich',
-			description: 'Six-storey residential building with underground parking',
+			description: 'Development variance permit for a six-unit infill project',
 			type: 'residential',
-			status: 'proposed',
+			status: 'under-review',
 			municipality: 'saanich',
-			storeys: 6,
-			units: 72,
-			flagged: true,
-			flagReasons: ['6 storeys'],
+			appType: 'Development Variance Permit',
+			flagged: false,
 			coordinates: [-123.34, 48.454],
-			source: 'seed'
-		},
-		{
-			id: 'esq-dev-seed-1',
-			address: '850 Esquimalt Rd, Esquimalt',
-			description: 'Infill residential with retail at grade',
-			type: 'mixed-use',
-			status: 'approved',
-			municipality: 'esquimalt',
-			storeys: 4,
-			units: 32,
-			flagged: true,
-			flagReasons: ['4 storeys'],
-			coordinates: [-123.414, 48.432],
 			source: 'seed'
 		}
 	];
 }
 
-function parseNumber(val: unknown): number | undefined {
-	if (val === null || val === undefined || val === '') return undefined;
+// --- helpers ---
+
+function str(val: unknown): string {
+	if (val === null || val === undefined) return '';
+	return String(val).trim();
+}
+
+function titleCase(s: string): string {
+	if (!s) return s;
+	return s.toLowerCase().replace(/\b([a-z])/g, (c) => c.toUpperCase());
+}
+
+function stripHtml(s: string): string {
+	return s
+		.replace(/<br\s*\/?>(\s*)/gi, ' ')
+		.replace(/<[^>]+>/g, '')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+/** CREATED_DATE is an esriFieldTypeDate (epoch milliseconds). */
+function parseEpoch(val: unknown): string | undefined {
 	const n = Number(val);
-	return isNaN(n) ? undefined : n;
-}
-
-function normalizeStatus(str: string): DevelopmentApplication['status'] {
-	const lower = str.toLowerCase();
-	if (lower.includes('propos') || lower.includes('submit')) return 'proposed';
-	if (lower.includes('review') || lower.includes('pending')) return 'under-review';
-	if (lower.includes('approv')) return 'approved';
-	if (lower.includes('construct') || lower.includes('building')) return 'under-construction';
-	if (lower.includes('complet') || lower.includes('final')) return 'complete';
-	if (lower.includes('denied') || lower.includes('refused')) return 'denied';
-	if (lower.includes('withdraw')) return 'withdrawn';
-	return 'under-review';
-}
-
-function normalizeType(str: string): DevelopmentApplication['type'] {
-	const lower = str.toLowerCase();
-	if (lower.includes('mixed')) return 'mixed-use';
-	if (lower.includes('commerc') || lower.includes('retail') || lower.includes('office'))
-		return 'commercial';
-	if (
-		lower.includes('resid') ||
-		lower.includes('housing') ||
-		lower.includes('apartment') ||
-		lower.includes('townhouse')
-	)
-		return 'residential';
-	if (lower.includes('instit') || lower.includes('school') || lower.includes('hospital'))
-		return 'institutional';
-	if (lower.includes('indust')) return 'industrial';
-	return 'other';
-}
-
-function normalizeDate(val: unknown): string {
-	try {
-		if (typeof val === 'number') return new Date(val).toISOString();
-		return new Date(String(val)).toISOString();
-	} catch {
-		return new Date().toISOString();
-	}
+	if (!isFinite(n) || n <= 0) return undefined;
+	const d = new Date(n);
+	if (isNaN(d.getTime())) return undefined;
+	return d.toISOString().slice(0, 10);
 }
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -277,32 +203,19 @@ export const GET: RequestHandler = async ({ url }) => {
 	const flaggedOnly = url.searchParams.get('flagged') === 'true';
 	const limit = parseLimit(url.searchParams.get('limit'), 50);
 
-	// Fetch from Victoria Open Data
-	let applications = await fetchVictoriaDevPermits();
+	let applications = await fetchVictoriaDevApplications();
+	if (applications.length === 0) applications = getSeedDevelopments();
 
-	// If no live data, use seed data
-	if (applications.length === 0) {
-		applications = getSeedDevelopments();
-	}
+	if (municipality) applications = applications.filter((a) => a.municipality === municipality);
+	if (flaggedOnly) applications = applications.filter((a) => a.flagged);
 
-	// Filter
-	if (municipality) {
-		applications = applications.filter((a) => a.municipality === municipality);
-	}
-	if (flaggedOnly) {
-		applications = applications.filter((a) => a.flagged);
-	}
-
+	const flaggedCount = applications.filter((a) => a.flagged).length;
 	applications = applications.slice(0, limit);
 
 	return json(
 		{
 			data: applications,
-			meta: {
-				total: applications.length,
-				municipality,
-				flaggedCount: applications.filter((a) => a.flagged).length
-			}
+			meta: { total: applications.length, municipality, flaggedCount }
 		},
 		{
 			headers: {

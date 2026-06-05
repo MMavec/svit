@@ -70,6 +70,48 @@ export const demolitionCategoryColor = colorMap<
 	'var(--text-tertiary)'
 );
 
+/** Building-permit activity bucket → color */
+export const permitActivityColor = colorMap<
+	'new-construction' | 'renovation' | 'demolition' | 'electrical' | 'plumbing' | 'sign' | 'other'
+>(
+	{
+		'new-construction': 'var(--palette-green)',
+		renovation: 'var(--accent-primary)',
+		demolition: 'var(--accent-danger)',
+		electrical: 'var(--accent-warning)',
+		plumbing: 'var(--palette-cyan)',
+		sign: 'var(--palette-purple)',
+		other: 'var(--text-tertiary)'
+	},
+	'var(--text-tertiary)'
+);
+
+/** Business-licence category → color */
+export const licenceCategoryColor = colorMap<
+	| 'retail'
+	| 'food-drink'
+	| 'professional'
+	| 'personal-services'
+	| 'accommodation'
+	| 'rental-housing'
+	| 'contractor'
+	| 'machines'
+	| 'other'
+>(
+	{
+		retail: 'var(--palette-blue)',
+		'food-drink': 'var(--accent-warning)',
+		professional: 'var(--palette-purple)',
+		'personal-services': 'var(--palette-pink)',
+		accommodation: 'var(--palette-cyan)',
+		'rental-housing': 'var(--palette-sky)',
+		contractor: 'var(--palette-green)',
+		machines: 'var(--text-tertiary)',
+		other: 'var(--palette-muted)'
+	},
+	'var(--text-tertiary)'
+);
+
 /** Environment reading status → color */
 export const envStatusColor = colorMap<
 	'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'hazardous'

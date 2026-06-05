@@ -844,3 +844,72 @@ The Demolition Permits API therefore returns an **honest empty state** for non-V
 | 5    | **Property Assessment / Land Value** | `services.arcgis.com/EHSKalEvBxdO9ljW/.../Property_Assessment_Report_2026/FeatureServer/0` | 67,396 rows, non-spatial (join to parcels via PID/FOLIO)                                            |
 
 Not available: tree-removal permits (no feed; only canopy rasters), traffic/bike counts (network geometry only), STR registry (folded into Business Licences as `LICENCE_TYPE_NAME` categories).
+
+---
+
+## Civic Build-out 2 (2026-06): 1 fix + 4 tiles shipped
+
+All endpoints verified live and built into tiles in this pass. All on Victoria's self-hosted
+ArcGIS (`maps.victoria.ca/server/rest/services/OpenData/...`), public, no key. Reminders that
+apply to every one: parse `f=json` body without gating on content-type; `IssuedDate`/`Covers_FROM`
+are `YYYYMMDD` strings; `BldgValue`/money fields are strings (sum client-side); permit coords are in
+`X_LONG`/`Y_LAT`, but licences/EV/dev-apps carry coords only in geometry (request `&outSR=4326`).
+
+### FIX — Development Watch now uses live data
+
+`/api/development` was repointed from two dead endpoints to
+`OpenData_PlanningAndDevelopment/MapServer/3` (290 rows / 167 distinct `FOLDER_NUMBER`). Mapping:
+`AppType`, `STATUS` (ACTIVE/ON HOLD only), `PURPOSE` (strip `<br>`), `CREATED_DATE` (epoch ms),
+dedupe on `FOLDER_NUMBER`. No storeys/units/zoning fields exist, so flagging is by AppType
+(Rezoning / Heritage Designation / Temporary Use / Tax Incentive) + OCP/large-project text + ON HOLD.
+Deep-link: `https://tender.victoria.ca/webapps/ourcity/Prospero/Details.aspx?folderNumber={FOLDER}`.
+
+### TILE — Building Activity / Permit Pulse (`/api/permits`)
+
+`OpenData_PermitsAndLicences/MapServer/4` (last 60 days, ~1,000 rows). Classifies the 16 `type`
+codes into activity buckets (new/major build, renovation, demolition, electrical, plumbing, sign);
+discipline from the `BP-/EP-/PP-/SP-` prefix. Sums `BldgValue` client-side; note ~$39M single-permit
+outliers exist (electrical dominates count, BP-COMPLEX dominates value). `AUC_Group` is the cleanest
+residential/commercial cross-cut. Civic view (Political + Generalist).
+
+### TILE — Business Licences (`/api/business-licences`)
+
+`OpenData_PermitsAndLicences/MapServer/1` (current-year, 7,535 rows). CRITICAL honesty: ~95% are
+annual renewals (`Covers_FROM = Jan 1`). The tile flags `newlyCommenced` (coverage NOT starting
+Jan 1) and labels it as "not a routine renewal", never as "new business". 190 `LICENCE_TYPE_NAME`
+values collapsed into 9 categories; ~29% of the feed is residential-rental + laundry/vending. Civic
+view. Coords from geometry (`&outSR=4326`); `CIVIC_ADDRESS` has `\r\n`.
+
+### TILE — Assessment Values by Neighbourhood (`/api/assessment`)
+
+`OpenData_Land/MapServer/6` (12 polygons, pre-aggregated 2026 BC Assessment roll). Fields
+`{Residential|Business}_{Land|Impr|Total}Gross_{Median|Average}` (Doubles). Tile ranks neighbourhoods
+by residential/business median total value with a land-vs-building split. Civic view. No map (polygon
+choropleth deferred).
+
+### TILE — EV Charging (`/api/ev-charging`)
+
+`OpenData_Parking/MapServer/8` (40 active points). `Type`, `RatePerHour` (free-text — trust only this
+for "free"; the Description says "download the free FLO app"), `Description` (venue + network), hours.
+Placed in Nature (climate infrastructure) + Generalist. Map-pinned.
+
+### Map (HeroMap)
+
+Added `business-licence` (orange) and `ev-charging` (teal) pin categories with legend toggles, on top
+of the existing `demolition` category. Development applications already render via the `development`
+category (now live).
+
+### Coverage reality (unchanged)
+
+Every tile above is City-of-Victoria-only — no other CRD municipality publishes a queryable permit /
+licence / assessment feed. Non-Victoria municipalities get an honest empty state with a note, never
+fabricated rows.
+
+### Remaining verified candidates (documented, not yet built)
+
+- **Mobility** — `OpenData_Parking` car-share (1) / bike racks (0) / pay stations (5) points.
+- **Extreme Heat / Emergency resources** — `OpenData_EmergencyServices/MapServer/11` (cooling centres, point); seasonal.
+- **Heritage Register / Conservation Areas** — `OpenData_PlanningAndDevelopment/MapServer/10` (933 polygons) — best as a context overlay, static inventory.
+- **Property Assessment / Tax parcel-level** — AGOL `Property_Assessment_Report_2026` (67k rows, non-spatial table; join via `PID`/`gislink`).
+- **Civic amenities** — `OpenData_Facilities` washrooms/facilities/schools; `OpenData_City` patio areas. Static, lower priority.
+- Saanich/Oak Bay/other CRD: still no open permit/licence feeds (Saanich tracker is login-gated HTML).

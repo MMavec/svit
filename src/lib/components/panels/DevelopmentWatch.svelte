@@ -5,7 +5,6 @@
 	import PanelSkeleton from '$lib/components/ui/PanelSkeleton.svelte';
 	import PanelError from '$lib/components/ui/PanelError.svelte';
 	import BookmarkButton from '$lib/components/ui/BookmarkButton.svelte';
-	import { devStatusColor } from '$lib/utils/color-maps';
 
 	let applications = $state<DevelopmentApplication[]>([]);
 	let loading = $state(true);
@@ -99,6 +98,9 @@
 					<div class="dev-desc">{app.description}</div>
 
 					<div class="dev-stats">
+						{#if app.appType}
+							<span class="app-type">{app.appType}</span>
+						{/if}
 						{#if app.storeys}
 							<span class="stat" class:stat-flagged={app.storeys >= 4}>
 								{app.storeys} storeys
@@ -109,14 +111,15 @@
 								{app.units} units
 							</span>
 						{/if}
-						<span
-							class="status-pill"
-							style="color: {devStatusColor(app.status)}; border-color: {devStatusColor(
-								app.status
-							)}"
-						>
-							{app.status.replace('-', ' ')}
-						</span>
+						{#if app.documentUrl}
+							<a
+								class="track-link"
+								href={app.documentUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								onclick={(e) => e.stopPropagation()}>Track ↗</a
+							>
+						{/if}
 					</div>
 
 					{#if app.flagReasons && app.flagReasons.length > 0}
@@ -276,14 +279,26 @@
 		font-weight: 700;
 	}
 
-	.status-pill {
+	.app-type {
 		font-size: 0.625rem;
 		font-weight: 600;
-		padding: 1px 6px;
-		border: 1px solid;
-		border-radius: 4px;
-		text-transform: capitalize;
+		padding: 1px 7px;
+		border: 1px solid var(--accent-primary);
+		border-radius: 10px;
+		color: var(--accent-primary);
+	}
+
+	.track-link {
+		font-size: 0.625rem;
+		font-weight: 600;
+		color: var(--accent-secondary);
+		text-decoration: none;
 		margin-left: auto;
+		white-space: nowrap;
+	}
+
+	.track-link:hover {
+		text-decoration: underline;
 	}
 
 	.flag-reasons {

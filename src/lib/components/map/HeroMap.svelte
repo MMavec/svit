@@ -7,6 +7,8 @@
 	import { CRD_BBOX } from '$lib/config/municipalities';
 	import { fetchDevelopments } from '$lib/api/development';
 	import { fetchDemolitions } from '$lib/api/demolitions';
+	import { fetchBusinessLicences } from '$lib/api/business-licences';
+	import { fetchEvChargers } from '$lib/api/ev-charging';
 	import { fetchConstruction } from '$lib/api/construction';
 	import { fetchSafetyAlerts } from '$lib/api/safety';
 	import { fetchEvents } from '$lib/api/events';
@@ -33,6 +35,8 @@
 	const CATEGORIES = {
 		development: { label: 'Development', color: '#3182ce' },
 		demolition: { label: 'Demolitions', color: '#9b2c2c' },
+		'business-licence': { label: 'Business', color: '#dd6b20' },
+		'ev-charging': { label: 'EV Charging', color: '#319795' },
 		construction: { label: 'Roads', color: '#d69e2e' },
 		safety: { label: 'Safety', color: '#e53e3e' },
 		event: { label: 'Events', color: '#38a169' },
@@ -65,6 +69,8 @@
 	let activeCategories = new SvelteSet<Category>([
 		'development',
 		'demolition',
+		'business-licence',
+		'ev-charging',
 		'construction',
 		'safety',
 		'event',
@@ -95,10 +101,12 @@
 		const municipality = municipalityStore.slug;
 		const allFeatures: MapFeature[] = [];
 
-		const [devRes, demoRes, conRes, safeRes, eventRes, wildRes, treeRes, envRes] =
+		const [devRes, demoRes, licRes, evRes, conRes, safeRes, eventRes, wildRes, treeRes, envRes] =
 			await Promise.allSettled([
 				fetchDevelopments({ municipality, limit: 50 }),
 				fetchDemolitions({ municipality, limit: 50 }),
+				fetchBusinessLicences({ municipality, limit: 60 }),
+				fetchEvChargers({ municipality }),
 				fetchConstruction({ municipality, limit: 50 }),
 				fetchSafetyAlerts({ municipality, limit: 30 }),
 				fetchEvents({ municipality, limit: 30 }),
@@ -141,6 +149,39 @@
 					municipality: d.municipality,
 					color: CATEGORIES.demolition.color,
 					icon: 'X'
+				});
+			}
+		}
+
+		if (licRes.status === 'fulfilled' && licRes.value.data) {
+			for (const l of licRes.value.data) {
+				if (!l.coordinates) continue;
+				allFeatures.push({
+					id: l.id,
+					type: 'business-licence',
+					coordinates: l.coordinates,
+					title: l.tradeName,
+					description: l.licenceType,
+					severity: l.newlyCommenced ? 'high' : undefined,
+					municipality: l.municipality,
+					color: CATEGORIES['business-licence'].color,
+					icon: 'B'
+				});
+			}
+		}
+
+		if (evRes.status === 'fulfilled' && evRes.value.data) {
+			for (const c of evRes.value.data) {
+				if (!c.coordinates) continue;
+				allFeatures.push({
+					id: c.id,
+					type: 'ev-charging',
+					coordinates: c.coordinates,
+					title: c.name,
+					description: c.free ? 'Free charging' : c.rate || 'EV charging',
+					municipality: c.municipality,
+					color: CATEGORIES['ev-charging'].color,
+					icon: 'E'
 				});
 			}
 		}
