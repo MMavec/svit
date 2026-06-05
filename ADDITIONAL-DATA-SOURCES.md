@@ -779,3 +779,68 @@ Ranked by community value and feasibility:
 4. **BC Parks Advisories** - Trail closures and park safety advisories are relevant to the nature and family audiences. Free government API.
 5. **Acartia Whale Sightings** - Unique differentiator for the dashboard. Real-time whale sightings in the Salish Sea. Requires free API key.
 6. **CRD Alerts** - Covers trail closures, water advisories, and facility issues that directly affect residents. Requires scraping.
+
+---
+
+## Civic & Development Data: Victoria Open Data (2026-06 research)
+
+Research pass for the Demolition Permits tile and companion "development & civic activity"
+tiles. All endpoints below were probed with live `curl` and confirmed returning data on
+2026-06-05. No API key or account is required for any of them (public ArcGIS REST, anonymous GET).
+
+### Key infrastructure finding
+
+The City of Victoria self-hosts two relevant ArcGIS backends:
+
+- **Live rolling layers** (best for a dashboard): `https://maps.victoria.ca/server/rest/services/OpenData/...` — auto-refreshing 60-day / 365-day / current-year windows.
+- **Annual snapshot copies** on Esri AGOL: `https://services.arcgis.com/EHSKalEvBxdO9ljW/...` — deeper history, static yearly.
+
+Two gotchas that silently break naive integrations:
+
+- Some `f=json` query shapes return `Content-Type: text/plain` — **do not gate on content-type**, parse the body directly.
+- Date fields (`IssuedDate`) are **`YYYYMMDD` strings**, not real dates — `new Date('20260520')` is Invalid Date. Parse manually. Money fields (`BldgValue`) are strings too.
+
+### ⚠️ Existing Development Watch panel points at a dead endpoint
+
+`/api/development` currently queries a guessed AGOL URL (`services1.arcgis.com/gqkHRGtUEhylIBOE/...Development_Permit_Applications`) and an `opendata.victoria.ca/datasets/development-permit-applications/api` path. Neither resolves to Victoria's real data, so **Development Watch is almost certainly serving seed data in production.** The real live endpoint is:
+
+```
+https://maps.victoria.ca/server/rest/services/OpenData/OpenData_PlanningAndDevelopment/MapServer/3
+```
+
+It carries Rezoning, Development Permit, Development Variance, Heritage Alteration/Designation, Temporary Use, and Tax Incentive applications as points (167 distinct active applications; field `AppType`, `STATUS`, `FOLDER_NUMBER`, `CREATED_DATE` real date, `ClickUrl` deep-link). **Recommended follow-up: repoint `/api/development` at this layer for live data.**
+
+### Demolition Permits (IMPLEMENTED — this tile)
+
+```
+https://maps.victoria.ca/server/rest/services/OpenData/OpenData_PermitsAndLicences/MapServer/3
+  ?where=type='BP-DEMOLITION'
+```
+
+49 demolitions in the rolling 365-day window (date range ~2025-06 → 2026-05); fields
+`PermitNo, type, SUBJECT, Purpose, IssuedDate, BldgValue, House, Street, Neighbourhood, X_LONG, Y_LAT`.
+WGS84 coords live in the `X_LONG`/`Y_LAT` string columns. 10-year history (885 demolitions) at
+`services.arcgis.com/EHSKalEvBxdO9ljW/.../Building_Permits_Issued_Past_10_Years_(2016_to_2025)/FeatureServer/0`.
+
+### Coverage reality (important for civic-integrity)
+
+**Victoria is the ONLY CRD municipality with a machine-readable demolition/permit feed.**
+
+- **Saanich**: has an ArcGIS Hub (`opendata-saanich.hub.arcgis.com`, ~60 services) but NO permit records — only a HTML "Permit & Development Tracker" (Tempest/Prospero, no export). Building footprints exist (polygons), not permits.
+- **Oak Bay**: no open-data portal at all; Geocortex viewer only; permits are `inspections@oakbay.ca` + PDF council reports.
+- **Esquimalt, Langford, Colwood, Sidney, North/Central Saanich, View Royal, Sooke, Highlands, Metchosin**: none publish queryable permit data.
+- **CRD regional server** (`mapservices.crd.bc.ca`): basemaps/parcels/parks/environment only, no permits.
+
+The Demolition Permits API therefore returns an **honest empty state** for non-Victoria municipalities (never fabricated rows) and labels sample data clearly when the live feed is unreachable. Extending coverage to Saanich/Oak Bay would require HTML scraping or an FOI/data request per municipality.
+
+### Companion tiles available now (verified live, ranked)
+
+| Rank | Tile idea                            | REST layer                                                                                 | Notes                                                                                               |
+| ---- | ------------------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| 1    | **Development Applications Tracker** | `maps.victoria.ca/.../OpenData_PlanningAndDevelopment/MapServer/3`                         | Rezoning/heritage/variance pipeline; would give Development Watch real live data                    |
+| 2    | **Building Activity / Permit Pulse** | `.../OpenData_PermitsAndLicences/MapServer/3` (365d) & `/4` (60d)                          | Permit count + total `BldgValue` by type/neighbourhood; 5,672 permits/yr                            |
+| 3    | **Business Licences Issued**         | `.../OpenData_PermitsAndLicences/MapServer/1`                                              | Economic-activity heartbeat; 7,535 current-year (mostly renewals — filter by `ISSUED_DATE` for new) |
+| 4    | **Zoning context overlay**           | `.../OpenData_PlanningAndDevelopment/MapServer/12`                                         | 755 zoning polygons; basemap overlay, not a standalone tile                                         |
+| 5    | **Property Assessment / Land Value** | `services.arcgis.com/EHSKalEvBxdO9ljW/.../Property_Assessment_Report_2026/FeatureServer/0` | 67,396 rows, non-spatial (join to parcels via PID/FOLIO)                                            |
+
+Not available: tree-removal permits (no feed; only canopy rasters), traffic/bike counts (network geometry only), STR registry (folded into Business Licences as `LICENCE_TYPE_NAME` categories).

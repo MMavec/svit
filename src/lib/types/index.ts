@@ -17,6 +17,7 @@ export interface SavedItem {
 		| 'meeting'
 		| 'news'
 		| 'development'
+		| 'demolition'
 		| 'bylaw'
 		| 'event'
 		| 'wildlife'
@@ -214,6 +215,22 @@ export interface DevelopmentApplication {
 	source: string;
 }
 
+export interface DemolitionPermit {
+	id: string;
+	permitNo?: string;
+	address: string;
+	structure: string; // human-readable description of what is being demolished
+	category: 'single-family' | 'multi-unit' | 'commercial' | 'accessory' | 'institutional' | 'other';
+	municipality: string;
+	neighbourhood?: string;
+	issuedDate?: string; // ISO 8601
+	value?: number; // declared demolition/construction value in CAD
+	purpose?: string; // cleaned free-text scope (boilerplate stripped)
+	coordinates?: [number, number]; // [lng, lat]
+	heritage?: boolean; // flagged when the record references heritage status
+	source: string; // 'victoria-opendata' | 'seed'
+}
+
 // --- Phase 2: Community Intelligence Types ---
 
 export interface ConstructionEvent {
@@ -284,6 +301,7 @@ export interface MapFeature {
 	id: string;
 	type:
 		| 'development'
+		| 'demolition'
 		| 'construction'
 		| 'fire'
 		| 'transit-alert'

@@ -68,7 +68,8 @@
 		'community-board': () => import('$lib/components/panels/CommunityBoard.svelte'),
 		'family-activities': () => import('$lib/components/panels/FamilyActivities.svelte'),
 		'parks-recreation': () => import('$lib/components/panels/ParksRecreation.svelte'),
-		'schools-libraries': () => import('$lib/components/panels/SchoolsLibraries.svelte')
+		'schools-libraries': () => import('$lib/components/panels/SchoolsLibraries.svelte'),
+		'demolition-permits': () => import('$lib/components/panels/DemolitionPermits.svelte')
 	};
 
 	const COLS = 12;

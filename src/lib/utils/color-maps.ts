@@ -55,6 +55,21 @@ export const devStatusColor = colorMap<
 	withdrawn: 'var(--text-tertiary)'
 });
 
+/** Demolition permit category → color (red-weighted: loss of housing stock reads as a warning) */
+export const demolitionCategoryColor = colorMap<
+	'single-family' | 'multi-unit' | 'commercial' | 'accessory' | 'institutional' | 'other'
+>(
+	{
+		'single-family': 'var(--accent-danger)',
+		'multi-unit': 'var(--status-critical)',
+		commercial: 'var(--palette-blue)',
+		accessory: 'var(--palette-muted)',
+		institutional: 'var(--palette-purple)',
+		other: 'var(--text-tertiary)'
+	},
+	'var(--text-tertiary)'
+);
+
 /** Environment reading status → color */
 export const envStatusColor = colorMap<
 	'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'hazardous'

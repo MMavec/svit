@@ -6,6 +6,7 @@
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { CRD_BBOX } from '$lib/config/municipalities';
 	import { fetchDevelopments } from '$lib/api/development';
+	import { fetchDemolitions } from '$lib/api/demolitions';
 	import { fetchConstruction } from '$lib/api/construction';
 	import { fetchSafetyAlerts } from '$lib/api/safety';
 	import { fetchEvents } from '$lib/api/events';
@@ -31,6 +32,7 @@
 
 	const CATEGORIES = {
 		development: { label: 'Development', color: '#3182ce' },
+		demolition: { label: 'Demolitions', color: '#9b2c2c' },
 		construction: { label: 'Roads', color: '#d69e2e' },
 		safety: { label: 'Safety', color: '#e53e3e' },
 		event: { label: 'Events', color: '#38a169' },
@@ -62,6 +64,7 @@
 	let marineSightings = $state<MarineSighting[]>([]);
 	let activeCategories = new SvelteSet<Category>([
 		'development',
+		'demolition',
 		'construction',
 		'safety',
 		'event',
@@ -92,15 +95,17 @@
 		const municipality = municipalityStore.slug;
 		const allFeatures: MapFeature[] = [];
 
-		const [devRes, conRes, safeRes, eventRes, wildRes, treeRes, envRes] = await Promise.allSettled([
-			fetchDevelopments({ municipality, limit: 50 }),
-			fetchConstruction({ municipality, limit: 50 }),
-			fetchSafetyAlerts({ municipality, limit: 30 }),
-			fetchEvents({ municipality, limit: 30 }),
-			fetchWildlifeSightings({ municipality, limit: 50 }),
-			fetchTreeObservations({ municipality, limit: 50 }),
-			fetchEnvironmentReadings({ municipality, limit: 20 })
-		]);
+		const [devRes, demoRes, conRes, safeRes, eventRes, wildRes, treeRes, envRes] =
+			await Promise.allSettled([
+				fetchDevelopments({ municipality, limit: 50 }),
+				fetchDemolitions({ municipality, limit: 50 }),
+				fetchConstruction({ municipality, limit: 50 }),
+				fetchSafetyAlerts({ municipality, limit: 30 }),
+				fetchEvents({ municipality, limit: 30 }),
+				fetchWildlifeSightings({ municipality, limit: 50 }),
+				fetchTreeObservations({ municipality, limit: 50 }),
+				fetchEnvironmentReadings({ municipality, limit: 20 })
+			]);
 
 		// Bail if this request was superseded by a newer one
 		if (signal.aborted) return;
@@ -118,6 +123,24 @@
 					municipality: d.municipality,
 					color: CATEGORIES.development.color,
 					icon: 'D'
+				});
+			}
+		}
+
+		if (demoRes.status === 'fulfilled' && demoRes.value.data) {
+			for (const d of demoRes.value.data) {
+				if (!d.coordinates) continue;
+				allFeatures.push({
+					id: d.id,
+					type: 'demolition',
+					coordinates: d.coordinates,
+					title: d.address,
+					description: d.structure,
+					severity:
+						d.category === 'single-family' || d.category === 'multi-unit' ? 'high' : undefined,
+					municipality: d.municipality,
+					color: CATEGORIES.demolition.color,
+					icon: 'X'
 				});
 			}
 		}

@@ -281,6 +281,15 @@ export const panels: PanelConfig[] = [
 		defaultPosition: { x: 8, y: 54, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
+	},
+	{
+		id: 'demolition-permits',
+		title: 'Demolition Permits',
+		tier: 3,
+		icon: '🏚',
+		defaultPosition: { x: 0, y: 60, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
 	}
 ];
 
