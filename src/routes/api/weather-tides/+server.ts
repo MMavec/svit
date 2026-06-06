@@ -40,8 +40,14 @@ async function resolveStationId(): Promise<string | null> {
 			if (!isJsonResponse(response)) return null;
 
 			const stations = await response.json();
-			if (Array.isArray(stations) && stations.length > 0) {
-				return stations[0].id as string;
+			// IMPORTANT: the IWLS `chs-station-code` query param is NOT honoured — the API returns the
+			// full ~1570-station list, so stations[0] is an arbitrary station (e.g. Tasiujaq in Ungava
+			// Bay, whose real ~12m tides were being shown as "Victoria Harbour"). Filter by exact code.
+			if (Array.isArray(stations)) {
+				const match = stations.find(
+					(s) => s && (s.code === VICTORIA_HARBOUR_CODE || s.officialName === 'Victoria Harbour')
+				);
+				if (match) return match.id as string;
 			}
 			return null;
 		} catch {
@@ -218,11 +224,25 @@ async function fetchTideData(): Promise<{
 
 		const predictions: TidePrediction[] = [];
 		if (hiloResult.status === 'fulfilled' && Array.isArray(hiloResult.value)) {
-			for (const entry of hiloResult.value.slice(0, 8)) {
+			const entries = hiloResult.value.slice(0, 8);
+			const heights = entries.map((e) =>
+				typeof e.value === 'number' ? e.value : parseFloat(e.value || '0')
+			);
+			// The IWLS wlp-hilo response carries no high/low flag, so derive it: each hi/lo point is a
+			// local extreme, so it's a HIGH when it's >= its neighbours, otherwise a LOW.
+			for (let i = 0; i < entries.length; i++) {
+				const h = heights[i];
+				const prev = i > 0 ? heights[i - 1] : undefined;
+				const next = i < heights.length - 1 ? heights[i + 1] : undefined;
+				let isHigh: boolean;
+				if (prev !== undefined && next !== undefined) isHigh = h >= prev && h >= next;
+				else if (prev !== undefined) isHigh = h >= prev;
+				else if (next !== undefined) isHigh = h >= next;
+				else isHigh = false;
 				predictions.push({
-					time: entry.eventDate || entry.time || '',
-					height: typeof entry.value === 'number' ? entry.value : parseFloat(entry.value || '0'),
-					type: (entry.event || '').toLowerCase().includes('high') ? 'high' : 'low'
+					time: entries[i].eventDate || entries[i].time || '',
+					height: h,
+					type: isHigh ? 'high' : 'low'
 				});
 			}
 		}

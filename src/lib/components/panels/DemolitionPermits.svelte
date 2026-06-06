@@ -196,7 +196,12 @@
 							<span class="meta-bit">{p.neighbourhood}</span>
 						{/if}
 						{#if p.value}
-							<span class="meta-bit value">{formatValue(p.value)}</span>
+							<span
+								class="meta-bit value"
+								title="Declared value of the demolition work, as stated on the permit"
+							>
+								demo cost {formatValue(p.value)}
+							</span>
 						{/if}
 						{#if p.issuedDate}
 							<span class="meta-bit date">{formatDate(p.issuedDate)}</span>
@@ -331,17 +336,18 @@
 	.demo-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.demo-item {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-		border-left: 3px solid var(--cat-color);
+		padding: 8px 4px;
+		border-bottom: 1px solid var(--border-primary);
 		text-align: left;
+	}
+
+	.demo-item:last-child {
+		border-bottom: none;
 	}
 
 	.demo-item.clickable {
@@ -350,7 +356,7 @@
 	}
 
 	.demo-item.clickable:hover {
-		background: var(--bg-surface-active, var(--bg-surface-hover));
+		background: var(--bg-surface-hover);
 	}
 
 	.demo-item:focus-visible {
@@ -366,9 +372,9 @@
 	}
 
 	.cat-badge {
-		width: 10px;
-		height: 10px;
-		border-radius: 2px;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
 		background: var(--cat-color);
 		flex-shrink: 0;
 	}

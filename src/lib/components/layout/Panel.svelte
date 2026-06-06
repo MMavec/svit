@@ -55,11 +55,12 @@
 	}
 
 	const isFocused = $derived(urlState.focusedPanel === config.id);
+	const PanelIcon = $derived(config.icon);
 </script>
 
 <div class="panel" class:collapsed data-panel-id={config.id} data-tier={config.tier}>
 	<div class="panel-header">
-		<span class="panel-icon" aria-hidden="true">{config.icon}</span>
+		<span class="panel-icon" aria-hidden="true"><PanelIcon size={15} strokeWidth={2} /></span>
 		<span class="panel-title">{config.title}</span>
 		<DataFreshness timestamp={lastUpdated} cached={isCached} {cachedAt} />
 		<button

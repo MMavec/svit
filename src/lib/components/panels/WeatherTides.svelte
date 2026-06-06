@@ -158,6 +158,26 @@
 		}
 	}
 
+	/** Pacific-time day key (YYYY-MM-DD) so multi-day tide rows can show Today/Tomorrow/weekday. */
+	function pacificDayKey(d: Date): string {
+		return d.toLocaleDateString('en-CA', { timeZone: 'America/Vancouver' });
+	}
+
+	/** Relative day label for a tide row: 'Today', 'Tomorrow', or a short weekday (e.g. 'Sun'). */
+	function formatTideDay(iso: string): string {
+		try {
+			const d = new Date(iso);
+			const key = pacificDayKey(d);
+			const today = pacificDayKey(new Date(data?.tides.current?.time ?? iso));
+			if (key === today) return 'Today';
+			const tomorrow = new Date(new Date(today + 'T12:00:00').getTime() + 86400000);
+			if (key === pacificDayKey(tomorrow)) return 'Tomorrow';
+			return d.toLocaleDateString('en-CA', { weekday: 'short', timeZone: 'America/Vancouver' });
+		} catch {
+			return '';
+		}
+	}
+
 	function tideDirection(current: number, predictions: { height: number; type: string }[]): string {
 		if (predictions.length === 0) return '';
 		return predictions[0].type === 'high' ? 'rising' : 'falling';
@@ -296,7 +316,10 @@
 								{pred.type === 'high' ? '\u25B2' : '\u25BC'}
 								{pred.type === 'high' ? 'High' : 'Low'}
 							</span>
-							<span class="tide-time">{formatTime(pred.time)}</span>
+							<span class="tide-time">
+								<span class="tide-day">{formatTideDay(pred.time)}</span>
+								{formatTime(pred.time)}
+							</span>
 							<span class="tide-height">{pred.height.toFixed(1)}m</span>
 						</div>
 					{/each}
@@ -600,6 +623,13 @@
 		color: var(--text-secondary);
 		font-family: 'Geist Mono', monospace;
 		flex: 1;
+	}
+
+	.tide-day {
+		display: inline-block;
+		width: 4.5em;
+		color: var(--text-tertiary);
+		font-size: 0.6875rem;
 	}
 
 	.tide-height {

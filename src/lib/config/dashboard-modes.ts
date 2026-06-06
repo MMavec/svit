@@ -1,4 +1,6 @@
 import { panels } from './panels';
+import { Baby, Landmark, LayoutGrid, Leaf, LifeBuoy, Sun, UsersRound } from '@lucide/svelte';
+import type { IconComponent } from '$lib/types/index';
 
 export type DashboardMode =
 	| 'generalist'
@@ -12,7 +14,7 @@ export type DashboardMode =
 export interface ModeConfig {
 	id: DashboardMode;
 	label: string;
-	icon: string;
+	icon: IconComponent;
 	panelOrder: string[];
 }
 
@@ -27,9 +29,10 @@ export const dashboardModes: ModeConfig[] = [
 	{
 		id: 'generalist',
 		label: 'Generalist',
-		icon: '👤',
+		icon: LayoutGrid,
 		panelOrder: buildOrder([
 			'council-watch',
+			'council-votes',
 			'bylaw-tracker',
 			'voices',
 			'public-hearings',
@@ -59,9 +62,10 @@ export const dashboardModes: ModeConfig[] = [
 	{
 		id: 'civic',
 		label: 'Civic',
-		icon: '🏛',
+		icon: Landmark,
 		panelOrder: buildOrder([
 			'council-watch',
+			'council-votes',
 			'bylaw-tracker',
 			'councillor-profiles',
 			'crime-incidents',
@@ -82,7 +86,7 @@ export const dashboardModes: ModeConfig[] = [
 	{
 		id: 'nature',
 		label: 'Nature',
-		icon: '🌿',
+		icon: Leaf,
 		panelOrder: buildOrder([
 			'wildlife-marine',
 			'trees-urban-forest',
@@ -99,7 +103,7 @@ export const dashboardModes: ModeConfig[] = [
 	{
 		id: 'social',
 		label: 'Social',
-		icon: '🎉',
+		icon: UsersRound,
 		panelOrder: buildOrder([
 			'events',
 			'voices',
@@ -115,7 +119,7 @@ export const dashboardModes: ModeConfig[] = [
 	{
 		id: 'active-senior',
 		label: 'Active Senior',
-		icon: '📰',
+		icon: Sun,
 		panelOrder: buildOrder([
 			// Lead with practical daily-life tiles
 			'grocery-flyers',
@@ -142,7 +146,7 @@ export const dashboardModes: ModeConfig[] = [
 	{
 		id: 'family',
 		label: 'Family',
-		icon: '👨‍👩‍👧‍👦',
+		icon: Baby,
 		panelOrder: buildOrder([
 			// Family-first tiles
 			'family-activities',
@@ -167,7 +171,7 @@ export const dashboardModes: ModeConfig[] = [
 	{
 		id: 'be-ready',
 		label: 'Be Ready',
-		icon: '🆘',
+		icon: LifeBuoy,
 		panelOrder: buildOrder([
 			// Live emergency signals first
 			'power-outages',

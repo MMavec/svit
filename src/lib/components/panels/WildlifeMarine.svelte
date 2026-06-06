@@ -195,17 +195,31 @@
 	.sighting-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.sighting-card {
-		padding: 8px;
-		padding-left: 10px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
+		position: relative;
+		padding: 8px 8px 8px 15px;
+		border-bottom: 1px solid var(--border-primary);
 		transition: background 0.2s;
+		--row-accent: var(--text-tertiary);
+	}
+
+	.sighting-card::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 14px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
+	}
+
+	.sighting-card:last-child {
+		border-bottom: none;
 	}
 
 	.sighting-card:hover {
@@ -286,7 +300,7 @@
 
 	/* Marine mammal card enhancements */
 	.marine-card {
-		border-left: 3px solid #805ad5;
+		--row-accent: #805ad5;
 	}
 
 	.marine-alert-label {

@@ -185,20 +185,34 @@
 	.hearing-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 	}
 
 	.hearing-item {
+		position: relative;
 		display: flex;
 		gap: 10px;
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-		border-left: 3px solid var(--accent-warning);
+		padding: 8px 8px 8px 15px;
+		border-bottom: 1px solid var(--border-primary);
+		--row-accent: var(--accent-warning);
+	}
+
+	.hearing-item::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 14px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
+	}
+
+	.hearing-item:last-child {
+		border-bottom: none;
 	}
 
 	.hearing-item.closed {
-		border-left-color: var(--text-tertiary);
+		--row-accent: var(--text-tertiary);
 		opacity: 0.7;
 	}
 

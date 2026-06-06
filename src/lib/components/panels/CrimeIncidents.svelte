@@ -393,10 +393,7 @@
 		<!-- Incident list -->
 		<div class="incident-list">
 			{#each filteredIncidents as incident (incident.id)}
-				<div
-					class="incident-card"
-					style="border-left: 3px solid {crimeSeverityColor(incident.severity)}"
-				>
+				<div class="incident-card" style="--row-accent: {crimeSeverityColor(incident.severity)}">
 					<div class="incident-header">
 						<span class="type-badge" style="background: {crimeTypeColor(incident.type)}">
 							{typeIcon(incident.type)}
@@ -652,21 +649,34 @@
 	.incident-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.incident-card {
-		padding: 8px;
-		padding-left: 10px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
+		position: relative;
+		padding: 9px 4px 9px 15px;
+		border-bottom: 1px solid var(--border-primary);
 		transition: background 0.2s;
 	}
 
+	.incident-card::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 17px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
+	}
+
+	.incident-card:last-child {
+		border-bottom: none;
+	}
+
 	.incident-card:hover {
-		background: var(--bg-surface-elevated);
+		background: var(--bg-surface-hover);
 	}
 
 	.incident-header {

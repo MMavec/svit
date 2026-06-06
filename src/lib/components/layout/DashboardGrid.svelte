@@ -81,7 +81,8 @@
 		patios: () => import('$lib/components/panels/Patios.svelte'),
 		'power-outages': () => import('$lib/components/panels/PowerOutages.svelte'),
 		'emergency-alerts': () => import('$lib/components/panels/EmergencyAlerts.svelte'),
-		'public-land': () => import('$lib/components/panels/PublicLand.svelte')
+		'public-land': () => import('$lib/components/panels/PublicLand.svelte'),
+		'council-votes': () => import('$lib/components/panels/CouncilVotes.svelte')
 	};
 
 	const COLS = 12;

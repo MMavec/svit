@@ -158,7 +158,7 @@
 		{/if}
 		<div class="alert-list">
 			{#each filteredAlerts as alert (alert.id)}
-				<div class="alert-card" style="border-left: 3px solid {safetyAlertColor(alert.severity)}">
+				<div class="alert-card" style="--row-accent: {safetyAlertColor(alert.severity)}">
 					<div class="alert-header">
 						<span class="type-badge" style="background: {safetyAlertColor(alert.severity)}">
 							{typeIcon(alert.type)}
@@ -250,17 +250,30 @@
 	.alert-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.alert-card {
-		padding: 8px;
-		padding-left: 10px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
+		position: relative;
+		padding: 8px 8px 8px 15px;
+		border-bottom: 1px solid var(--border-primary);
 		transition: background 0.2s;
+	}
+
+	.alert-card::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 14px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
+	}
+
+	.alert-card:last-child {
+		border-bottom: none;
 	}
 
 	.alert-card:hover {

@@ -185,22 +185,22 @@
 	.list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 	.item {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-		border-left: 3px solid var(--c);
+		padding: 8px 4px;
+		border-bottom: 1px solid var(--border-primary);
 		text-align: left;
+	}
+	.item:last-child {
+		border-bottom: none;
 	}
 	.item.clickable {
 		cursor: pointer;
 	}
 	.item.clickable:hover {
-		background: var(--bg-surface-active, var(--bg-surface-hover));
+		background: var(--bg-surface-hover);
 	}
 	.item:focus-visible {
 		outline: 2px solid var(--c);

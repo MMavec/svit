@@ -509,19 +509,34 @@
 	.monitor-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.monitor-card {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
+		position: relative;
+		padding: 9px 2px 10px 15px;
+		border-bottom: 1px solid var(--border-primary);
+		--row-accent: var(--text-tertiary);
+	}
+
+	.monitor-card:last-child {
+		border-bottom: none;
 	}
 
 	.monitor-card.has-matches {
-		border-left: 3px solid var(--accent-primary);
+		--row-accent: var(--accent-primary);
+	}
+
+	.monitor-card::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 14px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
 	}
 
 	.monitor-header-btn {

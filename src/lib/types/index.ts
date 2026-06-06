@@ -1,4 +1,14 @@
+import type { Component } from 'svelte';
+
 export type Theme = 'dark' | 'light';
+
+/** A Lucide (or any Svelte) icon component used for panel/mode glyphs. */
+export type IconComponent = Component<{
+	size?: number | string;
+	strokeWidth?: number | string;
+	color?: string;
+	class?: string;
+}>;
 
 export interface Municipality {
 	slug: string;
@@ -36,7 +46,7 @@ export interface PanelConfig {
 	id: string;
 	title: string;
 	tier: 1 | 2 | 3 | 4;
-	icon: string;
+	icon: IconComponent;
 	defaultPosition: GridPosition;
 	minWidth: number;
 	minHeight: number;
@@ -398,6 +408,31 @@ export interface EmergencyAlert {
 	agency?: string;
 	updated?: string; // ISO 8601
 	source: string;
+}
+
+export interface CouncilVote {
+	id: string;
+	meetingName: string;
+	meetingDate: string; // YYYY/MM/DD
+	itemCode?: string;
+	motion: string;
+	result: string;
+	carried: boolean;
+	unanimous: boolean;
+	forCount: number;
+	againstCount: number;
+	opposed: string[];
+	inFavour: string[];
+	conflict: string[];
+	split: boolean;
+	valid: boolean;
+}
+
+export interface CouncillorScore {
+	name: string;
+	votesRecorded: number;
+	dissents: number;
+	conflicts: number;
 }
 
 export interface PublicLandParcel {

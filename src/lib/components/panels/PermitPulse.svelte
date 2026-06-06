@@ -309,17 +309,18 @@
 	.list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.item {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-		border-left: 3px solid var(--c);
+		padding: 9px 2px 10px;
+		border-bottom: 1px solid var(--border-primary);
 		text-align: left;
+	}
+
+	.item:last-child {
+		border-bottom: none;
 	}
 
 	.item.clickable {
@@ -328,7 +329,7 @@
 	}
 
 	.item.clickable:hover {
-		background: var(--bg-surface-active, var(--bg-surface-hover));
+		background: var(--bg-surface-hover);
 	}
 
 	.item:focus-visible {
@@ -344,9 +345,9 @@
 	}
 
 	.dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 2px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
 		background: var(--c);
 		flex-shrink: 0;
 	}

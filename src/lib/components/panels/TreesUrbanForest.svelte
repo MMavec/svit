@@ -108,16 +108,31 @@
 	.tree-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.tree-card {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
+		position: relative;
+		padding: 8px 8px 8px 15px;
+		border-bottom: 1px solid var(--border-primary);
 		transition: background 0.2s;
+		--row-accent: var(--text-tertiary);
+	}
+
+	.tree-card::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 14px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
+	}
+
+	.tree-card:last-child {
+		border-bottom: none;
 	}
 
 	.tree-card:hover {
@@ -125,8 +140,7 @@
 	}
 
 	.tree-card.heritage {
-		border-left: 3px solid var(--accent-secondary);
-		padding-left: 7px;
+		--row-accent: var(--accent-secondary);
 	}
 
 	.tree-header {

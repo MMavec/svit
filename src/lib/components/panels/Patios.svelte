@@ -155,7 +155,6 @@
 	.list {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
 		overflow-y: auto;
 		flex: 1;
 	}
@@ -163,29 +162,33 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 6px 8px;
+		padding: 8px 2px;
 		border: none;
-		border-radius: 6px;
-		background: var(--bg-surface-hover);
+		border-bottom: 1px solid var(--border-primary);
+		background: transparent;
 		text-align: left;
 		width: 100%;
+	}
+	.row:last-child {
+		border-bottom: none;
 	}
 	.row.clickable {
 		cursor: pointer;
 	}
 	.row.clickable:hover {
-		background: var(--bg-surface-active, var(--bg-surface-hover));
+		background: var(--bg-surface-hover);
 	}
 	.row:focus-visible {
 		outline: 2px solid var(--accent-warning);
 		outline-offset: 1px;
 	}
 	.bar {
-		width: 3px;
-		height: 18px;
-		border-radius: 2px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
 		background: var(--accent-warning);
 		flex-shrink: 0;
+		margin-left: 2px;
 	}
 	.label {
 		font-size: 0.75rem;

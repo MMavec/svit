@@ -350,21 +350,35 @@
 	.dev-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.dev-item {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-		border-left: 3px solid var(--border-primary);
+		position: relative;
+		padding: 9px 2px 10px 15px;
+		border-bottom: 1px solid var(--border-primary);
 		text-align: left;
+		--row-accent: var(--border-primary);
 	}
 
 	.dev-item.flagged {
-		border-left-color: var(--accent-danger);
+		--row-accent: var(--accent-danger);
+	}
+
+	.dev-item::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 14px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
+	}
+
+	.dev-item:last-child {
+		border-bottom: none;
 	}
 
 	.dev-item.clickable {

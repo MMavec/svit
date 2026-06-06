@@ -1,0 +1,48 @@
+name: Scrape Council Votes
+
+# Refreshes src/lib/data/council-votes.json from City of Victoria eSCRIBE minutes.
+# Minutes are adopted at the FOLLOWING council meeting, so this trails live council
+# by a few weeks — a twice-weekly cadence comfortably keeps pace with new adoptions.
+
+on:
+  schedule:
+    - cron: '17 11 * * 1,4' # Mon & Thu 03:17 PT (11:17 UTC)
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scrape-votes
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    name: Scrape & commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Install poppler-utils (pdftotext)
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Scrape council votes
+        run: node scripts/scrape-council-votes.mjs
+        env:
+          VOTE_MONTHS_BACK: 8
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- src/lib/data/council-votes.json; then
+            echo "No vote changes — nothing to commit."
+          else
+            git add src/lib/data/council-votes.json
+            git commit -m "chore(data): refresh council vote scorecard [skip ci]"
+            git push
+          fi

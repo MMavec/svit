@@ -504,23 +504,35 @@
 	.councillor-list {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.councillor-card {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
-		border-left: 3px solid transparent;
-		transition:
-			border-color 0.15s,
-			background 0.15s;
+		position: relative;
+		padding: 8px 8px 8px 15px;
+		border-bottom: 1px solid var(--border-primary);
+		--row-accent: transparent;
+		transition: background 0.15s;
 	}
 
 	.councillor-card.is-followed {
-		border-left-color: var(--accent-warning);
+		--row-accent: var(--accent-warning);
+	}
+
+	.councillor-card::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 14px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
+	}
+
+	.councillor-card:last-child {
+		border-bottom: none;
 	}
 
 	.councillor-card:hover {

@@ -116,7 +116,6 @@
 					}}
 				>
 					<div class="head">
-						<span class="bar"></span>
 						<span class="class">{p.inventoryClass}</span>
 						{#if p.pid}<span class="pid">{p.pid}</span>{/if}
 					</div>
@@ -198,16 +197,28 @@
 	.list {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
 		overflow-y: auto;
 		flex: 1;
 	}
 	.item {
-		padding: 7px 8px;
-		border-radius: 6px;
-		background: var(--bg-surface-hover);
-		border-left: 3px solid var(--palette-green);
+		position: relative;
+		padding: 7px 8px 7px 15px;
+		border-bottom: 1px solid var(--border-primary);
 		text-align: left;
+		--row-accent: var(--palette-green);
+	}
+	.item::before {
+		content: '';
+		position: absolute;
+		left: 2px;
+		top: 12px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--row-accent);
+	}
+	.item:last-child {
+		border-bottom: none;
 	}
 	.item.clickable {
 		cursor: pointer;
@@ -223,13 +234,6 @@
 		display: flex;
 		align-items: center;
 		gap: 6px;
-	}
-	.bar {
-		width: 8px;
-		height: 8px;
-		border-radius: 2px;
-		background: var(--palette-green);
-		flex-shrink: 0;
 	}
 	.class {
 		font-size: 0.75rem;

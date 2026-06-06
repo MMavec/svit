@@ -35,6 +35,7 @@
 		"vitest": "^4.0.18"
 	},
 	"dependencies": {
+		"@lucide/svelte": "^1.17.0",
 		"@supabase/supabase-js": "^2.98.0",
 		"@sveltejs/adapter-vercel": "^6.3.3",
 		"@vercel/analytics": "^1.6.1",

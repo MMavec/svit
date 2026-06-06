@@ -169,15 +169,17 @@
 	.reading-list {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
 		overflow-y: auto;
 		flex: 1;
 	}
 
 	.reading-card {
-		padding: 8px;
-		border-radius: 8px;
-		background: var(--bg-surface-hover);
+		padding: 9px 2px 10px;
+		border-bottom: 1px solid var(--border-primary);
+	}
+
+	.reading-card:last-child {
+		border-bottom: none;
 	}
 
 	.reading-header {

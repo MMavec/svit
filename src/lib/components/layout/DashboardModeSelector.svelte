@@ -6,6 +6,7 @@
 
 <div class="mode-selector" role="radiogroup" aria-label="Dashboard mode">
 	{#each dashboardModes as mode (mode.id)}
+		{@const ModeIcon = mode.icon}
 		<button
 			class="mode-btn"
 			class:active={dashboardModeStore.mode === mode.id}
@@ -15,7 +16,7 @@
 			title={mode.label}
 			aria-label="{mode.label} mode"
 		>
-			<span class="mode-icon">{mode.icon}</span>
+			<span class="mode-icon"><ModeIcon size={15} strokeWidth={2} /></span>
 			<span class="mode-label">{mode.label}</span>
 		</button>
 	{/each}

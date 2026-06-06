@@ -17,6 +17,7 @@ const CACHE_TTLS: Record<string, number> = {
 	'/news': 5 * 60 * 1000,
 	'/social': 5 * 60 * 1000,
 	'/construction': 5 * 60 * 1000,
+	'/council-votes': 6 * 60 * 60 * 1000,
 	'/council': 30 * 60 * 1000,
 	'/development': 15 * 60 * 1000,
 	'/demolitions': 15 * 60 * 1000,
