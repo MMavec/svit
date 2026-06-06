@@ -2,7 +2,7 @@ import { panels } from './panels';
 
 export type DashboardMode =
 	| 'generalist'
-	| 'political'
+	| 'civic'
 	| 'nature'
 	| 'social'
 	| 'active-senior'
@@ -48,8 +48,8 @@ export const dashboardModes: ModeConfig[] = [
 		])
 	},
 	{
-		id: 'political',
-		label: 'Political',
+		id: 'civic',
+		label: 'Civic',
 		icon: '🏛',
 		panelOrder: buildOrder([
 			'council-watch',

@@ -5,7 +5,7 @@ import type { DashboardMode } from '$lib/config/dashboard-modes';
 
 const validModes = new Set<string>([
 	'generalist',
-	'political',
+	'civic',
 	'nature',
 	'social',
 	'active-senior',

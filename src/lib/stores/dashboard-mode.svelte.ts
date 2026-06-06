@@ -11,7 +11,7 @@ function loadMode(): DashboardMode {
 	if (typeof window === 'undefined') return 'generalist';
 	const stored = localStorage.getItem(STORAGE_KEY);
 	if (
-		stored === 'political' ||
+		stored === 'civic' ||
 		stored === 'nature' ||
 		stored === 'social' ||
 		stored === 'active-senior' ||
