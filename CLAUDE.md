@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Adapter**: `@sveltejs/adapter-vercel` with Node.js 22.x runtime
 - **Mapping**: MapLibre GL JS — CARTO basemaps (no API key), municipality boundaries + feature pins
 - **Charts**: D3.js — sparkline charts via `d3.line()` + `d3.curveBasis`
+- **Icons**: `@lucide/svelte` line icons (NOT emoji). `PanelConfig.icon` / `ModeConfig.icon` hold Lucide components, not strings — see "Icon System" below
 - **GTFS-RT**: `gtfs-realtime-bindings` for BC Transit protobuf alert decoding
 - **Auth/DB**: Supabase (auth store + modal wired, optional accounts only)
 - **Fonts**: Inter (body) + Geist Mono (data/monospace)
@@ -65,7 +66,9 @@ Single-page dashboard with a 12-column draggable grid (60px rows, 12px gap). Pan
 
 - **Tier 1** (eagerly loaded): Council Watch, Bylaw Tracker, Voices, Public Hearings, Development Watch, Councillors & Mayors
 - **Tier 2** (eagerly loaded): Local Wire, Pulse (D3), Construction & Roads, Transit, Safety & Emergency, Weather & Tides, Crime & Incidents
-- **Tier 3** (lazily loaded): Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment, Demographics, Topic Watch (formerly My Monitors), Connections, Threads, Grocery Flyers, Local Food & Drink, Real Estate Market, Community Board, Family Activities, Parks & Recreation, Schools & Libraries
+- **Tier 3** (lazily loaded): Housing & Development, Community Events, Budget & Finance, Wildlife & Marine, Trees & Urban Forest, Nature & Environment, Demographics, Topic Watch (formerly My Monitors), Connections, Threads, Grocery Flyers, Local Food & Drink, Real Estate Market, Community Board, Family Activities, Parks & Recreation, Schools & Libraries, plus the civic/permitting set (Demolition Permits, Building Activity, Business Licences, Assessment Values, EV Charging, Mobility, Cooling & Water, Heritage Sites, Public Amenities, Patios & Parklets, Power Outages, Emergency Alerts, City-Owned Land) and **Council Votes** (see "Council Vote Scorecard")
+
+(The panel count is approximate and grows; `src/lib/config/panels.ts` is the source of truth. A 7th dashboard mode, **Be Ready** (emergency), and a **Civic** mode — renamed from "Political" — are now in `dashboard-modes.ts`.)
 
 Panel registration: `src/lib/components/layout/DashboardGrid.svelte` maps panel IDs to components. Tier 1+2 are eagerly loaded via `panelComponents: Record<string, Component>`. Tier 3 are lazily loaded via `lazyPanels: Record<string, () => Promise<...>>` using dynamic `import()` and `LazyPanel.svelte` wrapper — new panels in Tier 3 only need a `lazyPanels` entry. All panels are wrapped in `<svelte:boundary>` for error isolation — a crashing panel shows a retry button instead of breaking the dashboard.
 
@@ -142,6 +145,7 @@ Vercel edge cache tiers: 5min (news, social, transit, safety), 15min (council, d
 | `GET /api/parks`             | Static directory                                                                                                   | 15 facilities (parks, pools, playgrounds, trails, beaches)           |
 | `GET /api/schools-libraries` | Static directory                                                                                                   | 12 items (GVPL branches, programs, school districts)                 |
 | `GET /api/crime`             | VicPD Open Data (ArcGIS Hub) — crime incidents with type, severity, coordinates, block-level address               | 20 incidents across 5 municipalities                                 |
+| `GET /api/council-votes`     | Static `src/lib/data/council-votes.json` (built offline by the vote scraper — see below)                           | The committed JSON is the only source; route never fetches live      |
 
 All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`. Development accepts `?flagged=true`. Construction accepts `?event_type=CONSTRUCTION|INCIDENT`. Events accepts `?category=`. Budget accepts `?type=revenue|expenditure`. Wildlife accepts `?category=`. Trees accepts `?heritage=true`. Crime accepts `?type=`, `?severity=`, and `?hours=` (6-720, default 168/7 days).
 
@@ -160,6 +164,15 @@ All routes accept `?municipality=slug&limit=N`. News also accepts `?source=slug`
 **Flyers API**: Uses `User-Agent` header (`SVIT/1.0`) for Flipp API requests. Known grocery-only merchants pass by merchant ID alone; multi-category merchants (Walmart, Costco) require a grocery category tag to filter non-food flyers.
 
 **Crime & Incidents panel**: Tier 2, eagerly loaded. Features a time range selector (6h to 7d, default 7d, persisted to localStorage `svit-crime-range`), a radial 24-hour SVG clock (arc segments scaled by hourly incident density), a stacked category bar, severity-colored filter chips, and scrollable incident cards. The API route accepts `?hours=` param, computes `hourlyDistribution[0-23]` and `typeCounts` server-side, and returns them in `meta`. Uses `crimeTypeColor` from color-maps. VicPD data uses `attributeMunicipality(lng, lat, 'victoria')` fallback to prevent data loss from tight bbox mismatches.
+
+### Council Vote Scorecard (offline scraping pipeline)
+
+The **Council Votes** panel (Tier 3, lazy-loaded; prioritized in Civic + Generalist modes) shows per-councillor recorded votes from City of Victoria council meetings. Unlike every other panel, its data is **scraped offline and committed**, not fetched live:
+
+- `scripts/scrape-council-votes.mjs` — Node script (needs `poppler-utils` / `pdftotext`). Pipeline: POST eSCRIBE `GetCalendarMeetings` → find each meeting's `PostMinutes` PDF → `pdftotext -layout` → parse the OPPOSED-only convention (`OPPOSED (n): names…` + `CARRIED/DEFEATED (a to b)` / `CARRIED UNANIMOUSLY`); in-favour = PRESENT − OPPOSED − CONFLICT, reconciled against the (a to b) tally. Writes `src/lib/data/council-votes.json` ({ generatedAt, scorecard[], votes[], latestMeeting }).
+- `.github/workflows/scrape-votes.yml` — scheduled twice-weekly (Mon & Thu), installs poppler-utils, runs the scraper, commits the JSON if changed (`[skip ci]`). Also `workflow_dispatch`.
+- `GET /api/council-votes` imports the JSON and serves it with `?councillor=` and `?split=true` filters. **Inherent lag:** minutes are adopted at the _following_ meeting, so the scorecard trails live council by ~2–4 weeks (the panel states this and shows `latestMeeting`).
+- Why offline: parsing PDFs needs `pdftotext` (not available in the Vercel serverless runtime), and minutes change rarely — a committed JSON + scheduled refresh is simpler and cache-friendly.
 
 ### HeroMap & MapLibre
 
@@ -260,13 +273,22 @@ The animated background is data-driven via `skyPulseStore`, which aggregates 10 
 
 In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant rezonings are automatically flagged with red badges and `flagReasons` array.
 
+### Icon System (`@lucide/svelte`)
+
+Panel and dashboard-mode icons are **Lucide SVG components**, not emoji strings. `PanelConfig.icon` and `ModeConfig.icon` are typed `IconComponent` (a `Component<{ size?, strokeWidth?, color?, class? }>` alias exported from `src/lib/types/index.ts`). `panels.ts` and `dashboard-modes.ts` import the icons (e.g. `Landmark`, `Vote`, `WavesHorizontal`) and assign the components directly. Render sites:
+
+- `Panel.svelte`: `const PanelIcon = $derived(config.icon)` then `<PanelIcon size={15} strokeWidth={2} />` (a `$derived` capitalized var is needed because `{@const}` can't sit directly inside a non-block element).
+- `DashboardModeSelector.svelte`: `{@const ModeIcon = mode.icon}` inside the `{#each}`, then `<ModeIcon size={15} />`.
+
+Verify Lucide icon names against `node_modules/@lucide/svelte/dist/icons/*.svelte` (kebab-case files; the export is PascalCase). Some names changed in v1 — e.g. `waves` → `waves-horizontal` (`WavesHorizontal`). A wrong name is a build error.
+
 ### Adding a New Panel
 
 1. Define the interface in `src/lib/types/index.ts`
 2. Create API route at `src/routes/api/<name>/+server.ts` (with seed fallback, use `parseLimit`/`parseMunicipality` from `$lib/utils/api-validation`)
 3. Create API client at `src/lib/api/<name>.ts` wrapping `apiFetch<T>()`
 4. Create panel component at `src/lib/components/panels/<Name>.svelte` following the panel pattern (PanelSkeleton for loading, PanelError for errors). Use color functions from `$lib/utils/color-maps` — never define inline.
-5. Add entry to `src/lib/config/panels.ts` (id, title, icon, tier, defaultPosition, minW, minH)
+5. Add entry to `src/lib/config/panels.ts` (id, title, icon, tier, defaultPosition, minW, minH). **`icon` is a Lucide component, not an emoji** — `import { SomeIcon } from '@lucide/svelte'` at the top of `panels.ts` and set `icon: SomeIcon` (see "Icon System")
 6. Wire into `DashboardGrid.svelte`:
    - **Tier 1/2**: Static import + add to `panelComponents` map
    - **Tier 3/4**: Add dynamic `import()` entry to `lazyPanels` map (no static import needed)
@@ -305,6 +327,7 @@ In DevelopmentWatch: applications with 4+ storeys, 100+ units, or significant re
 - **ESLint**: `@typescript-eslint/no-unused-vars` allows `_` prefix for unused vars/args. In `.svelte.ts` files, `svelte/prefer-svelte-reactivity` flags `new Date()` — extract to helper functions.
 - **Loading states**: `PanelSkeleton.svelte` component provides shimmer skeletons (variants: `list`, `card`, `chart`, `hero`). All panels use it during loading. Skeleton unmount auto-triggers data freshness timestamp via Svelte context.
 - **Error states**: `PanelError.svelte` component with message and optional retry callback (`role="alert"`). All panels display it when API calls fail.
+- **List-item card style (avoid AI-design tells)**: list rows are **flat, separated by a `border-bottom: 1px solid var(--border-primary)` hairline** (`:last-child` removes it), with a small **leading colored dot** carrying the per-row accent/severity — a `::before` (6px circle, `left: 2px; top: ~14px`) whose color comes from `--row-accent` (or an existing inline `--cat-color` / category var). Do **NOT** use the old `border-radius` + `border-left: 3px solid <accent>` "card with a colored left strip" pattern — the rounded card clips the strip into a `[` bracket that reads as machine-generated. Keep non-repeating callouts (`.note`, banners) as-is. Reference implementation: `CouncilVotes.svelte` `.vote`.
 - **Data freshness**: `DataFreshness.svelte` shows relative timestamp ("Just now", "3m ago") in panel headers with green/amber/red color coding (fresh <2min, recent 2-10min, stale >10min). Shows "Cached" badge when serving stale IndexedDB data. Auto-updates via `Panel.svelte` context — no per-panel wiring needed.
 - **API validation**: `parseLimit()` and `parseMunicipality()` from `$lib/utils/api-validation` — used in all API routes to clamp limits and validate municipality slugs.
 
@@ -360,12 +383,18 @@ Future tables: `layout_preferences` (saved grid positions), `saved_items` (bookm
 - **`weather-tides` returns single object**: Only route where `data` is an object instead of an array. All others return `{ data: T[], meta }`.
 - **`transit` and `weather-tides` ignore `?municipality=`**: Transit alerts are region-wide; weather serves a single station. Other routes accept the param.
 - **Development data is Victoria-only when live**: Only Victoria open data portal is queried. Other municipalities show seed data when the live API succeeds.
+- **Tides — resolve the station by code, not `stations[0]`**: the CHS IWLS `/stations?chs-station-code=07120` filter is **ignored by the API** (it returns all ~1570 stations). Picking `stations[0]` yields Tasiujaq (Ungava Bay, ~13m Arctic tides) mislabeled "Victoria Harbour". `resolveStationId()` must `.find()` the station by `code === '07120'` / `officialName === 'Victoria Harbour'` (id `5cebf1df3d0f4a073c4bbd1e`). High/low is derived from the height extrema (the IWLS hi-lo entries have no `event` field). Victoria's tides are mixed/diurnal-dominant (often one high + one low per day), so the panel shows Today/Tomorrow day labels — the list is correct even when times look non-monotonic across days.
 
 ### MapLibre
 
 - **Dynamic import required**: Static `import maplibregl` crashes headless Chromium (no WebGL). Use `await import('maplibre-gl')` in `onMount`.
 - **Paint properties can't use CSS vars**: MapLibre WebGL renderer doesn't support `var()` — use hex colors for cluster/circle paint.
 - **`setStyle()` destroys all sources/layers**: Theme toggle triggers `setStyle()` — the `style.load` callback must re-add all data layers.
+
+### CSS & Overlays
+
+- **`backdrop-filter` traps `position: fixed`**: panels use `backdrop-filter: blur(20px)` (frosted glass), which — like `transform`, `filter`, `perspective`, `will-change: transform` — establishes a **containing block for fixed descendants**. A `position: fixed` overlay rendered inside a panel anchors to the panel box, not the viewport, and can land off-screen. **Fix: portal the overlay to `document.body`.** `ShareDrawer.svelte` uses a small `use:portal` action (`document.body.appendChild(node)` on mount, remove on `destroy`) for exactly this reason. Any future modal/drawer/popover opened from inside a panel must do the same.
+- **`<svelte:boundary>` hides runtime crashes**: every panel is wrapped in an error boundary, so a panel that throws at runtime shows a retry button instead of failing the build/CI. **Browser-verification is mandatory** after panel changes (e.g. `each_key_duplicate` from duplicate list-key ids only shows up in the browser, not in `svelte-check`/build).
 
 ### Store Patterns
 
