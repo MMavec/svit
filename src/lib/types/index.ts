@@ -216,6 +216,9 @@ export interface DevelopmentApplication {
 	flagged: boolean; // true if 4+ storeys, 100+ units, or major rezoning
 	flagReasons?: string[];
 	documentUrl?: string;
+	assessedLand?: number; // 2026 BC Assessment land value (joined by FOLIO)
+	assessedImprovement?: number;
+	assessedTotal?: number;
 	source: string;
 }
 
@@ -232,6 +235,9 @@ export interface DemolitionPermit {
 	purpose?: string; // cleaned free-text scope (boilerplate stripped)
 	coordinates?: [number, number]; // [lng, lat]
 	heritage?: boolean; // flagged when the record references heritage status
+	assessedLand?: number; // 2026 BC Assessment land value (joined by FOLIO)
+	assessedImprovement?: number; // 2026 assessed building value (what is being demolished)
+	assessedTotal?: number;
 	source: string; // 'victoria-opendata' | 'seed'
 }
 
@@ -365,6 +371,44 @@ export interface PatioArea {
 	note?: string; // free-text year/date note
 	municipality: string;
 	coordinates?: [number, number];
+	source: string;
+}
+
+export interface PowerOutage {
+	id: string;
+	municipality: string;
+	area: string;
+	cause: string;
+	customersAffected: number;
+	crewStatus?: string;
+	eta?: string; // ISO 8601 estimated restoration
+	off?: string; // ISO 8601 when power went out
+	lastUpdated?: string;
+	coordinates?: [number, number];
+	source: string;
+}
+
+export interface EmergencyAlert {
+	id: string;
+	title: string;
+	category: 'evacuation' | 'marine' | 'flood' | 'other';
+	status: string; // Order / Alert / Warning
+	severity: 'high' | 'moderate' | 'info';
+	area?: string;
+	agency?: string;
+	updated?: string; // ISO 8601
+	source: string;
+}
+
+export interface PublicLandParcel {
+	id: string;
+	ownerName: string;
+	ownerType: string; // MUNICIPAL ...
+	inventoryClass: string; // RoadROW / Park / Building ...
+	pid?: string;
+	legalDescription?: string;
+	municipality: string;
+	coordinates?: [number, number]; // polygon centroid
 	source: string;
 }
 

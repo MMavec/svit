@@ -9,7 +9,8 @@ const validModes = new Set<string>([
 	'nature',
 	'social',
 	'active-senior',
-	'family'
+	'family',
+	'be-ready'
 ]);
 
 interface UrlState {

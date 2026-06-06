@@ -78,7 +78,10 @@
 		'cooling-centres': () => import('$lib/components/panels/CoolingCentres.svelte'),
 		heritage: () => import('$lib/components/panels/Heritage.svelte'),
 		'public-amenities': () => import('$lib/components/panels/PublicAmenities.svelte'),
-		patios: () => import('$lib/components/panels/Patios.svelte')
+		patios: () => import('$lib/components/panels/Patios.svelte'),
+		'power-outages': () => import('$lib/components/panels/PowerOutages.svelte'),
+		'emergency-alerts': () => import('$lib/components/panels/EmergencyAlerts.svelte'),
+		'public-land': () => import('$lib/components/panels/PublicLand.svelte')
 	};
 
 	const COLS = 12;

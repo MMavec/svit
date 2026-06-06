@@ -941,3 +941,41 @@ keep the map legend manageable (already 10 categories).
 
 - **Bug**: the "Flagged Only" button refetched on every toggle (the `$effect` synchronously read `showFlaggedOnly` via `fetchDevelopments({flagged})`), surfacing transient network errors. Fixed by dropping the `flagged` fetch param — every application already carries a `flagged` boolean, so filtering is now pure client-side (instant, no network).
 - **Redesign**: replaced the single button with a search box + AppType category chips (Rezoning / Dev Permits / Variances / Heritage, with counts) + the Flagged toggle + a result summary. Added `neighbourhood` to the application data and a per-item map-focus + Track-tracker link.
+
+---
+
+## Civic Build-out 4 (2026-06): Be Ready view, BC Assessment enrichment, transparency
+
+### "Be Ready" emergency view + tiles
+
+A new dashboard mode (`be-ready`, named to stay meaningful when quiet and to house preparedness
+resources). New live tiles:
+
+- **Power Outages** (`/api/power-outages`) — BC Hydro's public JSON feed (`outages-map-data.json`), filtered to a Greater Victoria bbox, with an "elsewhere on the Island" context count. Shows an all-clear state when local power is on.
+- **Emergency Alerts** (`/api/emergency-alerts`) — aggregates provincial Evacuation Orders & Alerts (ArcGIS, Vancouver Island envelope, stale entries >120d dropped) + Environment Canada GeoMet marine warnings for the four Greater-Victoria marine zones (Juan de Fuca / Haro / Georgia / WCVI South). Dedupes multi-polygon events.
+  The view also surfaces existing Safety, Crime, Weather, Construction, Transit, and Cooling tiles.
+
+### BC Assessment cross-reference (demolition + development cards)
+
+Honest feasibility outcome: **year-built and sale history are NOT available from any free/open
+dataset** (BC Assessment Residential Inventory + Data Advice are restricted to named gov users; BC
+Property Transfer Tax sales are municipality-aggregate only). What IS available and now shown:
+**2026 assessed land + building (improvement) value**, joined by parcel FOLIO
+(`gislink` -> FOLIO for permits; `FOLIO` field directly for dev applications) against
+`Property_Assessment_Report_2026`. One batched query per request (`src/lib/utils/assessment.ts`).
+Demolition cards now show "ASSESSED building $X · land $Y" — a teardown-pressure signal (low building
+value on high-value land). Dev cards show total assessed + land.
+
+### Transparency: City-Owned Land
+
+**Public Land Inventory** (`/api/public-land`) from `OpenData_Land/MapServer/3` — every parcel the
+City owns or leases (~1,400), grouped by inventory class (Road ROW, Parks, School, Core Service…).
+Polygon centroids computed in-route for the map. A land-disposition / public-asset accountability tile.
+
+### Deferred (high value, but need a scraping pipeline — not a clean request-time route)
+
+- **Council Vote Scorecard** — per-councillor recorded votes ARE published, but only in eSCRIBE PDFs (no API; meeting shells are JS-rendered). Building it needs a scheduled scraper + PDF parser writing to a store, not a serverless route. Highest-value next step.
+- **Local campaign contributions** (Elections BC FRPC) — .txt export behind an ASPX postback form; scraper needed. Pairs with the vote scorecard for a "follow the money" view.
+- **Councillor expenses/remuneration** and **financial-disclosure statements** — HTML/PDF only.
+- **LOTR beneficial ownership** — public but rate-limited (50/day), no API/bulk; **private parcel ownership** — paywalled (BC Assessment). "Who owns my block" is not buildable from open data.
+- **BC Lobbyist Registry** — open dataset exists but covers PROVINCIAL office holders only (0 City-of-Victoria rows); municipal lobbying is not registered anywhere.

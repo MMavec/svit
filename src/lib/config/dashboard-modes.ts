@@ -6,7 +6,8 @@ export type DashboardMode =
 	| 'nature'
 	| 'social'
 	| 'active-senior'
-	| 'family';
+	| 'family'
+	| 'be-ready';
 
 export interface ModeConfig {
 	id: DashboardMode;
@@ -49,7 +50,10 @@ export const dashboardModes: ModeConfig[] = [
 			'cooling-centres',
 			'heritage',
 			'public-amenities',
-			'patios'
+			'patios',
+			'power-outages',
+			'emergency-alerts',
+			'public-land'
 		])
 	},
 	{
@@ -68,6 +72,7 @@ export const dashboardModes: ModeConfig[] = [
 			'business-licences',
 			'assessment-values',
 			'heritage',
+			'public-land',
 			'voices',
 			'local-wire',
 			'budget-finance',
@@ -157,6 +162,24 @@ export const dashboardModes: ModeConfig[] = [
 			'local-wire',
 			'construction-roads',
 			'transit'
+		])
+	},
+	{
+		id: 'be-ready',
+		label: 'Be Ready',
+		icon: '🆘',
+		panelOrder: buildOrder([
+			// Live emergency signals first
+			'power-outages',
+			'emergency-alerts',
+			'safety-emergency',
+			'crime-incidents',
+			// Conditions
+			'weather-tides',
+			'construction-roads',
+			'transit',
+			// Preparedness resources
+			'cooling-centres'
 		])
 	}
 ];

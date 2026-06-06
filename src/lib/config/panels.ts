@@ -371,6 +371,33 @@ export const panels: PanelConfig[] = [
 		defaultPosition: { x: 0, y: 78, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
+	},
+	{
+		id: 'power-outages',
+		title: 'Power Outages',
+		tier: 3,
+		icon: '🔌',
+		defaultPosition: { x: 4, y: 78, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'emergency-alerts',
+		title: 'Emergency Alerts',
+		tier: 3,
+		icon: '🚨',
+		defaultPosition: { x: 8, y: 78, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'public-land',
+		title: 'City-Owned Land',
+		tier: 3,
+		icon: '🏢',
+		defaultPosition: { x: 0, y: 84, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
 	}
 ];
 

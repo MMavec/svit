@@ -141,6 +141,16 @@ export const amenityKindColor = colorMap<'washroom' | 'facility'>(
 	'var(--text-tertiary)'
 );
 
+/** Emergency alert severity → color */
+export const emergencySeverityColor = colorMap<'high' | 'moderate' | 'info'>(
+	{
+		high: 'var(--status-critical)',
+		moderate: 'var(--accent-warning)',
+		info: 'var(--accent-primary)'
+	},
+	'var(--text-tertiary)'
+);
+
 /** Environment reading status → color */
 export const envStatusColor = colorMap<
 	'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'hazardous'

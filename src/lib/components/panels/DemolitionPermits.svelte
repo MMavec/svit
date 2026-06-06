@@ -81,6 +81,12 @@
 		currency: 'CAD',
 		maximumFractionDigits: 0
 	});
+	const moneyShort = new Intl.NumberFormat('en-CA', {
+		style: 'currency',
+		currency: 'CAD',
+		maximumFractionDigits: 1,
+		notation: 'compact'
+	});
 
 	function formatValue(v?: number): string {
 		return v ? moneyFmt.format(v) : '—';
@@ -196,6 +202,16 @@
 							<span class="meta-bit date">{formatDate(p.issuedDate)}</span>
 						{/if}
 					</div>
+
+					{#if p.assessedTotal}
+						<div class="assessed" title="2026 BC Assessment, joined by parcel folio">
+							<span class="assessed-label">Assessed</span>
+							{#if p.assessedImprovement}<span
+									>building {moneyShort.format(p.assessedImprovement)}</span
+								>{/if}
+							{#if p.assessedLand}<span>· land {moneyShort.format(p.assessedLand)}</span>{/if}
+						</div>
+					{/if}
 				</div>
 			{:else}
 				<div class="empty" role="status">
@@ -416,6 +432,23 @@
 	.meta-bit.date {
 		margin-left: auto;
 		font-family: var(--font-mono, monospace);
+	}
+
+	.assessed {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+		margin-top: 5px;
+		font-size: 0.625rem;
+		color: var(--text-tertiary);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.assessed-label {
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--text-secondary);
 	}
 
 	.empty {

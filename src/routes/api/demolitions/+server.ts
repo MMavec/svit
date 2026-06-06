@@ -4,6 +4,7 @@ import type { DemolitionPermit } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
 import { parseLimit, parseMunicipality, parseEnum } from '$lib/utils/api-validation';
 import { municipalities } from '$lib/config/municipalities';
+import { fetchAssessedValues, gislinkToFolio } from '$lib/utils/assessment';
 
 const CACHE_MAX_AGE = 900; // 15 minutes (permit data updates daily at most)
 
@@ -30,7 +31,7 @@ async function fetchVictoriaDemolitions(): Promise<DemolitionPermit[]> {
 		const params = new URLSearchParams({
 			where: "type='BP-DEMOLITION'",
 			outFields:
-				'PermitNo,type,SUBJECT,Purpose,IssuedDate,BldgValue,House,Street,Unit,Neighbourhood,X_LONG,Y_LAT',
+				'PermitNo,type,SUBJECT,Purpose,IssuedDate,BldgValue,House,Street,Unit,Neighbourhood,X_LONG,Y_LAT,gislink',
 			orderByFields: 'IssuedDate DESC',
 			returnGeometry: 'false',
 			resultRecordCount: '200',
@@ -53,11 +54,26 @@ async function fetchVictoriaDemolitions(): Promise<DemolitionPermit[]> {
 		// permit so Svelte list keys stay unique AND declared value isn't double-counted.
 		const seen = new Set<string>();
 		const out: DemolitionPermit[] = [];
+		const folios: (number | null)[] = [];
 		for (const f of data.features) {
 			const p = mapToDemolition(f.attributes);
 			if (seen.has(p.id)) continue;
 			seen.add(p.id);
 			out.push(p);
+			folios.push(gislinkToFolio(f.attributes.gislink));
+		}
+
+		// Enrich with 2026 assessed land + building value (one batched query). Shows the value of the
+		// structure being demolished vs the land — a teardown-pressure signal.
+		const values = await fetchAssessedValues(folios.filter((x): x is number => x !== null));
+		for (let i = 0; i < out.length; i++) {
+			const folio = folios[i];
+			const v = folio !== null ? values.get(folio) : undefined;
+			if (v) {
+				out[i].assessedLand = v.land;
+				out[i].assessedImprovement = v.improvement;
+				out[i].assessedTotal = v.total;
+			}
 		}
 		return out;
 	} catch (err) {

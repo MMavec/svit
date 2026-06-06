@@ -15,7 +15,8 @@ function loadMode(): DashboardMode {
 		stored === 'nature' ||
 		stored === 'social' ||
 		stored === 'active-senior' ||
-		stored === 'family'
+		stored === 'family' ||
+		stored === 'be-ready'
 	)
 		return stored;
 	return 'generalist';

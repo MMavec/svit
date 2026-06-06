@@ -106,6 +106,13 @@
 		if (isNaN(d.getTime())) return iso;
 		return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
 	}
+
+	const moneyShort = new Intl.NumberFormat('en-CA', {
+		style: 'currency',
+		currency: 'CAD',
+		maximumFractionDigits: 1,
+		notation: 'compact'
+	});
 </script>
 
 <div class="dev-watch">
@@ -207,6 +214,14 @@
 							{#each app.flagReasons as reason, i (reason + '-' + i)}
 								<span class="flag-reason">{reason}</span>
 							{/each}
+						</div>
+					{/if}
+
+					{#if app.assessedTotal}
+						<div class="assessed" title="2026 BC Assessment, joined by parcel folio">
+							<span class="assessed-label">Assessed</span>
+							{#if app.assessedTotal}<span>total {moneyShort.format(app.assessedTotal)}</span>{/if}
+							{#if app.assessedLand}<span>· land {moneyShort.format(app.assessedLand)}</span>{/if}
 						</div>
 					{/if}
 				</div>
@@ -456,6 +471,23 @@
 		border-radius: 8px;
 		background: color-mix(in srgb, var(--accent-danger) 14%, transparent);
 		color: var(--accent-danger);
+	}
+
+	.assessed {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+		margin-top: 5px;
+		font-size: 0.625rem;
+		color: var(--text-tertiary);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.assessed-label {
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--text-secondary);
 	}
 
 	.empty {

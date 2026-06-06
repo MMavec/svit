@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import type { DevelopmentApplication } from '$lib/types/index';
 import { hashCode } from '$lib/utils/hash';
 import { parseLimit, parseMunicipality } from '$lib/utils/api-validation';
+import { fetchAssessedValues } from '$lib/utils/assessment';
 
 const CACHE_MAX_AGE = 900; // 15 minutes
 
@@ -28,7 +29,7 @@ async function fetchVictoriaDevApplications(): Promise<DevelopmentApplication[]>
 		const params = new URLSearchParams({
 			where: '1=1',
 			outFields:
-				'FOLDER_NUMBER,AppType,STATUS,SUBJECT,HOUSE,STREET,Neighbourhood,PURPOSE,DevAppTracker,CREATED_DATE',
+				'FOLDER_NUMBER,AppType,STATUS,SUBJECT,HOUSE,STREET,Neighbourhood,PURPOSE,DevAppTracker,CREATED_DATE,FOLIO',
 			orderByFields: 'CREATED_DATE DESC',
 			returnGeometry: 'true',
 			outSR: '4326',
@@ -49,12 +50,27 @@ async function fetchVictoriaDevApplications(): Promise<DevelopmentApplication[]>
 		// One point per purpose row -> dedupe to one application per FOLDER_NUMBER (keep first/newest).
 		const seen = new Set<string>();
 		const out: DevelopmentApplication[] = [];
+		const folios: (number | null)[] = [];
 		for (const f of data.features) {
 			const folder = String(f.attributes.FOLDER_NUMBER || '').trim();
 			const key = folder || `obj-${out.length}`;
 			if (seen.has(key)) continue;
 			seen.add(key);
 			out.push(mapToDevApplication(f.attributes, f.geometry, folder));
+			const folio = Number(f.attributes.FOLIO);
+			folios.push(Number.isFinite(folio) && folio > 0 ? folio : null);
+		}
+
+		// Enrich with 2026 assessed land + building value (one batched query, joined by FOLIO).
+		const values = await fetchAssessedValues(folios.filter((x): x is number => x !== null));
+		for (let i = 0; i < out.length; i++) {
+			const folio = folios[i];
+			const v = folio !== null ? values.get(folio) : undefined;
+			if (v) {
+				out[i].assessedLand = v.land;
+				out[i].assessedImprovement = v.improvement;
+				out[i].assessedTotal = v.total;
+			}
 		}
 		return out;
 	} catch (err) {
