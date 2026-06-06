@@ -922,6 +922,7 @@ All previously-documented "remaining candidates" are now BUILT and browser-verif
 Generalist + one themed view. Plus a grid-interaction upgrade and a Development Watch fix/redesign.
 
 ### Tiles shipped
+
 - **Mobility** (`/api/mobility`) — `OpenData_Parking` bike racks (0) + car-share (1, geometry-only) + pay stations (5). Grouped by kind, click-to-focus. Generalist + Active Senior.
 - **Cooling & Water** (`/api/cooling`) — `OpenData_EmergencyServices/MapServer/11` Extreme Heat Resources (30). Category = indoor cooling / water. Generalist + Nature.
 - **Heritage Sites** (`/api/heritage`) — `OpenData_PlanningAndDevelopment/MapServer/8` Prominent Heritage Sites (23, the ONLY heritage layer with Name+Address; the 933-polygon register has no labels). Polygon centroid computed in-route. Generalist + Civic.
@@ -932,9 +933,11 @@ These use the panel's click-to-focus (mapFocusStore) rather than persistent Hero
 keep the map legend manageable (already 10 categories).
 
 ### Grid interactions (DashboardGrid)
+
 - **Drag-to-swap**: dropping a tile on another swaps their positions (was free-overlap before).
 - **Edge-click nudge**: 4 hover-revealed arrow buttons per tile move it one slot up/down/left/right, swapping with the neighbour there. Both share `findPanelAt` + swap helpers.
 
 ### Development Watch fix + redesign
+
 - **Bug**: the "Flagged Only" button refetched on every toggle (the `$effect` synchronously read `showFlaggedOnly` via `fetchDevelopments({flagged})`), surfacing transient network errors. Fixed by dropping the `flagged` fetch param — every application already carries a `flagged` boolean, so filtering is now pure client-side (instant, no network).
 - **Redesign**: replaced the single button with a search box + AppType category chips (Rezoning / Dev Permits / Variances / Heritage, with counts) + the Flagged toggle + a result summary. Added `neighbourhood` to the application data and a per-item map-focus + Track-tracker link.
