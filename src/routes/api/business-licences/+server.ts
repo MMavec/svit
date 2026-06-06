@@ -41,7 +41,17 @@ async function fetchVictoriaLicences(): Promise<BusinessLicence[]> {
 
 		const data = (await response.json()) as { features?: ArcGisFeature[]; error?: unknown };
 		if (data.error || !Array.isArray(data.features)) return [];
-		return data.features.map((f) => mapToLicence(f.attributes, f.geometry));
+
+		// Dedupe by id so Svelte list keys stay unique even if two rows hash alike.
+		const seen = new Set<string>();
+		const out: BusinessLicence[] = [];
+		for (const f of data.features) {
+			const l = mapToLicence(f.attributes, f.geometry);
+			if (seen.has(l.id)) continue;
+			seen.add(l.id);
+			out.push(l);
+		}
+		return out;
 	} catch (err) {
 		console.error('Failed to fetch Victoria business licences:', err);
 		return [];
@@ -62,7 +72,7 @@ function mapToLicence(
 	const addrLine = str(props.CIVIC_ADDRESS).split(/\r?\n/)[0].trim();
 
 	return {
-		id: `vic-lic-${hashCode(tradeName + licenceType + coversFromRaw)}`,
+		id: `vic-lic-${hashCode(tradeName + licenceType + coversFromRaw + addrLine)}`,
 		tradeName,
 		licenceType,
 		category: classify(licenceTypeRaw.toUpperCase()),

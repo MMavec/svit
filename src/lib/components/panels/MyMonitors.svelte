@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { municipalityStore } from '$lib/stores/municipality.svelte';
 	import { apiFetch } from '$lib/api/fetcher';
@@ -198,8 +199,10 @@
 		scanning = false;
 	}
 
-	// Initialize on mount
-	$effect(() => {
+	// Initialize once on mount. (Must be onMount, NOT $effect: initMonitors() writes the `monitors`
+	// $state and scanForMatches() reads it, so an $effect re-fires infinitely — that loop spammed the
+	// API on every load. Re-scans on user actions go through scanForMatches() directly.)
+	onMount(() => {
 		initMonitors();
 	});
 </script>

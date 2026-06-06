@@ -49,7 +49,17 @@ async function fetchVictoriaDemolitions(): Promise<DemolitionPermit[]> {
 		const data = (await response.json()) as { features?: ArcGisFeature[]; error?: unknown };
 		if (data.error || !Array.isArray(data.features)) return [];
 
-		return data.features.map((f) => mapToDemolition(f.attributes));
+		// A demolition permit can span multiple unit/address rows (same PermitNo). Dedupe to one per
+		// permit so Svelte list keys stay unique AND declared value isn't double-counted.
+		const seen = new Set<string>();
+		const out: DemolitionPermit[] = [];
+		for (const f of data.features) {
+			const p = mapToDemolition(f.attributes);
+			if (seen.has(p.id)) continue;
+			seen.add(p.id);
+			out.push(p);
+		}
+		return out;
 	} catch (err) {
 		console.error('Failed to fetch Victoria demolition permits:', err);
 		return [];

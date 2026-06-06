@@ -39,7 +39,18 @@ async function fetchVictoriaPermits(): Promise<BuildingPermit[]> {
 
 		const data = (await response.json()) as { features?: ArcGisFeature[]; error?: unknown };
 		if (data.error || !Array.isArray(data.features)) return [];
-		return data.features.map((f) => mapToPermit(f.attributes));
+
+		// A single permit can span multiple unit rows (same PermitNo). Dedupe to one per permit so
+		// keys stay unique AND construction value isn't double-counted in the aggregation.
+		const seen = new Set<string>();
+		const out: BuildingPermit[] = [];
+		for (const f of data.features) {
+			const p = mapToPermit(f.attributes);
+			if (seen.has(p.id)) continue;
+			seen.add(p.id);
+			out.push(p);
+		}
+		return out;
 	} catch (err) {
 		console.error('Failed to fetch Victoria building permits:', err);
 		return [];

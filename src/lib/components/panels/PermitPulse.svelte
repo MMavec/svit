@@ -15,6 +15,7 @@
 	let live = $state(true);
 	let note = $state<string | null>(null);
 	let totalValue = $state(0);
+	let total = $state(0);
 	let byActivity = $state<Record<string, { count: number; value: number }>>({});
 	let activeActivity = $state<Activity | null>(null);
 
@@ -40,6 +41,7 @@
 			live = meta?.live !== false;
 			note = (meta?.note as string) || null;
 			totalValue = (meta?.totalValue as number) || 0;
+			total = (meta?.total as number) || permits.length;
 			byActivity = (meta?.byActivity as Record<string, { count: number; value: number }>) || {};
 		}
 		loading = false;
@@ -107,7 +109,7 @@
 		{#if permits.length > 0}
 			<div class="headline">
 				<div class="metric">
-					<span class="metric-num">{permits.length}</span>
+					<span class="metric-num">{total}</span>
 					<span class="metric-label">permits · 60 days</span>
 				</div>
 				<div class="metric">

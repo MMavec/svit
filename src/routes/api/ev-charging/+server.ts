@@ -37,7 +37,17 @@ async function fetchVictoriaEvChargers(): Promise<EvCharger[]> {
 
 		const data = (await response.json()) as { features?: ArcGisFeature[]; error?: unknown };
 		if (data.error || !Array.isArray(data.features)) return [];
-		return data.features.map((f) => mapToCharger(f.attributes, f.geometry));
+
+		// Dedupe by id so Svelte list keys stay unique.
+		const seen = new Set<string>();
+		const out: EvCharger[] = [];
+		for (const f of data.features) {
+			const c = mapToCharger(f.attributes, f.geometry);
+			if (seen.has(c.id)) continue;
+			seen.add(c.id);
+			out.push(c);
+		}
+		return out;
 	} catch (err) {
 		console.error('Failed to fetch Victoria EV chargers:', err);
 		return [];

@@ -251,7 +251,7 @@
 		<!-- Forecast Strip -->
 		{#if data.weather.forecast.length > 0}
 			<div class="forecast-strip">
-				{#each data.weather.forecast.slice(0, 4) as fc (fc.period)}
+				{#each data.weather.forecast.slice(0, 4) as fc, i (fc.period + '-' + i)}
 					<div class="forecast-item" title={fc.summary}>
 						<div class="fc-period">{fc.period}</div>
 						<div class="fc-icon">{weatherIcon(fc.iconCode)}</div>
@@ -286,7 +286,7 @@
 
 			{#if data.tides.predictions.length > 0}
 				<div class="tide-list">
-					{#each data.tides.predictions.slice(0, 4) as pred (pred.time)}
+					{#each data.tides.predictions.slice(0, 4) as pred, i (pred.time + '-' + i)}
 						<div class="tide-row">
 							<span
 								class="tide-type"
@@ -322,7 +322,7 @@
 
 						<g transform="translate({margin.left}, {margin.top})">
 							<!-- Height axis grid lines -->
-							{#each tideChart.heightTicks as tick (tick.label)}
+							{#each tideChart.heightTicks as tick, i (tick.label + '-' + i)}
 								<line x1="0" x2={innerWidth} y1={tick.y} y2={tick.y} class="grid-line" />
 								<text
 									x="-4"
@@ -357,7 +357,7 @@
 							{/if}
 
 							<!-- High/low point markers and labels -->
-							{#each tideChart.labels as label (label.timeLabel)}
+							{#each tideChart.labels as label, i (label.timeLabel + '-' + i)}
 								<circle
 									cx={label.x}
 									cy={label.y}
@@ -377,7 +377,7 @@
 							{/each}
 
 							<!-- Time axis labels -->
-							{#each tideChart.timeTicks as tick (tick.label)}
+							{#each tideChart.timeTicks as tick, i (tick.label + '-' + i)}
 								<text
 									x={tick.x}
 									y={innerHeight + 14}
