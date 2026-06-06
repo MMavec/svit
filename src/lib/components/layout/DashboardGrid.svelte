@@ -73,7 +73,12 @@
 		'permit-pulse': () => import('$lib/components/panels/PermitPulse.svelte'),
 		'business-licences': () => import('$lib/components/panels/BusinessLicences.svelte'),
 		'assessment-values': () => import('$lib/components/panels/AssessmentValues.svelte'),
-		'ev-charging': () => import('$lib/components/panels/EvCharging.svelte')
+		'ev-charging': () => import('$lib/components/panels/EvCharging.svelte'),
+		mobility: () => import('$lib/components/panels/Mobility.svelte'),
+		'cooling-centres': () => import('$lib/components/panels/CoolingCentres.svelte'),
+		heritage: () => import('$lib/components/panels/Heritage.svelte'),
+		'public-amenities': () => import('$lib/components/panels/PublicAmenities.svelte'),
+		patios: () => import('$lib/components/panels/Patios.svelte')
 	};
 
 	const COLS = 12;
@@ -163,8 +168,61 @@
 		}
 	}
 
+	/** Find the panel whose grid rect covers cell (x, y), excluding one id. */
+	function findPanelAt(x: number, y: number, excludeId: string): string | null {
+		for (const panel of panels) {
+			if (panel.id === excludeId) continue;
+			const pos = layoutStore.getPosition(panel.id);
+			if (x >= pos.x && x < pos.x + pos.w && y >= pos.y && y < pos.y + pos.h) {
+				return panel.id;
+			}
+		}
+		return null;
+	}
+
 	function onPointerUp() {
+		if (dragging) {
+			const a = layoutStore.getPosition(dragging);
+			const moved = a.x !== dragStartPos.origX || a.y !== dragStartPos.origY;
+			if (moved) {
+				// If dropped on top of another panel, swap: that panel takes the dragged one's
+				// original slot. Otherwise the panel just stays where it was dropped.
+				const cx = a.x + Math.floor(a.w / 2);
+				const cy = a.y + Math.floor(a.h / 2);
+				const targetId = findPanelAt(cx, cy, dragging);
+				if (targetId) {
+					const b = layoutStore.getPosition(targetId);
+					layoutStore.updatePosition(targetId, {
+						...b,
+						x: dragStartPos.origX,
+						y: dragStartPos.origY
+					});
+					layoutStore.updatePosition(dragging, { ...a, x: b.x, y: b.y });
+				}
+			}
+		}
 		dragging = null;
+	}
+
+	/** Move a panel one slot in a direction, swapping with the neighbour there (edge-click nudge). */
+	function nudge(panelId: string, dir: 'up' | 'down' | 'left' | 'right') {
+		const a = layoutStore.getPosition(panelId);
+		let nx = a.x;
+		let ny = a.y;
+		if (dir === 'left') nx = a.x - a.w;
+		else if (dir === 'right') nx = a.x + a.w;
+		else if (dir === 'up') ny = a.y - a.h;
+		else if (dir === 'down') ny = a.y + a.h;
+		if (nx < 0 || nx + a.w > COLS || ny < 0) return;
+
+		const cx = nx + Math.floor(a.w / 2);
+		const cy = ny + Math.floor(a.h / 2);
+		const targetId = findPanelAt(cx, cy, panelId);
+		if (targetId) {
+			const b = layoutStore.getPosition(targetId);
+			layoutStore.updatePosition(targetId, { ...b, x: a.x, y: a.y });
+		}
+		layoutStore.updatePosition(panelId, { ...a, x: nx, y: ny });
 	}
 
 	// Sort panels by tier for priority rendering
@@ -208,6 +266,47 @@
 					{/snippet}
 				</svelte:boundary>
 			</Panel>
+
+			{#if !isMobile && urlState.focusedPanel === null}
+				<div class="nudge-controls" aria-hidden={dragging !== null}>
+					<button
+						class="nudge nudge-up"
+						title="Move up"
+						aria-label="Move {panel.title} up"
+						onclick={(e) => {
+							e.stopPropagation();
+							nudge(panel.id, 'up');
+						}}>▲</button
+					>
+					<button
+						class="nudge nudge-down"
+						title="Move down"
+						aria-label="Move {panel.title} down"
+						onclick={(e) => {
+							e.stopPropagation();
+							nudge(panel.id, 'down');
+						}}>▼</button
+					>
+					<button
+						class="nudge nudge-left"
+						title="Move left"
+						aria-label="Move {panel.title} left"
+						onclick={(e) => {
+							e.stopPropagation();
+							nudge(panel.id, 'left');
+						}}>◀</button
+					>
+					<button
+						class="nudge nudge-right"
+						title="Move right"
+						aria-label="Move {panel.title} right"
+						onclick={(e) => {
+							e.stopPropagation();
+							nudge(panel.id, 'right');
+						}}>▶</button
+					>
+				</div>
+			{/if}
 		</div>
 	{/each}
 </div>
@@ -247,6 +346,74 @@
 
 	.grid-cell > :global(.panel) {
 		height: 100%;
+	}
+
+	/* Edge-click nudge controls: move a tile one slot in a direction (swapping with the neighbour) */
+	.nudge-controls {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.15s;
+		z-index: 20;
+	}
+
+	.grid-cell:hover .nudge-controls {
+		opacity: 1;
+	}
+
+	.grid-cell.dragging .nudge-controls {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.nudge {
+		position: absolute;
+		width: 20px;
+		height: 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		font-size: 0.5rem;
+		line-height: 1;
+		border: 1px solid var(--border-primary);
+		border-radius: 50%;
+		background: var(--bg-panel, var(--bg-surface-hover));
+		color: var(--text-secondary);
+		cursor: pointer;
+		pointer-events: auto;
+		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+	}
+
+	.nudge:hover {
+		background: var(--accent-primary);
+		border-color: var(--accent-primary);
+		color: #fff;
+	}
+
+	.nudge-up {
+		top: 9px;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.nudge-down {
+		bottom: 9px;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.nudge-left {
+		left: 9px;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.nudge-right {
+		right: 9px;
+		top: 50%;
+		transform: translateY(-50%);
 	}
 
 	/* Mobile: stacked layout */

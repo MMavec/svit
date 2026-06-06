@@ -106,6 +106,7 @@ function mapToDevApplication(
 		municipality: 'victoria',
 		appType: appType || undefined,
 		folderNumber: folder || undefined,
+		neighbourhood: titleCase(str(props.Neighbourhood)) || undefined,
 		submittedDate: parseEpoch(props.CREATED_DATE),
 		coordinates: coords,
 		flagged: significant,

@@ -112,6 +112,35 @@ export const licenceCategoryColor = colorMap<
 	'var(--text-tertiary)'
 );
 
+/** Mobility feature kind → color */
+export const mobilityKindColor = colorMap<'bike-rack' | 'car-share' | 'pay-station'>(
+	{
+		'bike-rack': 'var(--palette-green)',
+		'car-share': 'var(--palette-blue)',
+		'pay-station': 'var(--accent-warning)'
+	},
+	'var(--text-tertiary)'
+);
+
+/** Cooling-resource category → color */
+export const coolingCategoryColor = colorMap<'indoor' | 'water' | 'other'>(
+	{
+		indoor: 'var(--palette-purple)',
+		water: 'var(--palette-cyan)',
+		other: 'var(--text-tertiary)'
+	},
+	'var(--text-tertiary)'
+);
+
+/** Public-amenity kind → color */
+export const amenityKindColor = colorMap<'washroom' | 'facility'>(
+	{
+		washroom: 'var(--palette-cyan)',
+		facility: 'var(--palette-purple)'
+	},
+	'var(--text-tertiary)'
+);
+
 /** Environment reading status → color */
 export const envStatusColor = colorMap<
 	'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'hazardous'

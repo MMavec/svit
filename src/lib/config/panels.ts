@@ -326,6 +326,51 @@ export const panels: PanelConfig[] = [
 		defaultPosition: { x: 4, y: 66, w: 4, h: 6 },
 		minWidth: 3,
 		minHeight: 4
+	},
+	{
+		id: 'mobility',
+		title: 'Mobility',
+		tier: 3,
+		icon: '🚲',
+		defaultPosition: { x: 8, y: 66, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'cooling-centres',
+		title: 'Cooling & Water',
+		tier: 3,
+		icon: '💧',
+		defaultPosition: { x: 0, y: 72, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'heritage',
+		title: 'Heritage Sites',
+		tier: 3,
+		icon: '🏛',
+		defaultPosition: { x: 4, y: 72, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'public-amenities',
+		title: 'Public Amenities',
+		tier: 3,
+		icon: '🚻',
+		defaultPosition: { x: 8, y: 72, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
+	},
+	{
+		id: 'patios',
+		title: 'Patios & Parklets',
+		tier: 3,
+		icon: '🪑',
+		defaultPosition: { x: 0, y: 78, w: 4, h: 6 },
+		minWidth: 3,
+		minHeight: 4
 	}
 ];
 

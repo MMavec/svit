@@ -44,7 +44,12 @@ export const dashboardModes: ModeConfig[] = [
 			'transit',
 			'safety-emergency',
 			'crime-incidents',
-			'weather-tides'
+			'weather-tides',
+			'mobility',
+			'cooling-centres',
+			'heritage',
+			'public-amenities',
+			'patios'
 		])
 	},
 	{
@@ -62,6 +67,7 @@ export const dashboardModes: ModeConfig[] = [
 			'permit-pulse',
 			'business-licences',
 			'assessment-values',
+			'heritage',
 			'voices',
 			'local-wire',
 			'budget-finance',
@@ -78,6 +84,7 @@ export const dashboardModes: ModeConfig[] = [
 			'nature-environment',
 			'weather-tides',
 			'ev-charging',
+			'cooling-centres',
 			'safety-emergency',
 			'crime-incidents',
 			'parks-recreation',
@@ -95,6 +102,7 @@ export const dashboardModes: ModeConfig[] = [
 			'crime-incidents',
 			'councillor-profiles',
 			'community-board',
+			'patios',
 			'housing',
 			'pulse'
 		])
@@ -114,6 +122,8 @@ export const dashboardModes: ModeConfig[] = [
 			'local-wire',
 			'voices',
 			'events',
+			// Getting around town
+			'mobility',
 			// Civic engagement — active seniors vote and attend hearings
 			'council-watch',
 			'councillor-profiles',
@@ -133,6 +143,7 @@ export const dashboardModes: ModeConfig[] = [
 			'family-activities',
 			'parks-recreation',
 			'schools-libraries',
+			'public-amenities',
 			// Events and community
 			'events',
 			'safety-emergency',

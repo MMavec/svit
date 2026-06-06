@@ -208,6 +208,7 @@ export interface DevelopmentApplication {
 	zoningProposed?: string;
 	appType?: string; // raw municipal application type (e.g. "Rezoning", "Heritage Alteration Permit")
 	folderNumber?: string; // municipal file number, used for tracker deep-links + dedup
+	neighbourhood?: string;
 	submittedDate?: string;
 	decisionDate?: string;
 	publicHearingDate?: string;
@@ -309,6 +310,61 @@ export interface EvCharger {
 	owner?: string;
 	municipality: string;
 	coordinates?: [number, number]; // [lng, lat]
+	source: string;
+}
+
+export interface MobilityFeature {
+	id: string;
+	kind: 'bike-rack' | 'car-share' | 'pay-station';
+	label: string;
+	detail?: string; // block, shape, or zone
+	municipality: string;
+	coordinates?: [number, number];
+	source: string;
+}
+
+export interface CoolingResource {
+	id: string;
+	name: string;
+	category: 'indoor' | 'water' | 'other';
+	resourceType: string; // raw HeatResourceType
+	location?: string;
+	hours?: string;
+	hoursUrl?: string;
+	petFriendly?: string;
+	municipality: string;
+	coordinates?: [number, number];
+	source: string;
+}
+
+export interface HeritageSite {
+	id: string;
+	name: string;
+	address?: string;
+	isProtected: boolean;
+	municipality: string;
+	coordinates?: [number, number];
+	source: string;
+}
+
+export interface PublicAmenity {
+	id: string;
+	kind: 'washroom' | 'facility';
+	name: string;
+	address?: string;
+	category?: string; // facility Type, e.g. Recreation / Square
+	hours?: string;
+	municipality: string;
+	coordinates?: [number, number];
+	source: string;
+}
+
+export interface PatioArea {
+	id: string;
+	patioType: string; // Parklet / Hub / BBV Licence / Patio Licence
+	note?: string; // free-text year/date note
+	municipality: string;
+	coordinates?: [number, number];
 	source: string;
 }
 
