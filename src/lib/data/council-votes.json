@@ -1,7 +1,7 @@
 {
-	"generatedAt": "2026-07-06T14:37:16.242Z",
+	"generatedAt": "2026-07-09T13:59:53.900Z",
 	"source": "City of Victoria eSCRIBE minutes",
-	"meetingsProcessed": 45,
+	"meetingsProcessed": 43,
 	"latestMeeting": "2026/05/14",
 	"councillors": [
 		"Alto",
@@ -17,56 +17,56 @@
 	"scorecard": [
 		{
 			"name": "Alto",
-			"votesRecorded": 343,
-			"dissents": 29,
+			"votesRecorded": 317,
+			"dissents": 24,
 			"conflicts": 0
 		},
 		{
 			"name": "Caradonna",
-			"votesRecorded": 343,
-			"dissents": 41,
+			"votesRecorded": 317,
+			"dissents": 36,
 			"conflicts": 1
 		},
 		{
 			"name": "Coleman",
-			"votesRecorded": 339,
-			"dissents": 31,
+			"votesRecorded": 313,
+			"dissents": 25,
 			"conflicts": 0
 		},
 		{
 			"name": "Dell",
-			"votesRecorded": 301,
-			"dissents": 30,
+			"votesRecorded": 275,
+			"dissents": 26,
 			"conflicts": 6
 		},
 		{
 			"name": "Gardiner",
-			"votesRecorded": 335,
-			"dissents": 61,
+			"votesRecorded": 309,
+			"dissents": 54,
 			"conflicts": 0
 		},
 		{
 			"name": "Hammond",
-			"votesRecorded": 266,
-			"dissents": 46,
+			"votesRecorded": 240,
+			"dissents": 37,
 			"conflicts": 0
 		},
 		{
 			"name": "Kim",
-			"votesRecorded": 299,
-			"dissents": 33,
+			"votesRecorded": 273,
+			"dissents": 28,
 			"conflicts": 3
 		},
 		{
 			"name": "Loughton",
-			"votesRecorded": 300,
-			"dissents": 29,
+			"votesRecorded": 274,
+			"dissents": 24,
 			"conflicts": 1
 		},
 		{
 			"name": "Thompson",
-			"votesRecorded": 291,
-			"dissents": 17,
+			"votesRecorded": 265,
+			"dissents": 15,
 			"conflicts": 4
 		}
 	],
@@ -9926,117 +9926,6 @@
 			],
 			"conflict": [],
 			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105978-13",
-			"meetingName": "Special Committee of the Whole",
-			"meetingDate": "2025/11/07",
-			"itemCode": "D.1",
-			"motion": "2026-2030 Draft Financial Plan",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 9,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Loughton",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105978-12",
-			"meetingName": "Special Committee of the Whole",
-			"meetingDate": "2025/11/07",
-			"itemCode": "D.1",
-			"motion": "2026-2030 Draft Financial Plan",
-			"result": "Defeated 3 to 6",
-			"carried": false,
-			"unanimous": false,
-			"forCount": 3,
-			"againstCount": 6,
-			"opposed": [
-				"Caradonna",
-				"Dell",
-				"Hammond",
-				"Kim",
-				"Loughton",
-				"Thompson"
-			],
-			"inFavour": [
-				"Alto",
-				"Coleman",
-				"Gardiner"
-			],
-			"conflict": [],
-			"split": true,
-			"valid": true
-		},
-		{
-			"id": "105978-11",
-			"meetingName": "Special Committee of the Whole",
-			"meetingDate": "2025/11/07",
-			"itemCode": "D.1",
-			"motion": "2026-2030 Draft Financial Plan",
-			"result": "Carried 8 to 1",
-			"carried": true,
-			"unanimous": false,
-			"forCount": 8,
-			"againstCount": 1,
-			"opposed": [
-				"Hammond"
-			],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Kim",
-				"Loughton",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": true,
-			"valid": true
-		},
-		{
-			"id": "105978-10",
-			"meetingName": "Special Committee of the Whole",
-			"meetingDate": "2025/11/07",
-			"itemCode": "D.1",
-			"motion": "2026-2030 Draft Financial Plan",
-			"result": "Carried 7 to 2",
-			"carried": true,
-			"unanimous": false,
-			"forCount": 7,
-			"againstCount": 2,
-			"opposed": [
-				"Gardiner",
-				"Hammond"
-			],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Kim",
-				"Loughton",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": true,
 			"valid": true
 		}
 	]
