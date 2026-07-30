@@ -1,7 +1,7 @@
 {
-	"generatedAt": "2026-07-27T13:44:55.757Z",
+	"generatedAt": "2026-07-30T12:55:15.244Z",
 	"source": "City of Victoria eSCRIBE minutes",
-	"meetingsProcessed": 39,
+	"meetingsProcessed": 37,
 	"latestMeeting": "2026/06/11",
 	"councillors": [
 		"Alto",
@@ -17,44 +17,44 @@
 	"scorecard": [
 		{
 			"name": "Alto",
-			"votesRecorded": 277,
+			"votesRecorded": 266,
 			"dissents": 19,
 			"conflicts": 0
 		},
 		{
 			"name": "Caradonna",
-			"votesRecorded": 277,
+			"votesRecorded": 266,
 			"dissents": 30,
 			"conflicts": 1
 		},
 		{
 			"name": "Coleman",
-			"votesRecorded": 271,
+			"votesRecorded": 260,
 			"dissents": 18,
 			"conflicts": 2
 		},
 		{
 			"name": "Dell",
-			"votesRecorded": 248,
-			"dissents": 19,
+			"votesRecorded": 237,
+			"dissents": 18,
 			"conflicts": 6
 		},
 		{
 			"name": "Gardiner",
-			"votesRecorded": 269,
+			"votesRecorded": 258,
 			"dissents": 43,
 			"conflicts": 0
 		},
 		{
 			"name": "Hammond",
-			"votesRecorded": 207,
+			"votesRecorded": 196,
 			"dissents": 25,
 			"conflicts": 0
 		},
 		{
 			"name": "Kim",
-			"votesRecorded": 234,
-			"dissents": 23,
+			"votesRecorded": 223,
+			"dissents": 22,
 			"conflicts": 4
 		},
 		{
@@ -65,7 +65,7 @@
 		},
 		{
 			"name": "Thompson",
-			"votesRecorded": 225,
+			"votesRecorded": 214,
 			"dissents": 10,
 			"conflicts": 4
 		}
@@ -8406,310 +8406,6 @@
 				"Gardiner",
 				"Hammond",
 				"Kim"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105811-3",
-			"meetingName": "Council (to follow COTW)",
-			"meetingDate": "2025/11/27",
-			"itemCode": "H.1",
-			"motion": "1516 Camosun Street, 1270 and 1286 Pandora Avenue: Update on Rezoning",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105811-2",
-			"meetingName": "Council (to follow COTW)",
-			"meetingDate": "2025/11/27",
-			"itemCode": "H.1",
-			"motion": "1516 Camosun Street, 1270 and 1286 Pandora Avenue: Update on Rezoning",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105811-1",
-			"meetingName": "Council (to follow COTW)",
-			"meetingDate": "2025/11/27",
-			"itemCode": "G.2",
-			"motion": "Bylaw for Amenity Cost Charges Reserve Fund",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105811-0",
-			"meetingName": "Council (to follow COTW)",
-			"meetingDate": "2025/11/27",
-			"motion": "Motion",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105810-7",
-			"meetingName": "Committee of the Whole",
-			"meetingDate": "2025/11/27",
-			"itemCode": "I.1",
-			"motion": "Council Member Motion: Bail Reform Addressing Chronic Repeat Offenders",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105810-6",
-			"meetingName": "Committee of the Whole",
-			"meetingDate": "2025/11/27",
-			"itemCode": "I.1",
-			"motion": "Council Member Motion: Bail Reform Addressing Chronic Repeat Offenders",
-			"result": "Carried 7 to 1",
-			"carried": true,
-			"unanimous": false,
-			"forCount": 7,
-			"againstCount": 1,
-			"opposed": [
-				"Kim"
-			],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": true,
-			"valid": true
-		},
-		{
-			"id": "105810-5",
-			"meetingName": "Committee of the Whole",
-			"meetingDate": "2025/11/27",
-			"itemCode": "I.1",
-			"motion": "Council Member Motion: Bail Reform Addressing Chronic Repeat Offenders",
-			"result": "Carried 8 to 0",
-			"carried": true,
-			"unanimous": false,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105810-4",
-			"meetingName": "Committee of the Whole",
-			"meetingDate": "2025/11/27",
-			"itemCode": "G.2",
-			"motion": "Centennial Square Revitalization Project - Design Update",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105810-3",
-			"meetingName": "Committee of the Whole",
-			"meetingDate": "2025/11/27",
-			"itemCode": "G.1",
-			"motion": "Code of Conduct for Council Members – Review and Update",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105810-2",
-			"meetingName": "Committee of the Whole",
-			"meetingDate": "2025/11/27",
-			"itemCode": "F.1",
-			"motion": "1555 Vancouver Street: Rezoning Application No. 00891 (North Park)",
-			"result": "Carried 7 to 2",
-			"carried": true,
-			"unanimous": false,
-			"forCount": 7,
-			"againstCount": 2,
-			"opposed": [
-				"Dell"
-			],
-			"inFavour": [],
-			"conflict": [],
-			"split": true,
-			"valid": false
-		},
-		{
-			"id": "105810-1",
-			"meetingName": "Committee of the Whole",
-			"meetingDate": "2025/11/27",
-			"itemCode": "G.3",
-			"motion": "Endorsement of Partnership for FCM Adaptation in Action Fund",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105810-0",
-			"meetingName": "Committee of the Whole",
-			"meetingDate": "2025/11/27",
-			"motion": "Motion",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 8,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Thompson"
 			],
 			"conflict": [],
 			"split": false,
