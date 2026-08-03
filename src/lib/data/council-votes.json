@@ -1,7 +1,7 @@
 {
-	"generatedAt": "2026-07-30T12:55:15.244Z",
+	"generatedAt": "2026-08-03T13:48:47.939Z",
 	"source": "City of Victoria eSCRIBE minutes",
-	"meetingsProcessed": 37,
+	"meetingsProcessed": 36,
 	"latestMeeting": "2026/06/11",
 	"councillors": [
 		"Alto",
@@ -17,43 +17,43 @@
 	"scorecard": [
 		{
 			"name": "Alto",
-			"votesRecorded": 266,
+			"votesRecorded": 264,
 			"dissents": 19,
 			"conflicts": 0
 		},
 		{
 			"name": "Caradonna",
-			"votesRecorded": 266,
+			"votesRecorded": 264,
 			"dissents": 30,
 			"conflicts": 1
 		},
 		{
 			"name": "Coleman",
-			"votesRecorded": 260,
+			"votesRecorded": 258,
 			"dissents": 18,
 			"conflicts": 2
 		},
 		{
 			"name": "Dell",
-			"votesRecorded": 237,
+			"votesRecorded": 235,
 			"dissents": 18,
 			"conflicts": 6
 		},
 		{
 			"name": "Gardiner",
-			"votesRecorded": 258,
+			"votesRecorded": 256,
 			"dissents": 43,
 			"conflicts": 0
 		},
 		{
 			"name": "Hammond",
-			"votesRecorded": 196,
+			"votesRecorded": 194,
 			"dissents": 25,
 			"conflicts": 0
 		},
 		{
 			"name": "Kim",
-			"votesRecorded": 223,
+			"votesRecorded": 221,
 			"dissents": 22,
 			"conflicts": 4
 		},
@@ -8342,55 +8342,6 @@
 			"id": "106433-0",
 			"meetingName": "Council (to follow COTW)",
 			"meetingDate": "2025/12/04",
-			"motion": "Motion",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 7,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105812-1",
-			"meetingName": "Special Committee of the Whole",
-			"meetingDate": "2025/12/01",
-			"itemCode": "D.1",
-			"motion": "2026-2030 Draft Financial Plan",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 7,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "105812-0",
-			"meetingName": "Special Committee of the Whole",
-			"meetingDate": "2025/12/01",
 			"motion": "Motion",
 			"result": "Carried unanimously",
 			"carried": true,
