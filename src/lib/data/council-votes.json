@@ -1,7 +1,7 @@
 {
-	"generatedAt": "2026-08-13T11:59:11.081Z",
+	"generatedAt": "2026-08-17T11:39:15.971Z",
 	"source": "City of Victoria eSCRIBE minutes",
-	"meetingsProcessed": 31,
+	"meetingsProcessed": 33,
 	"latestMeeting": "2026/06/11",
 	"councillors": [
 		"Alto",
@@ -17,57 +17,57 @@
 	"scorecard": [
 		{
 			"name": "Alto",
-			"votesRecorded": 217,
+			"votesRecorded": 230,
 			"dissents": 14,
 			"conflicts": 0
 		},
 		{
 			"name": "Caradonna",
-			"votesRecorded": 217,
+			"votesRecorded": 230,
 			"dissents": 22,
-			"conflicts": 1
+			"conflicts": 2
 		},
 		{
 			"name": "Coleman",
-			"votesRecorded": 211,
+			"votesRecorded": 224,
 			"dissents": 12,
 			"conflicts": 2
 		},
 		{
 			"name": "Dell",
-			"votesRecorded": 196,
-			"dissents": 11,
+			"votesRecorded": 209,
+			"dissents": 12,
 			"conflicts": 5
 		},
 		{
 			"name": "Gardiner",
-			"votesRecorded": 217,
-			"dissents": 35,
+			"votesRecorded": 230,
+			"dissents": 37,
 			"conflicts": 0
 		},
 		{
 			"name": "Hammond",
-			"votesRecorded": 147,
-			"dissents": 22,
+			"votesRecorded": 160,
+			"dissents": 23,
 			"conflicts": 0
 		},
 		{
 			"name": "Kim",
-			"votesRecorded": 174,
+			"votesRecorded": 187,
 			"dissents": 14,
 			"conflicts": 4
 		},
 		{
 			"name": "Loughton",
-			"votesRecorded": 200,
+			"votesRecorded": 213,
 			"dissents": 7,
 			"conflicts": 2
 		},
 		{
 			"name": "Thompson",
-			"votesRecorded": 209,
+			"votesRecorded": 221,
 			"dissents": 5,
-			"conflicts": 4
+			"conflicts": 5
 		}
 	],
 	"votes": [
@@ -1990,6 +1990,416 @@
 				"Coleman",
 				"Dell",
 				"Gardiner",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108466-2",
+			"meetingName": "Committee of the Whole",
+			"meetingDate": "2026/04/23",
+			"itemCode": "F.1",
+			"motion": "Bylaw Amendments Pursuant to Bill 25: Housing and Municipal Affairs",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108466-1",
+			"meetingName": "Committee of the Whole",
+			"meetingDate": "2026/04/23",
+			"itemCode": "F.1",
+			"motion": "Bylaw Amendments Pursuant to Bill 25: Housing and Municipal Affairs",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108466-0",
+			"meetingName": "Committee of the Whole",
+			"meetingDate": "2026/04/23",
+			"motion": "Motion",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-12",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "L.1",
+			"motion": "Law Enforcement - Community Charter Section 90(1)(c)",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-11",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "H.7",
+			"motion": "Bylaw for Temporary Borrowing (Crystal Pool Replacement)",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-10",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "H.7",
+			"motion": "Bylaw for Temporary Borrowing (Crystal Pool Replacement)",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-9",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "H.6",
+			"motion": "Bylaw for Five Year Financial Plan",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-8",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "H.5",
+			"motion": "Bylaw for 2026 Boulevard Tax",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-7",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "H.3",
+			"motion": "Bylaw for 2026 Development Potential Annual Property Tax Relief",
+			"result": "Carried 8 to 1",
+			"carried": true,
+			"unanimous": false,
+			"forCount": 8,
+			"againstCount": 1,
+			"opposed": [
+				"Hammond"
+			],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": true,
+			"valid": true
+		},
+		{
+			"id": "108467-6",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "H.2",
+			"motion": "Bylaw for 2026 Tax Rates",
+			"result": "Carried 7 to 2",
+			"carried": true,
+			"unanimous": false,
+			"forCount": 7,
+			"againstCount": 2,
+			"opposed": [
+				"Gardiner"
+			],
+			"inFavour": [],
+			"conflict": [],
+			"split": true,
+			"valid": false
+		},
+		{
+			"id": "108467-5",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "G.1",
+			"motion": "Committee of the Whole",
+			"result": "Carried 8 to 0",
+			"carried": true,
+			"unanimous": false,
+			"forCount": 8,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton"
+			],
+			"conflict": [
+				"Thompson"
+			],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-4",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "G.1",
+			"motion": "Committee of the Whole",
+			"result": "Carried 6 to 2",
+			"carried": true,
+			"unanimous": false,
+			"forCount": 6,
+			"againstCount": 2,
+			"opposed": [
+				"Dell"
+			],
+			"inFavour": [],
+			"conflict": [
+				"Caradonna"
+			],
+			"split": true,
+			"valid": false
+		},
+		{
+			"id": "108467-3",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "F.1",
+			"motion": "Council Member Motion: Funding to Support the Victoria Curling Club’s",
+			"result": "Carried 7 to 2",
+			"carried": true,
+			"unanimous": false,
+			"forCount": 7,
+			"againstCount": 2,
+			"opposed": [
+				"Gardiner"
+			],
+			"inFavour": [],
+			"conflict": [],
+			"split": true,
+			"valid": false
+		},
+		{
+			"id": "108467-2",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "F.1",
+			"motion": "Council Member Motion: Funding to Support the Victoria Curling Club’s",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-1",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"itemCode": "H.4",
+			"motion": "Bylaw for 2026 Business Improvement Area Rate",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
+				"Kim",
+				"Loughton",
+				"Thompson"
+			],
+			"conflict": [],
+			"split": false,
+			"valid": true
+		},
+		{
+			"id": "108467-0",
+			"meetingName": "Council (to follow COTW)",
+			"meetingDate": "2026/04/23",
+			"motion": "Motion",
+			"result": "Carried unanimously",
+			"carried": true,
+			"unanimous": true,
+			"forCount": 9,
+			"againstCount": 0,
+			"opposed": [],
+			"inFavour": [
+				"Alto",
+				"Caradonna",
+				"Coleman",
+				"Dell",
+				"Gardiner",
+				"Hammond",
 				"Kim",
 				"Loughton",
 				"Thompson"
