@@ -1,7 +1,7 @@
 {
-	"generatedAt": "2026-09-07T16:27:13.321Z",
+	"generatedAt": "2026-09-10T14:59:11.084Z",
 	"source": "City of Victoria eSCRIBE minutes",
-	"meetingsProcessed": 35,
+	"meetingsProcessed": 34,
 	"latestMeeting": "2026/06/11",
 	"councillors": [
 		"Alto",
@@ -17,55 +17,55 @@
 	"scorecard": [
 		{
 			"name": "Alto",
-			"votesRecorded": 241,
+			"votesRecorded": 237,
 			"dissents": 15,
 			"conflicts": 0
 		},
 		{
 			"name": "Caradonna",
-			"votesRecorded": 241,
+			"votesRecorded": 237,
 			"dissents": 25,
 			"conflicts": 2
 		},
 		{
 			"name": "Coleman",
-			"votesRecorded": 235,
+			"votesRecorded": 231,
 			"dissents": 13,
 			"conflicts": 2
 		},
 		{
 			"name": "Dell",
-			"votesRecorded": 220,
+			"votesRecorded": 216,
 			"dissents": 13,
 			"conflicts": 5
 		},
 		{
 			"name": "Gardiner",
-			"votesRecorded": 241,
+			"votesRecorded": 237,
 			"dissents": 39,
 			"conflicts": 0
 		},
 		{
 			"name": "Hammond",
-			"votesRecorded": 171,
+			"votesRecorded": 167,
 			"dissents": 25,
 			"conflicts": 0
 		},
 		{
 			"name": "Kim",
-			"votesRecorded": 198,
+			"votesRecorded": 194,
 			"dissents": 15,
 			"conflicts": 4
 		},
 		{
 			"name": "Loughton",
-			"votesRecorded": 219,
+			"votesRecorded": 215,
 			"dissents": 8,
 			"conflicts": 2
 		},
 		{
 			"name": "Thompson",
-			"votesRecorded": 232,
+			"votesRecorded": 228,
 			"dissents": 6,
 			"conflicts": 5
 		}
@@ -7296,112 +7296,6 @@
 				"Dell",
 				"Gardiner",
 				"Hammond",
-				"Loughton",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "106568-3",
-			"meetingName": "Council",
-			"meetingDate": "2026/01/08",
-			"itemCode": "F.1",
-			"motion": "1824, 1900, 1907, 1908,1924 and 2010 Store Street and 530 Chatham Street:",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 9,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Loughton",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "106568-2",
-			"meetingName": "Council",
-			"meetingDate": "2026/01/08",
-			"itemCode": "F.1",
-			"motion": "1824, 1900, 1907, 1908,1924 and 2010 Store Street and 530 Chatham Street:",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 9,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Loughton",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "106568-1",
-			"meetingName": "Council",
-			"meetingDate": "2026/01/08",
-			"motion": "Motion",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 9,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
-				"Loughton",
-				"Thompson"
-			],
-			"conflict": [],
-			"split": false,
-			"valid": true
-		},
-		{
-			"id": "106568-0",
-			"meetingName": "Council",
-			"meetingDate": "2026/01/08",
-			"motion": "Motion",
-			"result": "Carried unanimously",
-			"carried": true,
-			"unanimous": true,
-			"forCount": 9,
-			"againstCount": 0,
-			"opposed": [],
-			"inFavour": [
-				"Alto",
-				"Caradonna",
-				"Coleman",
-				"Dell",
-				"Gardiner",
-				"Hammond",
-				"Kim",
 				"Loughton",
 				"Thompson"
 			],
